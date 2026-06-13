@@ -211,67 +211,11 @@ jobs:
           retention-days: 1
 
   # ────────────────────────────────────────────────────────────────────────
-  # Linux — AppImage / tar.gz
-  # ────────────────────────────────────────────────────────────────────────
-  build-linux:
-    name: Build Linux tar.gz
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install system deps (für pywebview-Qt)
-        run: |
-          sudo apt-get update
-          # Qt6 ist Default für pywebview unter Linux
-          sudo apt-get install -y \
-            python3-pyqt5 \
-            python3-pyqt5.qtwebengine \
-            libnss3 libatk1.0-0 libatk-bridge2.0-0 libxss1 libasound2
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
-
-      - name: Install Playwright Chromium ins Bundle (pw-browsers/)
-        run: |
-          # v0.9.229 — in REPO-lokales pw-browsers/ statt User-Cache, damit die
-          # .spec den Browser ins Bundle einbackt (Out-of-box-Render).
-          PLAYWRIGHT_BROWSERS_PATH="$PWD/pw-browsers" python -m playwright install chromium-headless-shell
-          ls -la pw-browsers
-
-      - name: Build User-Guide HTML
-        run: python3 scripts/build_user_guide_html.py
-
-      - name: Build binary
-        run: pyinstaller ReisezoomGPSStudio.spec --clean --noconfirm
-
-      - name: Tar up
-        # Fixer Filename — s.reisezoom.com-Shortlinks zeigen exakt drauf.
-        # Siehe docs/HANDOVER_DEPLOYMENT.md
-        run: |
-          tar -czf "dist/ReisezoomGPSStudio-linux.tar.gz" -C dist ReisezoomGPSStudio
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ReisezoomGPSStudio-linux
-          path: dist/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
-
-  # ────────────────────────────────────────────────────────────────────────
   # Release: bei Git-Tag alle Artefakte zu einem GitHub Release hochladen
   # ────────────────────────────────────────────────────────────────────────
   release:
     name: Publish GitHub Release
-    needs: [build-macos, build-windows, build-linux]
+    needs: [build-macos, build-windows]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     permissions:
@@ -293,7 +237,6 @@ jobs:
           files: |
             artifacts/ReisezoomGPSStudio-macos/*.dmg
             artifacts/ReisezoomGPSStudio-windows/*.exe
-            artifacts/ReisezoomGPSStudio-linux/*.tar.gz
           generate_release_notes: true
           draft: false
           prerelease: false

@@ -1,6 +1,6 @@
 # Reisezoom GPS Studio
 
-**Animierte GPS-Karten-Videos aus deinen Touren – plus Foto-Geotagging. Kostenlos, für macOS, Windows & Linux.**
+**Animierte GPS-Karten-Videos aus deinen Touren – plus Foto-Geotagging. Kostenlos, für macOS & Windows (Linux aus dem Quellcode).**
 
 Du lädst ein GPX-Track rein, und Reisezoom GPS Studio macht daraus ein **animiertes Karten-Video** (Marker fährt die Route ab, Kinokamera, Höhenprofil, Stats-Overlays, Wegpunkt-Schilder, Foto-Pins). Dazu gibt es einen **Geotagger** (Fotos anhand der GPS-Zeit auf den Track setzen), einen **GPX-Inspektor** (kaputte Tracks reparieren) und ein **Reiseroute**-Modul (An-/Abreise als Animation).
 
@@ -18,7 +18,7 @@ Immer die neueste Version:
 |-----------|----------|
 | **macOS** | https://s.reisezoom.com/gps-studio-mac |
 | **Windows** | https://s.reisezoom.com/gps-studio-win |
-| **Linux** | https://s.reisezoom.com/gps-studio-linux |
+| **Linux** | aus dem Quellcode bauen → siehe [🐧 Linux](#-linux-aus-quellcode) |
 
 > Die App ist nicht über ein Apple-/Microsoft-Entwicklerzertifikat signiert. macOS: beim ersten Start **Rechtsklick → Öffnen**.
 
@@ -56,6 +56,35 @@ python app.py          # Dev-Start
 ```
 
 Architektur, Module und Render-Pipeline: [`docs/DEVELOPER.md`](docs/DEVELOPER.md). Endnutzer-Anleitung: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md). Versions-Historie: [`CHANGELOG.md`](CHANGELOG.md).
+
+## 🐧 Linux (aus Quellcode)
+
+Für macOS und Windows gibt es fertige Builds (siehe oben). Für **Linux läuft die App direkt aus dem Quellcode** — das Karten-/Render-Backend (pywebview) braucht dort die System-GTK-/WebKit-Bindings, die sich nicht zuverlässig in ein einzelnes Binary packen lassen.
+
+**1. System-Pakete installieren** (einmalig):
+
+```bash
+# Fedora
+sudo dnf install python3 python3-gobject gobject-introspection \
+                 webkit2gtk4.1 python3-cairo ffmpeg
+
+# Debian / Ubuntu
+sudo apt install python3 python3-venv python3-gi python3-gi-cairo \
+                 gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 ffmpeg
+```
+
+**2. Repo holen & starten:**
+
+```bash
+git clone https://github.com/docarzt123/reisezoom-gps-studio.git
+cd reisezoom-gps-studio
+python3 -m venv --system-site-packages .venv   # --system-site-packages → die venv sieht das System-GTK (gi)
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Den Mapbox-Token trägst du in der App unter ⚙ → Mapbox-Token ein (siehe oben).
 
 ## 📜 Lizenz & Credits
 

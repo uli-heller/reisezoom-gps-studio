@@ -25,6 +25,15 @@ Bei jeder neuen Version:
   Kacheln). Der maximale Zoom ist jetzt auf 18 begrenzt (Karte + Animator-Zoom-Regler) →
   der schwarze Zustand ist nicht mehr erreichbar.
 
+### Geändert
+
+- **Linux: aus Quellcode statt fertigem Binary (Beta-Tester-Bug).** Das gefrorene Linux-Binary
+  startete nicht (pywebview fand keine GTK-/Qt-Bindings — die lassen sich nicht zuverlässig
+  ins PyInstaller-Bundle packen). Da das Projekt jetzt Open Source ist, läuft Linux sauber
+  **direkt aus dem Quellcode**: System-Pakete (GTK/WebKit + ffmpeg + ExifTool) + `python app.py`.
+  Anleitung in README und USER_GUIDE. Das Linux-Binary entfällt aus der Release-Pipeline;
+  macOS & Windows bleiben fertige Builds.
+
 ### Hinzugefügt
 
 - **Reisezoom-Links in der App.** Oben rechts in der Titelleiste gibt es jetzt einen

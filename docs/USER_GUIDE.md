@@ -20,9 +20,9 @@ Lade dir die richtige Version für dein Betriebssystem:
 |-----------|-------|------|
 | macOS (Apple Silicon) | `ReisezoomGPSStudio-macos.dmg` | https://s.reisezoom.com/gps-studio-mac |
 | Windows (x64) | `ReisezoomGPSStudio-windows-setup.exe` | https://s.reisezoom.com/gps-studio-win |
-| Linux (x64) | `ReisezoomGPSStudio-linux.tar.gz` | https://s.reisezoom.com/gps-studio-linux |
+| Linux (x64) | aus Quellcode | siehe **Linux**-Abschnitt unten |
 
-**Du brauchst nichts extra installieren** — `ffmpeg` und `exiftool` sind bei macOS & Windows bereits in der App enthalten. Auf Linux musst du ggf. einmalig `python3-pyqt5.qtwebengine` installieren (siehe unten).
+**Auf macOS & Windows brauchst du nichts extra installieren** — `ffmpeg` und `exiftool` sind in der App enthalten. **Linux** läuft direkt aus dem Quellcode (System-Pakete + `python app.py`, siehe unten).
 
 ### macOS (.dmg)
 1. `.dmg` doppelklicken
@@ -44,23 +44,37 @@ xattr -dr com.apple.quarantine "/Applications/Reisezoom GPS Studio.app"
 
 Deinstallieren wie jede andere Windows-App: **Systemsteuerung → Apps & Features → Reisezoom GPS Studio → Deinstallieren**.
 
-### Linux (.tar.gz)
-```bash
-sudo apt install python3-pyqt5.qtwebengine     # Ubuntu/Debian
-tar -xzf ReisezoomGPSStudio-linux.tar.gz
-cd ReisezoomGPSStudio
-./ReisezoomGPSStudio
-```
+### Linux (aus Quellcode)
 
-**Wichtig für Linux-User:** Das macOS- und Windows-Bundle bringen **ExifTool**
-bereits mit (für RAW-Foto-Metadaten + GPS in HEIC schreiben). Auf Linux musst
-du das selbst installieren:
+Für Linux gibt es **kein fertiges Binary** — das Karten-/Render-Backend (pywebview) braucht die System-GTK-/WebKit-Bindings, die sich nicht zuverlässig in ein Einzel-Binary packen lassen. Stattdessen läuft die App direkt aus dem (offenen) Quellcode:
+
+**1. System-Pakete** (einmalig — inkl. ffmpeg + ExifTool für Render & Foto-Metadaten):
 
 ```bash
-sudo apt install libimage-exiftool-perl       # Debian/Ubuntu
-sudo dnf install perl-Image-ExifTool          # Fedora/RHEL
-sudo pacman -S perl-image-exiftool            # Arch
+# Fedora / RHEL
+sudo dnf install python3 python3-gobject gobject-introspection \
+                 webkit2gtk4.1 python3-cairo ffmpeg perl-Image-ExifTool
+
+# Debian / Ubuntu
+sudo apt install python3 python3-venv python3-gi python3-gi-cairo \
+                 gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 ffmpeg libimage-exiftool-perl
+
+# Arch
+sudo pacman -S python python-gobject webkit2gtk-4.1 ffmpeg perl-image-exiftool
 ```
+
+**2. Repo holen & starten:**
+
+```bash
+git clone https://github.com/docarzt123/reisezoom-gps-studio.git
+cd reisezoom-gps-studio
+python3 -m venv --system-site-packages .venv   # --system-site-packages → venv sieht das System-GTK (gi)
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Beim ersten Render lädt die App einmalig Chromium nach (~150 MB).
 
 Ohne ExifTool funktionieren JPEG-, TIFF- und HEIC-Fotos trotzdem (via piexif +
 pillow-heif, beides eingebaut). Nur RAW-Dateien (CR3, NEF, ARW, RAF, RW2, ORF,

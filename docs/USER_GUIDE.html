@@ -181,8 +181,8 @@
 <h2 id="1-installation">1 · Installation</h2>
 <h3 id="download">Download</h3>
 <p>Lade dir die richtige Version für dein Betriebssystem:</p>
-<table><thead><tr><th>Plattform</th><th>Datei</th><th>Link</th></tr></thead><tbody><tr><td>macOS (Apple Silicon)</td><td><code>ReisezoomGPSStudio-macos.dmg</code></td><td>https://s.reisezoom.com/gps-studio-mac</td></tr><tr><td>Windows (x64)</td><td><code>ReisezoomGPSStudio-windows-setup.exe</code></td><td>https://s.reisezoom.com/gps-studio-win</td></tr><tr><td>Linux (x64)</td><td><code>ReisezoomGPSStudio-linux.tar.gz</code></td><td>https://s.reisezoom.com/gps-studio-linux</td></tr></tbody></table>
-<p><strong>Du brauchst nichts extra installieren</strong> — <code>ffmpeg</code> und <code>exiftool</code> sind bei macOS &amp; Windows bereits in der App enthalten. Auf Linux musst du ggf. einmalig <code>python3-pyqt5.qtwebengine</code> installieren (siehe unten).</p>
+<table><thead><tr><th>Plattform</th><th>Datei</th><th>Link</th></tr></thead><tbody><tr><td>macOS (Apple Silicon)</td><td><code>ReisezoomGPSStudio-macos.dmg</code></td><td>https://s.reisezoom.com/gps-studio-mac</td></tr><tr><td>Windows (x64)</td><td><code>ReisezoomGPSStudio-windows-setup.exe</code></td><td>https://s.reisezoom.com/gps-studio-win</td></tr><tr><td>Linux (x64)</td><td>aus Quellcode</td><td>siehe <strong>Linux</strong>-Abschnitt unten</td></tr></tbody></table>
+<p><strong>Auf macOS &amp; Windows brauchst du nichts extra installieren</strong> — <code>ffmpeg</code> und <code>exiftool</code> sind in der App enthalten. <strong>Linux</strong> läuft direkt aus dem Quellcode (System-Pakete + <code>python app.py</code>, siehe unten).</p>
 <h3 id="macos-dmg">macOS (.dmg)</h3>
 <ol>
 <li><code>.dmg</code> doppelklicken</li>
@@ -201,15 +201,27 @@
 <li>Beim ersten Render lädt die App noch Chromium nach (~150 MB, einmalig, dauert 1-2 Min)</li>
 </ol>
 <p>Deinstallieren wie jede andere Windows-App: <strong>Systemsteuerung → Apps &amp; Features → Reisezoom GPS Studio → Deinstallieren</strong>.</p>
-<h3 id="linux-tar-gz">Linux (.tar.gz)</h3>
-<pre><code class="lang-bash">sudo apt install python3-pyqt5.qtwebengine     # Ubuntu/Debian
-tar -xzf ReisezoomGPSStudio-linux.tar.gz
-cd ReisezoomGPSStudio
-./ReisezoomGPSStudio</code></pre>
-<p><strong>Wichtig für Linux-User:</strong> Das macOS- und Windows-Bundle bringen <strong>ExifTool</strong> bereits mit (für RAW-Foto-Metadaten + GPS in HEIC schreiben). Auf Linux musst du das selbst installieren:</p>
-<pre><code class="lang-bash">sudo apt install libimage-exiftool-perl       # Debian/Ubuntu
-sudo dnf install perl-Image-ExifTool          # Fedora/RHEL
-sudo pacman -S perl-image-exiftool            # Arch</code></pre>
+<h3 id="linux-aus-quellcode">Linux (aus Quellcode)</h3>
+<p>Für Linux gibt es <strong>kein fertiges Binary</strong> — das Karten-/Render-Backend (pywebview) braucht die System-GTK-/WebKit-Bindings, die sich nicht zuverlässig in ein Einzel-Binary packen lassen. Stattdessen läuft die App direkt aus dem (offenen) Quellcode:</p>
+<p><strong>1. System-Pakete</strong> (einmalig — inkl. ffmpeg + ExifTool für Render &amp; Foto-Metadaten):</p>
+<pre><code class="lang-bash"># Fedora / RHEL
+sudo dnf install python3 python3-gobject gobject-introspection \
+                 webkit2gtk4.1 python3-cairo ffmpeg perl-Image-ExifTool
+
+# Debian / Ubuntu
+sudo apt install python3 python3-venv python3-gi python3-gi-cairo \
+                 gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 ffmpeg libimage-exiftool-perl
+
+# Arch
+sudo pacman -S python python-gobject webkit2gtk-4.1 ffmpeg perl-image-exiftool</code></pre>
+<p><strong>2. Repo holen &amp; starten:</strong></p>
+<pre><code class="lang-bash">git clone https://github.com/docarzt123/reisezoom-gps-studio.git
+cd reisezoom-gps-studio
+python3 -m venv --system-site-packages .venv   # --system-site-packages → venv sieht das System-GTK (gi)
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py</code></pre>
+<p>Beim ersten Render lädt die App einmalig Chromium nach (~150 MB).</p>
 <p>Ohne ExifTool funktionieren JPEG-, TIFF- und HEIC-Fotos trotzdem (via piexif + pillow-heif, beides eingebaut). Nur RAW-Dateien (CR3, NEF, ARW, RAF, RW2, ORF, DNG, PEF, RWL, SRW) und Video-Metadaten brauchen exiftool, und GPS-Schreiben in HEIC ebenfalls.</p>
 <hr>
 <h2 id="2-erste-schritte">2 · Erste Schritte</h2>

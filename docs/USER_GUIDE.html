@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reisezoom GPS Studio — Benutzer-Handbuch — Reisezoom GPS Studio</title>
+<style>
+  :root {
+    --bg-1: #0e1117;
+    --bg-2: #161b22;
+    --bg-3: #21262d;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --text-muted: #6e7681;
+    --accent: #ff6b35;
+    --accent-dim: #d65a2a;
+    --link: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg-1); color: var(--text); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .layout {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 36px 80px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  }
+  .header-title { font-size: 18px; font-weight: 600; }
+  .header-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.3px; }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #f0f6fc;
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 1.6em 0 0.5em;
+    scroll-margin-top: 24px;
+  }
+  h1 { font-size: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h2 { font-size: 22px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 18px; }
+  h4 { font-size: 16px; color: var(--text); }
+  h5 { font-size: 14px; color: var(--text); }
+
+  p { margin: 0.8em 0; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  strong { color: #f0f6fc; font-weight: 600; }
+  em { color: #d2a8ff; font-style: italic; }
+
+  code {
+    background: rgba(110, 118, 129, 0.18);
+    color: #ffb38a;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 88%;
+    font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
+  }
+  pre {
+    background: #0a0d12;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 1em 0;
+    line-height: 1.5;
+  }
+  pre code {
+    background: none;
+    color: var(--text);
+    padding: 0;
+    font-size: 12.5px;
+  }
+  kbd {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: 85%;
+    font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
+    color: #f0f6fc;
+    white-space: nowrap;
+  }
+
+  ul, ol {
+    margin: 0.6em 0;
+    padding-left: 1.6em;
+  }
+  li { margin: 0.25em 0; }
+  li > ul, li > ol { margin: 0.25em 0; }
+
+  blockquote {
+    margin: 1em 0;
+    padding: 8px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(255, 107, 53, 0.06);
+    color: var(--text-dim);
+    border-radius: 0 6px 6px 0;
+  }
+  blockquote p { margin: 0.3em 0; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--bg-2);
+    color: var(--text);
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: rgba(110, 118, 129, 0.05); }
+
+  /* Smooth-Scroll für Anchor-Links */
+  html { scroll-behavior: smooth; }
+
+  /* Mini-Footer mit Build-Hinweis */
+  .footer {
+    margin-top: 60px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 11.5px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="header">
+    <img class="header-icon" src="../ui/assets/icon.png" alt="" onerror="this.style.display='none'">
+    <div>
+      <div class="header-title">Reisezoom GPS Studio</div>
+      <div class="header-sub">Reisezoom GPS Studio — Benutzer-Handbuch</div>
+    </div>
+  </div>
+  <h1 id="reisezoom-gps-studio-benutzer-handbuch">Reisezoom GPS Studio — Benutzer-Handbuch</h1>
+<p>Cross-Plattform-Suite für GPS-Workflows (macOS · Windows · Linux). <strong>v0.3.3</strong> — Beta.</p>
+<p>Module:</p>
+<ul>
+<li><strong>Animator</strong> — GPX-Track als animiertes 3D-Karten-Video (MP4)</li>
+<li><strong>Reiseroute</strong> — Anreise als Video: Start/Ziel → berechnete Strecke animiert, das geladene GPX als Ghost</li>
+<li><strong>Tour-Map</strong> — GPX-Track als statisches PNG (z.B. für YouTube-Thumbnails)</li>
+<li><strong>Geotagger</strong> — GPS-Koordinaten aus GPX in JPG / RAW / Video-EXIF schreiben</li>
+<li><strong>GPX-Inspektor</strong> — Track Punkt-für-Punkt reparieren: Ausreißer heilen, Lücken füllen, Punkte verschieben</li>
+</ul>
+<hr>
+<h2 id="1-installation">1 · Installation</h2>
+<h3 id="download">Download</h3>
+<p>Lade dir die richtige Version für dein Betriebssystem:</p>
+<table><thead><tr><th>Plattform</th><th>Datei</th><th>Link</th></tr></thead><tbody><tr><td>macOS (Apple Silicon)</td><td><code>ReisezoomGPSStudio-macos.dmg</code></td><td>https://s.reisezoom.com/gps-studio-mac</td></tr><tr><td>Windows (x64)</td><td><code>ReisezoomGPSStudio-windows-setup.exe</code></td><td>https://s.reisezoom.com/gps-studio-win</td></tr><tr><td>Linux (x64)</td><td><code>ReisezoomGPSStudio-linux.tar.gz</code></td><td>https://s.reisezoom.com/gps-studio-linux</td></tr></tbody></table>
+<p><strong>Du brauchst nichts extra installieren</strong> — <code>ffmpeg</code> und <code>exiftool</code> sind bei macOS &amp; Windows bereits in der App enthalten. Auf Linux musst du ggf. einmalig <code>python3-pyqt5.qtwebengine</code> installieren (siehe unten).</p>
+<h3 id="macos-dmg">macOS (.dmg)</h3>
+<ol>
+<li><code>.dmg</code> doppelklicken</li>
+<li>App per Drag &amp; Drop in den <strong>Programme</strong>-Ordner ziehen</li>
+<li>Beim <strong>ersten Start</strong>: <strong>Rechtsklick</strong> (oder Ctrl+Klick) auf „Reisezoom GPS Studio&quot; → <strong>Öffnen</strong> → im Dialog noch mal <strong>Öffnen</strong> bestätigen.</li>
+<li>Ab dem zweiten Start reicht normaler Doppelklick.</li>
+</ol>
+<p>Falls macOS sagt „beschädigt und kann nicht geöffnet werden&quot;:</p>
+<pre><code class="lang-bash">xattr -dr com.apple.quarantine &quot;/Applications/Reisezoom GPS Studio.app&quot;</code></pre>
+<h3 id="windows">Windows</h3>
+<ol>
+<li><code>ReisezoomGPSStudio-windows-setup.exe</code> doppelklicken</li>
+<li>SmartScreen-Dialog: <strong>„Weitere Informationen&quot;</strong> → <strong>„Trotzdem ausführen&quot;</strong></li>
+<li>Setup-Wizard durchklicken (Sprache wählen → Pfad bestätigen → optional Desktop-Shortcut)</li>
+<li>Fertig — App startet automatisch und legt einen Start-Menü-Eintrag an</li>
+<li>Beim ersten Render lädt die App noch Chromium nach (~150 MB, einmalig, dauert 1-2 Min)</li>
+</ol>
+<p>Deinstallieren wie jede andere Windows-App: <strong>Systemsteuerung → Apps &amp; Features → Reisezoom GPS Studio → Deinstallieren</strong>.</p>
+<h3 id="linux-tar-gz">Linux (.tar.gz)</h3>
+<pre><code class="lang-bash">sudo apt install python3-pyqt5.qtwebengine     # Ubuntu/Debian
+tar -xzf ReisezoomGPSStudio-linux.tar.gz
+cd ReisezoomGPSStudio
+./ReisezoomGPSStudio</code></pre>
+<p><strong>Wichtig für Linux-User:</strong> Das macOS- und Windows-Bundle bringen <strong>ExifTool</strong> bereits mit (für RAW-Foto-Metadaten + GPS in HEIC schreiben). Auf Linux musst du das selbst installieren:</p>
+<pre><code class="lang-bash">sudo apt install libimage-exiftool-perl       # Debian/Ubuntu
+sudo dnf install perl-Image-ExifTool          # Fedora/RHEL
+sudo pacman -S perl-image-exiftool            # Arch</code></pre>
+<p>Ohne ExifTool funktionieren JPEG-, TIFF- und HEIC-Fotos trotzdem (via piexif + pillow-heif, beides eingebaut). Nur RAW-Dateien (CR3, NEF, ARW, RAF, RW2, ORF, DNG, PEF, RWL, SRW) und Video-Metadaten brauchen exiftool, und GPS-Schreiben in HEIC ebenfalls.</p>
+<hr>
+<h2 id="2-erste-schritte">2 · Erste Schritte</h2>
+<h3 id="mapbox-token-einrichten">Mapbox-Token einrichten 🗺️</h3>
+<p>Animator + Tour-Map brauchen einen <strong>kostenlosen Mapbox-Token</strong> für die 3D-Karten. <strong>Geotagger funktioniert auch ohne</strong>.</p>
+<p>Beim ersten App-Start öffnet sich automatisch ein Onboarding-Modal mit zwei Optionen:</p>
+<ul>
+<li><strong>Mit Mapbox-Token</strong> (empfohlen) — volle Features, kostenlos in 2 Minuten</li>
+<li><strong>Ohne Token (OSM)</strong> — funktioniert sofort, aber nur Standard-Karte (kein Satellite, kein 3D)</li>
+</ul>
+<p><strong>So bekommst du einen kostenlosen Mapbox-Token:</strong></p>
+<ol>
+<li>Konto bei <a href="https://account.mapbox.com/auth/signup" target="_blank" rel="noopener">account.mapbox.com</a> anlegen</li>
+<li>Bestätigungs-Mail klicken</li>
+<li>Im Dashboard auf <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener">Access tokens</a></li>
+<li>„Default public token&quot; kopieren — beginnt mit <code>pk.eyJ…</code></li>
+<li>In der App ins Token-Feld einfügen → Speichern</li>
+</ol>
+<blockquote>⚠️ <strong>Kreditkarte erforderlich</strong>: Mapbox verlangt seit Mitte 2026 bei der Registrierung eine Kreditkarte — <strong>auch fürs kostenlose Konto</strong>. Klingt erstmal komisch, ist aber bei vielen Cloud-Diensten so geworden. <strong>Es wird nichts abgebucht</strong> solange du im Free-Tier bleibst.</blockquote>
+<blockquote></blockquote>
+<blockquote>💡 <strong>Free-Tier: 50.000 Karten-Loads pro Monat — kostenlos.</strong> Das reicht in der Praxis für sehr viele Renders. Bei normaler Hobby-Nutzung wirst du nie eine Rechnung sehen — du müsstest schon richtig intensiv produzieren, um an die Grenze zu kommen.</blockquote>
+<p><strong>Token später ändern</strong>: macOS-Menü → <strong>Reisezoom</strong> → <strong>Einstellungen…</strong> (oder Cmd+,) — Windows/Linux: ⚙-Button oben rechts.</p>
+<h3 id="sprache-wechseln">Sprache wechseln 🌍</h3>
+<p>Die App startet automatisch in der <strong>Systemsprache</strong> (Deutsch, Englisch oder Spanisch — Fallback Englisch). Wechseln im <strong>⚙-Einstellungen-Modal</strong> → Sprache-Dropdown. Sofort aktiv, kein Restart nötig.</p>
+<h3 id="render-qualit-t-export-einstellen-seit-v0-9-245">Render-Qualität &amp; Export einstellen (seit v0.9.245) ⭐</h3>
+<p>Im <strong>⚙-Einstellungen-Modal</strong> gibt es den Block <strong>„Qualität &amp; Export&quot;</strong> — gilt global für den Animator-Video-Export:</p>
+<ul>
+<li><strong>Frame-Erfassung:</strong> <strong>Schnell (JPEG)</strong> ist der Standard und macht den Render <strong>~10× schneller</strong> (das Abgreifen der Einzelbilder war die eigentliche Bremse). Da das Video sowieso verlustbehaftet codiert wird, ist die Qualität visuell identisch. <strong>Maximal (PNG, verlustfrei)</strong> ist nur nötig, wenn du wirklich verlustfreie Einzelframes brauchst — deutlich langsamer.</li>
+<li><strong>JPEG-Qualität</strong> (nur bei JPEG): Standard 92, völlig ausreichend.</li>
+<li><strong>Video-Codec:</strong> H.264 (kompatibel, kleinste Datei) · H.265/HEVC (bessere Kompression) · ProRes 4444 (Master-Qualität, große Datei).</li>
+<li><strong>Video-Qualität (CRF)</strong> und <strong>Encoder-Tempo</strong> (Geschwindigkeit ↔ Dateigröße).</li>
+</ul>
+<p>Der <strong>Alpha-Modus</strong> („Ohne Karte&quot; im Animator) nutzt automatisch verlustfreie PNG-Frames und ProRes 4444 — den brauchst du hier nicht extra einstellen.</p>
+<h3 id="was-die-app-sich-merkt">Was die App sich merkt</h3>
+<ul>
+<li>Letzte Modul-Auswahl</li>
+<li>Alle Render-Einstellungen pro Modul (Stil, Pitch, Auflösung, Farbe, Codec, FPS etc.)</li>
+<li>Letzter Save-Ordner (pro Modul)</li>
+<li>Mapbox-Token</li>
+<li>Sprach-Auswahl</li>
+</ul>
+<p>Settings-Datei:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/Reisezoom GPS Studio/settings.json</code></li>
+<li>Windows: <code>%APPDATA%\Reisezoom GPS Studio\settings.json</code></li>
+<li>Linux: <code>~/.local/share/Reisezoom GPS Studio/settings.json</code></li>
+</ul>
+<h3 id="sessions-projekte-seit-v0-8">Sessions &amp; Projekte (seit v0.8) ⭐</h3>
+<p><strong>Sessions</strong> sind track-gebunden: jeder GPX-Track bekommt automatisch eine eigene Session (über einen Hash der Track-Koordinaten erkannt). Lädst du den selben Track ein zweites Mal, kriegst du <strong>alle vorher gemachten Einstellungen + Keyframes</strong> zurück — kein „verloren&quot; mehr beim Modul-Wechsel.</p>
+<p><strong>Projekte</strong> sind Varianten innerhalb einer Session — z.B. „Standard-Variante&quot; + „Hochformat-Reels&quot; + „mit Foto-Inserts&quot;. Pro Track kannst du beliebig viele Projekte anlegen.</p>
+<p><strong>Wo finde ich das?</strong> Topbar oben rechts — Projekt-Dropdown mit 4 Aktionen:</p>
+<ul>
+<li>🆕 <strong>Neues Projekt</strong> (mit pristinen Defaults)</li>
+<li>📋 <strong>Aktuelles duplizieren</strong> (kopiert alle Settings + Keyframes)</li>
+<li>✏️ <strong>Umbenennen</strong></li>
+<li>🗑 <strong>Löschen</strong> (das letzte Projekt einer Session lässt sich nicht löschen — wird automatisch als „Standard&quot; wiederhergestellt)</li>
+</ul>
+<p>Die Session-Daten liegen unter:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/Reisezoom GPS Studio/sessions/</code></li>
+</ul>
+<p>(Je Track-Hash ein Ordner mit GPX-Snapshot + projects.json mit allen Varianten.)</p>
+<hr>
+<h2 id="3-modul-animator-gpx-als-video-rendern">3 · Modul: Animator — GPX als Video rendern</h2>
+<h3 id="was-es-macht">Was es macht</h3>
+<p>Lädt eine GPX-Datei und rendert ein MP4 in dem die Track-Linie animiert über eine 3D-Mapbox-Karte gezeichnet wird. Einsatz: Intro für YouTube-Videos, Loops für Webseiten, Erinnerungs-Animation.</p>
+<h3 id="workflow">Workflow</h3>
+<ol>
+<li><strong>GPX laden</strong>: Button „📁 GPX-Datei auswählen&quot; oder Drag &amp; Drop ins Fenster</li>
+<li><strong>Track wird auf der Karte angezeigt</strong> (Vorschau live, im WYSIWYG-Letterbox-Rahmen)</li>
+<li><strong>Einstellungen tunen</strong> (siehe unten) — alle Änderungen sind sofort in der Vorschau sichtbar</li>
+<li><strong>„▶ Video rendern&quot;</strong> klicken</li>
+<li><strong>Save-Dialog</strong>: Wohin soll das MP4? Vorschlag: <code>&lt;GPX-Name&gt;_&lt;WxH&gt;_&lt;codec&gt;.mp4</code></li>
+<li>Render läuft — Live-Vorschau zeigt jedes Frame</li>
+<li>Fertig → Result-View zeigt MP4 + „Im Finder zeigen&quot;-Button</li>
+</ol>
+<blockquote><strong>Anreise/Route animieren?</strong> Dafür gibt es seit v0.9.205 ein eigenes Modul <strong>🛣 Reiseroute</strong> (Start/Ziel → berechnete Strecke). Siehe Kapitel 4.</blockquote>
+<h3 id="einstellungen">Einstellungen</h3>
+<p><strong>Karte:</strong></p>
+<ul>
+<li><strong>Stil</strong>: 6 Mapbox-Stile (Satellite 3D, Satellite+Streets, Outdoors, Streets, Hell, Dunkel)</li>
+<li><strong>3D-Terrain</strong> aktivieren — bei Alpentouren sieht das spektakulär aus</li>
+<li><strong>Track-Farbe + Dicke</strong> — frei wählbar</li>
+<li><strong>Linien-Stil</strong> (seit v0.6.5) — Durchgezogen / Gestrichelt / Gepunktet / Strich-Punkt / <strong>Röhre</strong>. Bei Strich-/Punkt-Varianten gibt&#x27;s einen zusätzlichen <strong>Punktabstand</strong>-Slider (multipliziert die Strich- bzw. Punkt-Längen). „Röhre&quot; (seit v0.8.10, im Linien-Stil-Dropdown seit v0.8.12) legt einen weißen Highlight-Streifen oben auf die Linie → wirkt plastischer wie ein Schlauch.</li>
+<li><strong>Schlagschatten unter Track</strong> (seit v0.4) — lässt den Track wie eine schwebende Linie über der Karte wirken. Stärke 0–10 px (Default 4). Bei aktivem 3D-Terrain bleibt der Schatten auf dem Boden während der Track 150 m darüber gerendert wird → plastischer 3D-Look.</li>
+<li><strong>Wegpunkt-Schilder (seit v0.9.171, voll gestaltbar seit v0.9.179)</strong> — setze Text-Schilder auf die Route (z.B. „Gipfel erreicht!&quot;). Bereich <strong>„🚩 Schilder&quot;</strong> in der Seitenleiste:</li>
+<li><strong>Platzieren:</strong> <strong>„📍 Auf Track&quot;</strong> → Klick auf den Track (rastet ein), oder <strong>„📌 Frei platzieren&quot;</strong> → Klick <strong>irgendwo</strong> auf die Karte (z.B. eine Sehenswürdigkeit abseits der Route). Bei freier Platzierung richtet sich der <strong>Anzeige-Zeitpunkt</strong> weiter nach dem nächstgelegenen Track-Punkt (Anker am Track + freier Koordinaten-Offset).</li>
+<li><strong>Bearbeiten:</strong> Klick auf ein Schild (Liste oder Karte) öffnet ein <strong>schwebendes Editor-Panel</strong> — an der Kopfzeile (⠿) frei verschiebbar, auch aus der Karte heraus. Das gerade bearbeitete Schild ist immer sichtbar (egal wo der Abspiel-Punkt steht).</li>
+<li><strong>Optik (alles live):</strong> Form (Sprechblase · Zielbanner · Stecknadel · Wegweiser · Schlicht), <strong>Hintergrund</strong>- + Textfarbe (der <strong>„Hintergrund&quot;-Picker</strong> ist die <strong>eine</strong> Box-/Blasenfarbe des Schilds — seit v0.9.271 gibt es keine separate „Akzentfarbe&quot; und kein „Auto&quot; mehr), Schriftart (System · Rundlich · Schmal · Serif · Monospace · Plakativ), Größe/Stärke/Kursiv/Ausrichtung, mehrzeiliger Text, Eckenradius, Deckkraft, Rahmen (Breite+Farbe), <strong>Stangen-Länge</strong> (nur bei Zielbanner + Wegweiser — wie lang die Pfosten/Stange unter dem Schild sind) und Schlagschatten. <strong>Bild hinzufügen</strong> macht aus dem Schild eine <strong>Foto-Karte</strong> (der Text wird dann zur Bildunterschrift); die Bildgröße ist separat einstellbar.</li>
+<li><strong>Eine Farbe statt zwei (seit v0.9.271):</strong> Früher gab es „Akzentfarbe&quot; <strong>und</strong> „Hintergrund&quot; — beide füllten dieselbe Fläche, das war verwirrend. Jetzt gibt es nur noch den <strong>„Hintergrund&quot;-Picker</strong> = die Farbe des Schilds (bei der Stecknadel auch des Tropfens). Den <strong>Rahmen</strong> stellst du separat unter „Rahmen&quot; ein.</li>
+<li><strong>Hintergrund „Keine&quot; (transparent, seit v0.9.269):</strong> Beim Hintergrund kannst du neben „Auto&quot; jetzt <strong>„Keine&quot;</strong> wählen → die Schild-Box wird komplett <strong>durchsichtig</strong>. Praktisch für <strong>Foto-Karten ohne farbigen Rahmen</strong>: dann siehst du nur das Bild (plus optionalem Rahmen), statt eines farbigen Rands rund ums Foto, der zusammen mit dem Rahmen sonst wie ein <strong>doppelter Rahmen</strong> wirkt.</li>
+<li><strong>Bearbeiten ist flackerfrei (seit v0.9.255):</strong> Beim Ziehen der Regler (Größe, Ecken, Rahmen, Schatten, Stangen-Länge …) ändert sich die Vorschau sofort und ruhig. Im Probelauf und im fertigen Video laufen die Schilder flüssig mit der Kamera mit.</li>
+<li><strong>Verhalten &amp; Timing:</strong> „Mit Zoom wachsen&quot; an/aus, <strong>„Ganze Zeit zeigen&quot;</strong> (durchgehend sichtbar), <strong>Vorlauf</strong> X Sek. (erscheint früher) + <strong>„Sichtbar nach&quot;</strong> X Sek. (verschwindet später; 0 = bleibt bis zum Ende), <strong>Einblendung</strong> (hart/einblenden). Erscheint im Video sonst genau dann, wenn der Marker den Punkt erreicht; steht aufrecht zur Kamera. <strong>Seit v0.9.204:</strong> Ein Schild ganz am Track-Anfang mit <strong>Vorlauf</strong> erscheint jetzt schon <strong>im Intro</strong> (Vorlauf = 1 Sek. → taucht in der letzten Intro-Sekunde auf, statt erst beim Track-Start aufzupoppen).</li>
+<li><strong>Auslöse-Zeitpunkt (seit v0.9.259) — für Hin-und-zurück-Strecken:</strong> Wenn dein Track denselben Ort <strong>zweimal</strong> passiert (z.B. hin und zurück), kann die App aus der Klick-Position allein nicht erkennen, welchen Durchgang du meinst. Lösung im Block <strong>„Auslöse-Zeitpunkt&quot;</strong>:</li>
+</ul>
+<ol>
+<li>Schiebe den <strong>Scrubber</strong> der Zeitleiste genau auf den Moment, an dem der Marker beim <strong>gewünschten Durchgang</strong> an der Stelle ist.</li>
+<li>Klick auf <strong>🕐 „Auf Zeitleisten-Position&quot;</strong> → das Schild ist fest an genau diesen Zeitpunkt gebunden (Statuszeile: „Fester Zeitpunkt: NN %&quot;).</li>
+<li><strong>„Auto&quot;</strong> stellt wieder auf automatische Positions-Erkennung um.</li>
+</ol>
+<p>    Das funktioniert in Vorschau und fertigem Video identisch. (Bei <strong>Foto-Karten</strong> passiert das automatisch über die Aufnahme-Zeit des Fotos.)</p>
+<ul>
+<li><strong>Vorschau-Hilfe:</strong> Checkbox <strong>„In der Vorschau ALLE Schilder zeigen&quot;</strong> — zeigt beim Platzieren alle Schilder gleichzeitig (nur Vorschau; im Video gilt weiter das Timing).</li>
+<li><strong>Ghost-Track (seit v0.9.169)</strong> — zeigt die <strong>komplette Route</strong> schon halbtransparent im Hintergrund, während nur der animierte Teil voll deckend darüber gezeichnet wird. So sieht man von Anfang an, wo es noch hingeht. Einstellbar: <strong>eigene Ghost-Track-Farbe</strong> (eigener Color-Picker, unabhängig von der Track-Farbe — z.B. dezentes Grau, seit v0.9.170) und <strong>Deckkraft</strong> (Slider 5–80 %, Default 30 %). Wirkt in Vorschau und Render inkl. Alpha/Transparent-Modus. Standard aus.</li>
+<li><strong>Karte ohne Beschriftungen</strong> (seit v0.4.4) — blendet Ortsnamen, Straßennamen und POI-Icons auf der Karte aus. Macht die Karte zum reinen Hintergrund — guter Look wenn du den Track als visuellen Hauptdarsteller haben willst statt einer Google-Maps-mäßigen Übersicht. Funktioniert mit allen Karten-Stilen und auch im Tour-Map-Modul.</li>
+</ul>
+<p><strong>Overlays</strong> (alle einzeln togglebar, frei platzierbar in 5 Positionen):</p>
+<ul>
+<li><strong>Totals-Box</strong> — Strecke, Zeit, Aufstieg, Abstieg, Max-Höhe</li>
+<li><strong>Live-Box</strong> — zurückgelegt, vergangen, Höhe (zählt während der Animation hoch)</li>
+<li><strong>Höhenprofil</strong> — animierte Linie unten</li>
+</ul>
+<p><strong>⏱ Zeitfenster pro Box</strong> (seit v0.9.228): Unter jeder Overlay-Box kannst du einstellen, <strong>ab welcher und bis zu welcher Video-Sekunde</strong> sie eingeblendet wird — z.B. die Live-Box erst ab Sekunde 2 zeigen, oder die Totals-Box nach Sekunde 8 wieder ausblenden. Zwei Felder „ab … s&quot; / „bis … s&quot;, gezählt über das <strong>ganze Video</strong> (Intro + Animation + Hold). <strong>Leer oder 0</strong> = wie bisher (ganze Zeit sichtbar). Das Ein-/Ausblenden siehst du schon im <strong>Probelauf</strong>, bevor du renderst.</p>
+<p><strong>Kamera:</strong></p>
+<ul>
+<li><strong>Neigung (Pitch)</strong> 0–80° — wie schräg die Kamera draufschaut</li>
+<li><strong>Rotation</strong> 0–60° — Sweep der Kamera während des Videos. Bei 0 = keine Rotation. Bei 20° dreht sie sich um 20° gleichmäßig über die Video-Länge.</li>
+<li><strong>Terrain-Übertreibung</strong> 0–4× — wie ausgeprägt die Berge wirken</li>
+</ul>
+<p><strong>Zeit &amp; Größe:</strong></p>
+<ul>
+<li><strong>Animation-Dauer</strong> in Sekunden — wie lang der Track gezeichnet wird</li>
+<li><strong>Hold</strong> in Sekunden — wie lang das fertige Bild am Ende stehen bleibt</li>
+<li><strong>Auflösung</strong>: 4K (3840×2160), 1080p, 4K↕ und 1080↕ (Hochformat für Shorts/Reels), oder eigene</li>
+<li><strong>FPS</strong>: 24 (Kino) · 25 (PAL/Europa-TV) · 30 (Standard) · 50 (PAL HFR) · 60</li>
+<li><strong>Codec</strong>: H.264 (universell kompatibel) oder H.265 (HEVC, ~30% kleiner)</li>
+</ul>
+<p><strong>Performance &amp; Output (seit v0.4):</strong></p>
+<ul>
+<li><strong>Track-Glätte (Punkte-Dichte)</strong> — wie fein der Track gezeichnet wird:</li>
+<li><strong>Niedrig</strong> (100 Punkte) — schnellster Render, gut für Vorschau</li>
+<li><strong>Mittel</strong> (250 Punkte) — empfohlener Default</li>
+<li><strong>Hoch</strong> (500 Punkte) — feinere Kurven bei vielen S-Schwüngen</li>
+<li><strong>Maximum</strong> — alle Original-GPX-Punkte (langsamer, selten nötig)</li>
+</ul>
+<p>  ℹ️ Die Render-Zeit hängt <strong>viel stärker</strong> von <strong>Dauer × FPS × Auflösung</strong> ab als von der Punkte-Anzahl. Wenn ein Render zu lange dauert: erst FPS/Auflösung reduzieren.</p>
+<ul>
+<li><strong>Animation ohne Karte (Alpha-Kanal)</strong> ⭐ <strong>Für Video-Editor-Composit</strong>:</li>
+<li>Aktiviere die Checkbox → rendert <strong>nur Track + Punkt + Stats-Overlays</strong> auf transparentem Hintergrund.</li>
+<li>Output ist eine **<code>.mov</code>-Datei** (ProRes 4444 mit Alpha-Kanal, größer als MP4 aber dafür NLE-tauglich).</li>
+<li>In <strong>Premiere Pro, Final Cut Pro, DaVinci Resolve, CapCut Pro</strong> kannst du diese Datei direkt <strong>über echtes Video</strong> legen — der Track erscheint als animiertes Overlay auf deinem Drohnen-, GoPro- oder Vlog-Material.</li>
+<li>Mapbox-Token ist in diesem Modus <strong>nicht erforderlich</strong> (es wird ja keine Karte gerendert).</li>
+<li>Karten-Stil, Terrain, Neigung und Codec werden im Alpha-Modus ignoriert.</li>
+</ul>
+<p><strong>Manuelle Karten-Position (WYSIWYG):</strong> Du kannst die Vorschau-Karte mit der Maus <strong>panen</strong> (Click+Drag) und mit Scroll-Wheel <strong>zoomen</strong>. Der Render übernimmt deine Position 1:1 — was du in der Vorschau siehst, kommt im Video raus.</p>
+<p>Wenn du den Track wieder mittig haben willst: Button <strong>⤢</strong> unten rechts.</p>
+<h3 id="camera-keyframes-timeline-bar-seit-v0-7">Camera-Keyframes (Timeline-Bar, seit v0.7) ⭐</h3>
+<blockquote><strong>Seit v0.8.16 ist das ein optionales Pro-Feature.</strong> Default neuer Projekte: nur eine Checkbox „🎥 Keyframe-Editor&quot; in der Sidebar. Erst wenn aktiviert: Timeline-Bar erscheint unter der Karte, Detail-Editor wird in der Sidebar zugänglich, Karten-Pins werden gezeichnet. Bestehende Projekte mit Keyframes werden automatisch aktiviert.</blockquote>
+<p>Mit der Timeline-Bar <strong>unter</strong> der Karten-Vorschau kannst du den Kamera-Flow dynamisch gestalten — Neigung, Drehung und Zoom an beliebigen Punkten im Track frei setzen. Die Engine interpoliert sauber zwischen den Keyframes (genau wie in Premiere oder Final Cut).</p>
+<p><strong>Aufbau der Bar:</strong></p>
+<ul>
+<li><strong>Timeline-Achse 0–100 %</strong> — gesamte Render-Dauer (Animation <strong>+</strong> Hold)</li>
+<li><strong>Orangener senkrechter Trenner</strong> markiert das <strong>Ende der Animations-Phase</strong>. Links davon läuft der Track, rechts davon ist die Hold-Phase (Track-Endpunkt steht still, aber Kamera kann weiter interpolieren).</li>
+<li><strong>Hold-Bereich</strong> ist orange schraffiert mit „HOLD&quot;-Label oben drüber</li>
+<li><strong>🎥-Marker</strong> pro gesetztem Keyframe (gelb umrandet wenn ausgewählt). Keyframes können auch in die Hold-Phase gesetzt werden — z.B. „am Ende auf die ganze Route rauszoomen&quot; während der Track schon zu Ende ist.</li>
+<li><strong>Scrubber</strong> (gelbe Linie) — zeigt die aktuelle Vorschau-Position</li>
+<li><strong>Position-Anzeige</strong>: <code>Punkt 234 / 1500 · 15.6 %</code> plus Mode-Indikator:</li>
+<li><code>🎥 auf Keyframe #2</code> — Detail-Editor in der Sidebar ist aktiv</li>
+<li><code>frei (📍 = neuer Keyframe)</code> — Karte frei manipulierbar, ohne Keyframes zu ändern</li>
+<li><code>⏸ Hold</code> — Scrubber ist in der Hold-Phase, der Track-Endpunkt steht</li>
+</ul>
+<p><strong>Snapshot-Workflow</strong> (der Kern):</p>
+<ol>
+<li>Karte ganz normal mit der Maus hinziehen, scrollen für Zoom</li>
+<li><strong><kbd>Cmd</kbd> + Drag</strong> (Mac) oder <strong>Rechtsklick + Drag</strong> kippt die Karte (Pitch + Bearing gleichzeitig)</li>
+<li>Wenn die Karte so steht wie du willst → <strong>„📍 Hier Keyframe&quot;</strong> drücken</li>
+<li>Position, Pitch, Bearing und Zoom werden alle automatisch festgehalten</li>
+<li>Wiederholen für weitere Stellen im Track</li>
+</ol>
+<p><strong>Frei-Modus vs. Edit-Modus:</strong></p>
+<ul>
+<li><strong>Auf einem Keyframe</strong> (Scrubber genau drauf) → Detail-Editor in der Sidebar erscheint mit 4 Slidern (Anchor, Pitch, Bearing, Zoom-Δ) zum Feintunen. Karten-Edits werden NICHT automatisch in den Keyframe übernommen — dafür drückst du „📍 Hier Keyframe&quot; nochmal (das updated den bestehenden) oder den Button „Mit aktueller Karten-Ansicht aktualisieren&quot; im Editor.</li>
+<li><strong>Zwischen Keyframes</strong> → Editor weg. Karte ist <strong>frei</strong> — pan/zoom/cmd-drag verändert KEINEN existierenden Keyframe. „📍 Hier Keyframe&quot; legt an dieser Position einen neuen an.</li>
+</ul>
+<p><strong>Probe-Lauf:</strong> Der <strong>▶-Button</strong> spielt den ganzen Track in deiner echten Animations-Dauer ab (also wenn du 12 s eingestellt hast, dauert die Probe 12 s). Zweiter Klick (oder <kbd>Space</kbd>) stoppt sofort. Reines Vorschau-Feature, kein Render nötig.</p>
+<p><strong>Tastatur-Navigation</strong> (wie im NLE):</p>
+<table><thead><tr><th>Taste</th><th>Aktion</th></tr></thead><tbody><tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Ein GPS-Punkt vor/zurück</td></tr><tr><td><kbd>⇧</kbd> + <kbd>←</kbd>/<kbd>→</kbd></td><td>10er-Sprung</td></tr><tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>Track-Anfang / -Ende</td></tr><tr><td><kbd>Space</kbd></td><td>Probe-Lauf starten/stoppen</td></tr><tr><td><kbd>Entf</kbd> / <kbd>Backspace</kbd></td><td>Ausgewählten Keyframe löschen</td></tr></tbody></table>
+<p>Funktioniert nur wenn kein Slider/Input gerade Fokus hat. Wenn du gerade einen Slider verstellt hast und Pfeiltasten nicht reagieren → einmal auf die Karte klicken.</p>
+<p><strong>Keyframe löschen</strong> geht auf 4 Wegen:</p>
+<ol>
+<li><strong>Detail-Editor</strong> → Button „🗑 Diesen Keyframe löschen&quot; unten</li>
+<li><strong>Rechtsklick</strong> auf den 🎥-Marker in der Bar oder den Karten-Pin</li>
+<li><kbd>Entf</kbd>/<kbd>Backspace</kbd>-Taste bei ausgewähltem Keyframe</li>
+<li>„🗑 Alle weg&quot;-Button (entfernt ALLE → klassisches Verhalten zurück)</li>
+</ol>
+<p><strong>Timeline-Anker (seit v0.8.11):</strong> Die Keyframes hängen an einer <strong>Position auf der gesamten Timeline</strong> (Animation + Hold), in der Range 0..100 %. Bei z.B. 12 s Animation + 5 s Hold liegt das Track-Ende bei ~70.6 % — Keyframes davor laufen mit dem Track, Keyframes danach bewegen nur die Kamera (Track-Endpunkt steht).</p>
+<p>Damit klappt z.B. <strong>„am Ende auf die ganze Route rauszoomen&quot;</strong>: Keyframe am Anfang zoomt auf den Start-Punkt, Keyframe am Track-Ende zoomt zurück auf normal, Keyframe ganz hinten in der Hold-Phase zoomt raus auf die ganze Route → cinematischer Outro.</p>
+<p><strong>Fallback auf klassisches Verhalten:</strong> Wenn keine Keyframes gesetzt sind, läuft alles wie vor v0.7 — statischer Pitch (aus dem Sidebar-Slider) + linearer Bearing-Sweep (aus dem Rotation-Slider). Sobald du den ersten Keyframe setzt, kriegen die zwei Sidebar-Slider einen gelben Hinweis „⏱ Wird durch Timeline-Keyframes gesteuert&quot; und werden visuell sekundär. „🗑 Alle weg&quot; macht sie wieder zur Primärsteuerung.</p>
+<h3 id="welt-drehung-erde-dreht-sich-auf-dem-weg-zum-track-seit-v0-9-136">Welt-Drehung — Erde dreht sich auf dem Weg zum Track (seit v0.9.136) ⭐</h3>
+<p>Wenn du am Anfang <strong>die ganze Erdkugel</strong> zeigen willst und sie sich beim Reinzoomen auf den Track ein- oder mehrmals dreht, läuft das jetzt — genau wie bei der <strong>Insta360</strong> — direkt über den <strong>Längengrad</strong> der Karten-Position. Es gibt keine separate „Welt-Drehung&quot;-Spur mehr; die Drehung steckt im Längengrad-Wert selbst.</p>
+<p><strong>So funktioniert&#x27;s:</strong> Jeder Keyframe hat im Editor zwei neue Felder <strong>Lon</strong> (Längengrad) und <strong>Lat</strong> (Breitengrad) — Slider plus klick-editierbares Zahlenfeld, genau wie Pitch/Drehung/Zoom. Der Längengrad ist <strong>abgewickelt</strong>: Werte über ±180° bedeuten volle Erd-Umdrehungen auf dem Weg vom vorherigen Keyframe.</p>
+<ul>
+<li>Längengrad <code>10</code> und beim nächsten KF <code>370</code> → die Erde dreht sich <strong>einmal komplett</strong> und landet wieder bei Längengrad 10.</li>
+<li><code>10</code> → <code>730</code> → <strong>zwei volle Umdrehungen</strong>, dann Landung bei 10.</li>
+<li><code>10</code> → <code>380</code> → eine Umdrehung <strong>plus</strong> 10° nach Osten.</li>
+</ul>
+<p><strong>Workflow für „Erde dreht sich, dann Reinzoom&quot;:</strong></p>
+<ol>
+<li><strong>KF1 am Anfang</strong> (anchor 0): Zoom auf ~0 (Weltkugel sichtbar), Pitch=0. Optional <strong>Welt zentrieren</strong>-Button für sinnvolle Defaults.</li>
+<li><strong>KF2 am Ende</strong> (anchor 1): Zoom auf z.B. 14 (Track-Detail), und den <strong>Längengrad</strong> auf den Track-Längengrad <strong>plus 360°</strong> (eine Drehung) oder <strong>+720°</strong> (zwei Drehungen) setzen.</li>
+</ol>
+<p>Die Erde dreht sich gleichmäßig zwischen den beiden KFs und kommt am Schluss exakt beim Track raus — der Zoom-/Schwenk-Flug bleibt dabei sauber (kein „Wildflug&quot;), weil die vollen Umdrehungen separat von der Flugkurve berechnet werden.</p>
+<p><strong>Beim Ziehen der Karte zählt der Wert automatisch hoch:</strong> Drehst du die Erde mit der Maus über die Datumsgrenze hinaus, springt der Längengrad nicht auf −180° zurück, sondern zählt weiter (181°, 182°, … 370°, …). Mach einfach so viele Umdrehungen wie du willst und drück dann den Snapshot-Button — der Wert wird mit allen Drehungen übernommen.</p>
+<p><strong>Slider-Tricks:</strong></p>
+<ul>
+<li><strong>Lon-Label klicken</strong> → direkt Zahl eintippen statt am Slider ziehen</li>
+<li>Auch Werte <strong>außerhalb des Slider-Bereichs</strong> (z.B. <code>1090</code> für 3 Umdrehungen) sind erlaubt</li>
+<li>Das Lon-Label zeigt automatisch den <strong>Umdrehungs-Counter</strong>: <code>370° (1↻)</code>, <code>730° (2↻)</code></li>
+<li>Funktioniert genauso für alle anderen KF-Slider (Pitch, Bearing, Zoom, Lat)</li>
+</ul>
+<blockquote><strong>Hinweis für alte Projekte:</strong> Projekte aus früheren Versionen mit der alten „Welt-Drehung&quot;-Spur laden weiterhin, die alte Drehungs-Spur wird aber ignoriert. Setz die Drehung bei Bedarf neu über den Längengrad.</blockquote>
+<h3 id="render-bereich-begrenzen-trim-handles-seit-v0-9-41">Render-Bereich begrenzen — Trim-Handles (seit v0.9.41) ⭐</h3>
+<p>Manchmal willst du nur einen <strong>Ausschnitt des Tracks</strong> rendern statt der ganzen Strecke. Beispiel: 30 km Tour, du willst aber nur die Berg-Sektion als Video.</p>
+<p>In der Timeline-Bar findest du <strong>zwei Schieber</strong> mit grauem Griff — den linken und rechten Trim-Handle. Zieh sie nach innen, um den Render-Bereich zu kürzen. Der ausgewählte Bereich wird hellorange hinterlegt; die ausgegrauten Bereiche bleiben links/rechts.</p>
+<ul>
+<li><strong>Linker Trim-Handle</strong> = wo der Render-Track losläuft</li>
+<li><strong>Rechter Trim-Handle</strong> = wo der Render-Track aufhört</li>
+<li><strong>Keyframes außerhalb</strong> bleiben sichtbar (dezent), wirken als „Anlauf&quot;-Setup: die Kamera-Interpolation läuft durch sie durch, der Track-Marker selbst startet aber erst am linken Handle</li>
+<li><strong>Probe-Lauf + Render</strong> spielen nur den getrimmten Bereich ab (Render-Output-Länge bleibt aber gleich, weil Animation-Dauer fest ist)</li>
+</ul>
+<h3 id="intro-animation-hold-seit-v0-9-59">Intro / Animation / Hold (seit v0.9.59) ⭐</h3>
+<p>Drei Eingabefelder im Block „Zeit &amp; Größe&quot; steuern wie lange dein Render-Video läuft:</p>
+<table><thead><tr><th>Feld</th><th>Was passiert</th></tr></thead><tbody><tr><td><strong>Intro</strong></td><td>Sekunden BEVOR der Track losläuft. Marker steht am linken Trim-Handle, Kamera-Keyframes laufen → für Setup-Shots (z.B. Erdkugel → Routenstart-Zoom)</td></tr><tr><td><strong>Animation</strong></td><td>Sekunden in denen der Track abgefahren wird</td></tr><tr><td><strong>Hold</strong></td><td>Sekunden NACH dem Track-Ende. Marker steht am rechten Trim-Handle, Kamera-Keyframes laufen → für Outro (z.B. „rauszoomen auf die ganze Route&quot;)</td></tr></tbody></table>
+<p>Die <strong>Timeline visualisiert</strong> das in drei Zonen:</p>
+<ul>
+<li>🔵 <strong>Hellblaue INTRO-Region</strong> links (sichtbar wenn Intro &gt; 0)</li>
+<li>⚪ <strong>Anim-Region</strong> in der Mitte (zwischen den Trim-Handles)</li>
+<li>🟠 <strong>Orange HOLD-Region</strong> rechts (sichtbar wenn Hold &gt; 0)</li>
+</ul>
+<p>Default-Werte: Intro 0 / Animation 12 / Hold 5. Insgesamt also 17 Sekunden Output-Video.</p>
+<h3 id="track-vor-trim-start-anzeigen-seit-v0-9-55">Track vor Trim-Start anzeigen (seit v0.9.55) ⭐</h3>
+<p>Wenn du nur einen Teil des Tracks renderst, kannst du wählen ob die <strong>Track-Linie davor</strong> sichtbar bleibt (als blasse Hintergrund-Linie zur Orientierung) oder ob die Linie erst am linken Trim-Handle anfängt. Checkbox im Overlay-Settings-Modal („🧭 Stats vom Trim-Bereich&quot; / „🧭 Track vor Trim-Start zeigen&quot;). Default an.</p>
+<h3 id="render-live-vorschau">Render-Live-Vorschau</h3>
+<p>Während des Renders siehst du das aktuell entstehende Frame im Vorschau-Fenster. Wenn dir die Kombination aus Stil und Kamera-Winkel nicht passt: <strong>„⨯ Abbrechen&quot;</strong> klicken — dann wird die halb-fertige Datei sofort gelöscht und du kannst neu konfigurieren, ohne 5 Min auf einen Render gewartet zu haben, der dann nichts wird.</p>
+<h3 id="fotos-auf-der-karte-seit-v0-9-74">📷 Fotos auf der Karte (seit v0.9.74) ⭐</h3>
+<p>Fotos mit GPS-EXIF erscheinen als kleine Thumbnails an ihrer Aufnahme-Position. Perfekt für Reise-Vlogs: Track läuft entlang, die Foto-Punkte sind als Polaroids auf der Karte sichtbar.</p>
+<p><strong>Workflow:</strong></p>
+<ol>
+<li><strong>Foto-Quelle wählen:</strong></li>
+</ol>
+<ul>
+<li><strong>„Ordner wählen&quot;</strong> → Native Folder-Picker. Die App scannt alle Fotos im Ordner (JPEG/HEIC/RAW).</li>
+<li><strong>Drag&amp;Drop</strong> ins „📷 Fotos&quot;-Panel (mehrere Dateien oder ein Ordner).</li>
+<li><strong>„Aus Geotagger übernehmen&quot;</strong> — wenn du die Fotos vorher durch das Geotagger-Modul geschickt hast (mit frisch geschriebenen GPS-Tags), kommt die Liste mit einem Klick rüber.</li>
+</ul>
+<ol>
+<li><strong>Was passiert:</strong> Fotos mit GPS landen als Mini-Thumbnail auf der Karte. Fotos ohne GPS werden übersprungen — du kriegst eine Meldung „X von Y Fotos geladen, Z übersprungen&quot;.</li>
+</ol>
+<ol>
+<li><strong>Größe einstellen:</strong> Der <strong>Größe</strong>-Slider (24–80 px) regelt wie groß die Thumbnails auf der Karte erscheinen. Wirkt sofort live in der Vorschau und im fertigen Render.</li>
+</ol>
+<ol>
+<li><strong>„Auf Karte anzeigen&quot;</strong>-Checkbox blendet alle Pins aus, ohne die Liste zu löschen — praktisch wenn du sie nur fürs Tour-Map willst und im Animator-Video nicht.</li>
+</ol>
+<ol>
+<li><strong>„🗑 Alle entfernen&quot;</strong> leert die Liste fürs aktuelle Projekt komplett.</li>
+</ol>
+<p><strong>Liste in der Sidebar:</strong> zeigt jedes Foto mit Thumbnail + Dateinamen + Koordinaten. Klick fliegt die Karte zum Foto.</p>
+<p><strong>Geteilt zwischen Animator und Tour-Map:</strong> Die Foto-Liste liegt auf Projekt-Ebene. Was du im Animator lädst, ist auch sofort im Tour-Map drauf (und umgekehrt). Die Größe ist pro Modul separat — Video kann kleinere Pins haben als die Druck-Karte.</p>
+<p><strong>Persistierung:</strong> Pfade + GPS-Koordinaten werden im Projekt gespeichert. Beim nächsten Öffnen werden die Thumbnails automatisch frisch erzeugt (Disk-Cache, deshalb schnell). Falls du eine Foto-Datei zwischenzeitlich verschoben oder gelöscht hast, fällt sie still aus der Liste raus — kein Crash.</p>
+<p><strong>Im Render:</strong> Foto-Pins erscheinen, <strong>sobald der animierte Marker ihre Position erreicht</strong> (seit v0.9.187 — vorher waren sie versehentlich ab dem ersten Frame sichtbar), und bleiben dann bis zum Ende stehen. Position ist exakt die EXIF-GPS-Position (auch wenn die nicht auf dem Track liegt, z.B. Gipfel-Foto neben dem Wanderweg).</p>
+<hr>
+<h2 id="4-modul-reiseroute-anreise-als-video-seit-v0-9-205">4 · Modul: Reiseroute — Anreise als Video 🛣️ (seit v0.9.205)</h2>
+<h3 id="was-es-macht">Was es macht</h3>
+<p>Animiert die <strong>Anreise</strong> zu einer Tour: du gibst Start und Ziel an, daraus wird eine Strecke berechnet und wie ein Track animiert — z.B. als Intro vor dem eigentlichen Wander-Video. Das geladene GPX (die Wanderung) wird dabei als <strong>Ghost</strong> im Hintergrund gezeigt.</p>
+<p>Reiseroute ist ein <strong>vollwertiger Klon des Animators</strong>: alles was dort geht (Kartenstil, Keyframes, Schilder, Render-Optionen) geht hier genauso — nur wird statt eines GPX die berechnete Route animiert. Eigene Einstellungen und eigene Schilder (unabhängig vom Animator).</p>
+<h3 id="workflow">Workflow</h3>
+<ol>
+<li><strong>GPX laden</strong> (die Wanderung) — ganz normal über die GPX-Leiste. Im Reiseroute-Tab erscheint sie automatisch als <strong>Ghost</strong> (schwache Linie).</li>
+<li>Bereich <strong>„🛫 Route / Anreise&quot;</strong>: <strong>Stil</strong> wählen — <strong>🛣️ Straße folgen</strong> (Mapbox-Route) oder <strong>✈️ Flugroute (Großkreis)</strong> (kürzester Weg auf der Kugel, wie echte Flüge — wölbt sich auf der Karte polwärts).</li>
+<li><strong>Start + Ziel</strong> angeben: als <strong>Adresse/Ort</strong> (z.B. „Dresden Hauptbahnhof&quot;), per <strong>📍 Klick auf die Karte</strong>, oder als <code>lat,lon</code>.</li>
+<li>Bei „Straße folgen&quot;: <strong>Fortbewegung</strong> (Auto/Fuß/Rad) + <strong>Detailgrad</strong>-Slider (fein → grob). Grob macht eine bewusst <strong>geschwungene, vereinfachte</strong> Linie, die sich locker an der Route orientiert (nicht so kleinteilig wie eine echte Wanderung). Die Animation bleibt dabei immer flüssig.</li>
+<li><strong>„Route berechnen&quot;</strong> → die Strecke wird als animierter Track geladen, die Wanderung bleibt als Ghost dahinter. Distanz + Fahrtzeit stehen unter dem Button.</li>
+<li>Wie im Animator weiter: Probelauf, Kamera, Schilder, <strong>Video rendern</strong>.</li>
+</ol>
+<blockquote><strong>Detailgrad wirkt erst beim nächsten „Route berechnen&quot;</strong> — Slider schieben, dann neu berechnen.</blockquote>
+<h3 id="gpx-ghost-konfigurieren">GPX-Ghost konfigurieren</h3>
+<p>Bereich <strong>„👻 GPX-Ghost&quot;</strong>: anzeigen an/aus, <strong>Farbe</strong>, <strong>Deckkraft</strong>, <strong>Linienbreite</strong>, <strong>gestrichelt</strong>. Wirkt live in der Vorschau und im gerenderten Video. (Im Reiseroute-Modul sind dafür die Stats-Overlays ausgeblendet.)</p>
+<h3 id="wird-gespeichert">Wird gespeichert</h3>
+<p>Start, Ziel, Stil, Detailgrad, Profil <strong>und die zuletzt berechnete Route</strong> werden im Projekt gespeichert — nach einem Neustart ist alles wieder da (die Route erscheint ohne erneutes Berechnen).</p>
+<h3 id="braucht-einen-mapbox-token">Braucht einen Mapbox-Token</h3>
+<p>Straßen-Routen + Adress-Suche laufen über Mapbox (derselbe Token wie die Karte, siehe Erste Schritte). Die Flugroute (Großkreis) braucht keinen API-Call.</p>
+<h2 id="5-modul-tour-map-statische-karten-png">5 · Modul: Tour-Map — Statische Karten-PNG</h2>
+<h3 id="was-es-macht">Was es macht</h3>
+<p>Wie der Animator, aber <strong>ein einziges Bild statt einem Video</strong>. Output: PNG in beliebiger Auflösung. Einsatz: YouTube-Thumbnails, Instagram-Posts, Blog-Cover, Komoot-Galerie-Bilder.</p>
+<h3 id="workflow">Workflow</h3>
+<ol>
+<li><strong>GPX laden</strong> (gleicher Weg wie Animator)</li>
+<li><strong>Format wählen</strong>: YouTube 16:9 (1920×1080) · 4K · Shorts 9:16 (1080×1920) · Instagram 1:1 (1080×1080) · oder eigene</li>
+<li><strong>Stil + Kamera</strong> wie im Animator</li>
+<li><strong>Pan/Zoom</strong> manuell für den perfekten Bildausschnitt (Letterbox-Vorschau im richtigen Aspect)</li>
+<li><strong>„🗺 Karte als PNG rendern&quot;</strong> → Save-Dialog → PNG ist in 3-5 Sekunden fertig</li>
+</ol>
+<h3 id="spezielle-optionen-gg-animator">Spezielle Optionen ggü. Animator</h3>
+<ul>
+<li><strong>Format-Presets</strong>: vier vordefinierte Aspect-Ratios — ein Klick und der Letterbox-Vorschau-Rahmen springt um</li>
+<li><strong>Padding</strong>: wieviel Luft um den Track rum (0–25 %)</li>
+<li><strong>Start-/End-Pin</strong>: optional zwei Punkte (Start weiß, End in Track-Farbe)</li>
+</ul>
+<h3 id="result-view">Result-View</h3>
+<p>Nach dem Render: großes Vorschaubild, „Im Finder zeigen&quot;, „Pfad kopieren&quot;, „Neue Karte&quot;.</p>
+<hr>
+<h2 id="6-modul-geotagger-fotos-mit-gps-taggen">6 · Modul: Geotagger — Fotos mit GPS taggen</h2>
+<h3 id="was-es-macht">Was es macht</h3>
+<p>Liest die Aufnahmezeit aus den EXIF-Daten jedes Fotos und sucht im GPX-Track den dazu passenden Track-Punkt. Schreibt die GPS-Koordinaten als EXIF-Tag ins Foto. <strong>Funktioniert mit JPG, RAW (CR3/NEF/ARW/RAF/RW2/ORF/DNG/PEF/RWL/SRW/HEIC) und Video (MP4/MOV/INSV)</strong>.</p>
+<h3 id="workflow">Workflow</h3>
+<ol>
+<li><strong>GPX laden</strong> — die Karte zeigt den Track</li>
+<li><strong>Fotos auswählen</strong> — entweder „📁 Fotos auswählen&quot;, „📁 Ganzen Ordner laden&quot;, oder Drag &amp; Drop</li>
+<li><strong>Foto-Tiles</strong> erscheinen in der Mitte mit Thumbnails. Marker auf der Karte zeigen wo jedes Foto basierend auf Aufnahmezeit zugeordnet wurde. <strong>Weitere Fotos reinziehen oder einen weiteren Ordner laden ergänzt die Liste</strong> (seit v0.9.176 — wird <em>hinzugefügt</em>, nicht ersetzt; Dubletten werden übersprungen). Zum Leeren das <strong>„🗑 Alle entfernen&quot;</strong> nutzen.</li>
+<li><strong>Offset prüfen</strong> (siehe „Zeitzonen&quot; unten) — meist passt&#x27;s direkt</li>
+<li><strong>„GPS in Fotos schreiben&quot;</strong> → Backup wird automatisch als ZIP angelegt → fertig</li>
+</ol>
+<h3 id="drag-drop-und-ordner-w-hlen-taggen-jetzt-beide-die-originale">Drag &amp; Drop und „Ordner wählen&quot; taggen jetzt beide die Originale ✅</h3>
+<ul>
+<li><strong>Seit v0.9.153</strong> kennt die App auch bei <strong>Drag &amp; Drop</strong> die echten Dateipfade — GPS wird <strong>direkt in deine Original-Fotos</strong> geschrieben, genau wie bei „📁 Ganzen Ordner laden&quot; / „📁 Fotos auswählen&quot;. Kein Export-Schritt mehr nötig: Foto reinziehen → taggen → fertig, das Original hat jetzt die GPS-Koordinaten.</li>
+<li><strong>Technischer Hintergrund:</strong> Frühere Versionen bekamen vom System beim Ziehen nur den Datei-<em>Inhalt</em> ohne Pfad und mussten mit Wegwerf-Kopien arbeiten. Die App löst den Original-Pfad jetzt nativ auf (alle Plattformen: macOS, Windows, Linux).</li>
+<li><strong>Seltener Fallback:</strong> Sollte der native Pfad einmal nicht verfügbar sein (sehr altes Betriebssystem, ganze Ordner-Struktur gezogen), arbeitet die App weiterhin sicher mit internen Kopien und bietet danach <strong>„Getaggte Fotos speichern …&quot;</strong> an. Für garantiertes In-Place-Tagging in solchen Fällen: „Ordner wählen&quot; nutzen.</li>
+</ul>
+<h3 id="zeitzonen-magie">Zeitzonen-Magie</h3>
+<p>Die App liest die <code>OffsetTimeOriginal</code>-EXIF-Tag aus jedem Foto und konvertiert die Aufnahmezeit zu UTC. Dadurch passt der Track in 95 % der Fälle <strong>out-of-the-box</strong> ohne dass du manuell Offset einstellen musst.</p>
+<p>Wenn doch nicht (z.B. weil die Kamera-Uhr falsch stand):</p>
+<ul>
+<li><strong>Offset-Slider</strong> im linken Panel — ±2h Default, mit aufklappbaren ±3 / ±6 / ±12h-Optionen</li>
+<li><strong>Referenz-Foto setzen</strong> — Klick auf ein Foto-Tile, dann auf der Karte auf die tatsächliche Aufnahme-Position klicken. Die App berechnet den Offset selbst.</li>
+<li><strong>Kamera-Zeitzone wählen</strong> (✎ → „Genauen Offset eingeben&quot;) — manche Kameras (viele Olympus/OM, GoPro) speichern <strong>keine</strong> Zeitzone im Foto. Reist du z.B. nach Vietnam (UTC+7), liegen die Bilder dann um 7 Stunden neben dem Track. Stell im Offset-Dialog einfach die <strong>Zeitzone der Kamera-Uhr</strong> ein — einmal gesetzt, passt alles. Fotos, die ihre Zeitzone selbst gespeichert haben (Handys etc.), bleiben unangetastet, du kannst also Handy- und Kamera-Fotos derselben Reise problemlos zusammen taggen. Die aktive Zeitzone steht unter dem Offset-Wert.</li>
+</ul>
+<h3 id="optionen">Optionen</h3>
+<ul>
+<li><strong>Backup-ZIP vor dem Schreiben</strong> (Default an) — Original-Fotos werden in <code>~/Library/.../​_backups_photos/</code> gesichert</li>
+<li><strong>Bestehende GPS-Daten überschreiben</strong> (Default aus)</li>
+<li><strong>Foto-Aufnahmezeit ebenfalls mit Offset anpassen</strong> (Default aus)</li>
+</ul>
+<h3 id="track-punkt-antippen-seit-v0-9-163">Track-Punkt antippen (seit v0.9.163) ⭐</h3>
+<p>Klick auf die <strong>Track-Linie</strong> auf der Karte → ein kleines Popup zeigt <strong>GPS-Koordinaten, Höhe und Datum/Zeit (UTC)</strong> der nächstgelegenen Track-Stelle. Praktisch, um schnell zu prüfen, wann/wo du an einer Stelle warst.</p>
+<h3 id="bersicht-filtern-seit-v0-9-163">Übersicht filtern (seit v0.9.163) ⭐</h3>
+<p>Die <strong>„Übersicht&quot;</strong> im linken Panel zählt, wie viele Fotos getaggt werden, außerhalb der Track-Zeit liegen, keine brauchbare EXIF-Zeit haben oder schon GPS hatten. Hinter jeder Zeile sitzt ein <strong>„zeigen&quot;</strong>-Button: ein Klick filtert die Foto-Liste auf genau diese Kategorie (z.B. nur die außerhalb der Zeit, um sie zu prüfen). <strong>„Filter zurücksetzen&quot;</strong> holt wieder alle Fotos zurück.</p>
+<h3 id="nach-kamera-filtern-gezielt-taggen-seit-v0-9-164">Nach Kamera filtern + gezielt taggen (seit v0.9.164) ⭐</h3>
+<ul>
+<li><strong>Kamera-Filter:</strong> Hast du Fotos von mehreren Kameras, listet die Übersicht jede <strong>Kamera</strong> mit Anzahl + <strong>„zeigen&quot;</strong>-Button. Ein Klick zeigt nur die Bilder dieser Kamera.</li>
+<li><strong>Häkchen pro Foto:</strong> Jedes Foto hat oben links eine Checkbox — <strong>standardmäßig an</strong>. Beim Schreiben werden <strong>nur Fotos getaggt, die gerade sichtbar (durch den aktiven Filter) UND angehakt sind</strong>. So taggst du z.B. mit Kamera-Filter gezielt nur eine Kamera, oder hakst einzelne Bilder ab, die nicht getaggt werden sollen.</li>
+<li><strong>Foto entfernen:</strong> Kleines <strong>✕</strong> oben rechts auf dem Foto (beim Drüberfahren) oder <strong>Backspace/Entf</strong> auf dem ausgewählten Foto nimmt es aus der Liste. Die Datei selbst bleibt unangetastet.</li>
+</ul>
+<h3 id="fotos-manuell-auf-der-karte-platzieren-seit-v0-9-166">Fotos manuell auf der Karte platzieren (seit v0.9.166) ⭐</h3>
+<p>Manche Fotos lassen sich <strong>nicht über die Zeit zuordnen</strong> — z.B. weil sie nur das Export-Datum tragen und damit „außerhalb der Track-Zeit&quot; landen. Statt sie aufzugeben, <strong>zieh sie einfach aus der Foto-Liste auf die Karte</strong> — dort, wo du loslässt, werden die GPS-Koordinaten gesetzt und geschrieben.</p>
+<ul>
+<li><strong>Frei platzieren</strong> (Standard): Das Foto landet exakt an der Stelle, an der du es fallen lässt. Funktioniert <strong>auch ganz ohne Track</strong> — so kannst du Fotos auch ohne GPX geotaggen.</li>
+<li><strong>Auf Track einrasten:</strong> Der Schalter <strong>„Auf Track einrasten&quot;</strong> (Sektion „Manuell platzieren&quot; links) setzt das Foto stattdessen auf den <strong>nächstgelegenen Track-Punkt</strong> (inkl. dessen Höhe). <strong>⌘ gedrückt halten</strong> beim Ablegen kehrt den Modus kurzzeitig um (frei ↔ einrasten).</li>
+<li><strong>Feinjustieren:</strong> Manuell gesetzte Pins sind <strong>blau</strong> und lassen sich <strong>direkt auf der Karte verschieben</strong>. Beim Verschieben gilt dieselbe Einrast-Logik (Toggle + ⌘).</li>
+<li>Ein Hinweis-Balken auf der Karte zeigt beim Ziehen an, ob gerade <strong>frei</strong> oder <strong>auf den Track</strong> gesetzt wird.</li>
+</ul>
+<blockquote>Hinweis: Manuelle Platzierungen gelten für die laufende Sitzung. Wechselst du das Modul und kommst zurück, musst du sie ggf. neu setzen.</blockquote>
+<h3 id="geschwindigkeit">Geschwindigkeit</h3>
+<p>ExifTool läuft als Daemon im Hintergrund — RAW-Verarbeitung ist ~8× schneller als bei naivem <code>subprocess</code>-Aufruf. 200 Fotos taggen dauert ~15 Sekunden.</p>
+<hr>
+<h2 id="7-modul-gpx-inspektor-track-reparieren-seit-v0-9-233">7 · Modul: GPX-Inspektor — Track reparieren 🔍 (seit v0.9.233)</h2>
+<h3 id="was-es-macht">Was es macht</h3>
+<p>Zeigt <strong>jeden einzelnen Punkt</strong> deines Tracks auf der Karte (den vollen Roh-Track, nicht das geglättete Vorschau-Downsample) und lässt dich kaputte Stellen reparieren: GPS-Ausreißer glätten, Lücken füllen, einzelne Punkte verschieben oder löschen. Braucht <strong>keinen</strong> Mapbox-Token (geht auch im OSM-Modus). Speichert als neue Datei <code>&lt;name&gt;_geheilt.gpx</code> — dein Original bleibt unangetastet.</p>
+<h3 id="werkzeuge">Werkzeuge</h3>
+<p><strong>Heilen (Sprung glätten)</strong> — für GPS-Zacken: Ein Punkt liegt kurz weit daneben (Tunnel, Häuserschlucht). Klick <strong>Anker A</strong> (grün, vor dem Sprung) und <strong>Anker B</strong> (rot, dahinter), dann <strong>🩹 Heilen</strong>. Die Punkte dazwischen werden auf die direkte Linie gelegt — <strong>Position und Höhe interpoliert, die Zeitstempel bleiben unverändert</strong>. Dadurch korrigiert sich die Geschwindigkeit von selbst (vorher z.B. „180 km/h zu Fuß&quot;).</p>
+<p><strong>Lücke füllen (Luftlinie)</strong> — wenn zwischen A und B <em>Punkte fehlen</em>: fügt neue Punkte auf der Geraden ein (Position, Höhe und Zeit interpoliert). Abstand per „Abstand beim Füllen&quot; einstellbar.</p>
+<p><strong>Pfad zeichnen &amp; füllen</strong> — wie „Lücke füllen&quot;, aber du zeichnest den Weg selbst: Anker A+B wählen → <strong>✏️ Pfad zeichnen &amp; füllen</strong> → auf die Karte klicken (Cursor wird zum Fadenkreuz) → <strong>✓ Pfad übernehmen</strong>. Die Lücke wird entlang deiner gezeichneten Linie aufgefüllt.</p>
+<p><strong>Einzelne Punkte:</strong> Einen Punkt anklicken (nur Anker A) → <strong>🗑 Diesen Punkt löschen</strong> oder einfach <strong>Entf/Backspace</strong>. Oder den <strong>grünen Punkt mit der Maus verschieben</strong> — z.B. auf den echten Weg ziehen, ohne ihn zu löschen (Zeit + Höhe bleiben, Geschwindigkeit stimmt weiter).</p>
+<p><strong>Punkt-Info / Zeitstempel (seit v0.9.263):</strong> Sobald du einen Punkt anklickst (Anker A), steht in der Auswahl-Zeile sein <strong>Index, die Uhrzeit (lokal) und die Höhe</strong>. Hast du A <strong>und</strong> B gesetzt, zeigt sie zusätzlich die <strong>Dauer</strong> zwischen den beiden Punkten — praktisch, um zu sehen, wie viel Zeit auf einem Abschnitt liegt.</p>
+<p><strong>🛣 Auf Straße/Weg matchen (Map Matching, seit v0.9.263):</strong> Legt eine verrauschte GPS-Spur sauber auf das <strong>Wegenetz</strong> (glättet Drift entlang Wegen/Straßen). Profil wählen (<strong>Zu Fuß / Fahrrad / Auto</strong>), dann:</p>
+<ul>
+<li><strong>Strecke A→B (Straße folgen)</strong> — findet die echte <strong>Straßen-/Wege-Route</strong> zwischen Anker A und B (Directions). A und B werden auf die nächste Straße gesnappt, dazwischen wird geroutet → <strong>robust gegen jede GPS-Drift, kein 50-m-Limit</strong>. Ideal für einen Abschnitt, der einem Weg folgt. Die gefundene Route wird auf die <strong>typische Punktdichte deines Tracks nachverdichtet</strong> und mit der <strong>Durchschnittsgeschwindigkeit des Abschnitts</strong> neu getaktet (statt in die alte A→B-Zeit gequetscht) — dadurch läuft die geheilte Stelle <strong>im Animator nicht zu schnell</strong>, und die nachfolgenden Zeitstempel verschieben sich konsistent mit (seit v0.9.268).</li>
+<li><strong>Ganzen Track snappen</strong> — die komplette Spur per Map Matching auf nahe Wege (folgt der Form der Spur). Mit <strong>Snap-Radius</strong> (5–50 m) einstellbar.</li>
+</ul>
+<p>Mit dem <strong>Such-Radius</strong> (5–50 m, Slider) stellst du ein, wie weit ein Punkt vom Weg entfernt sein darf, um noch gesnappt zu werden: klein = nur sehr nah am Weg, groß = fängt mehr GPS-Drift, kann aber eher auf eine <strong>parallele</strong> Straße springen. Position wird gesnappt, <strong>Zeit und Höhe werden über die neue Länge verteilt</strong>, alles ist <strong>rückgängig machbar</strong> (⌘Z). Lange Tracks werden automatisch in Stücke zerlegt (Mapbox-Limit). Findet die App in dem Radius <strong>keinen</strong> Weg, passiert nichts und du bekommst eine klare Meldung. <strong>Wichtig:</strong> nur sinnvoll, wenn der Track tatsächlich Wegen/Straßen folgt — bei <strong>Querfeldein-Wanderungen</strong> kann es die Spur verfälschen. Braucht <strong>Internet + Mapbox-Token</strong>.</p>
+<h3 id="ausrei-er-automatisch-finden">🔎 Ausreißer automatisch finden</h3>
+<p>Statt von Hand zu suchen: <strong>🔎 Ausreißer automatisch finden</strong> scannt den ganzen Track nach GPS-Sprüngen, die wegspringen <em>und wieder zurückkommen</em>, und markiert sie <strong>orange</strong>. Mit <strong>‹ / Nächster ›</strong> springst du von einem zum nächsten, <strong>🩹 Alle heilen</strong> glättet sie auf einmal. Der <strong>Empfindlichkeits-Regler</strong> (1–10) stellt ein, wie streng gesucht wird — niedrig = nur krasse Sprünge, hoch = auch kleine Zacken; die Markierung aktualisiert sich live beim Ziehen. (Echte <strong>Lücken</strong> werden bewusst nicht markiert — die füllst du mit „Lücke füllen&quot;.)</p>
+<h3 id="r-ckg-ngig">Rückgängig</h3>
+<p><strong>⌘Z</strong> macht jede Bearbeitung rückgängig, <strong>⌘⇧Z</strong> stellt wieder her (oder die ↩︎/↪︎-Buttons). Beim Laden eines neuen Tracks startet die Historie frisch.</p>
+<h3 id="speichern">Speichern</h3>
+<p><strong>💾 Geheiltes GPX speichern</strong> schreibt <code>&lt;name&gt;_geheilt.gpx</code> und lädt es direkt als aktiven Track — alle Module nutzen ab dann die saubere Version.</p>
+<hr>
+<h2 id="8-allgemeine-features">8 · Allgemeine Features</h2>
+<h3 id="workspace-leeren">Workspace leeren ✕</h3>
+<p>Oben im Modul-Header, <strong>direkt neben dem GPX-Namen</strong>, sitzt ein <strong>rotes ✕</strong> (Tooltip „Workspace leeren&quot;). Klick → kurze Sicherheitsabfrage → <strong>alle geladenen Daten weg, in allen Modulen gleichzeitig</strong>: GPX-Track, Fotos, Marker, Vorschau, Match-Daten — und der GPX-Name oben verschwindet ebenfalls. Praktisch wenn du mehrere unterschiedliche Touren hintereinander bearbeitest.</p>
+<blockquote>Seit v0.9.155 gibt es <strong>statt drei separater „↺ Workspace leeren&quot;-Buttons</strong> je Modul nur noch dieses eine zentrale ✕. Vorher blieb der GPX-Name nach dem Leeren stehen — das ist jetzt behoben.</blockquote>
+<p><strong>Was bleibt:</strong> Mapbox-Token, alle Einstellungen (Stil, Pitch, Farbe etc.), zuletzt genutzter Save-Ordner.</p>
+<h3 id="save-dialog-vor-render">Save-Dialog vor Render</h3>
+<p>Animator und Tour-Map fragen <strong>vor dem Render</strong> wo das Output landen soll. Default-Name wird vorgeschlagen:</p>
+<ul>
+<li>Animator: <code>&lt;GPX-Stem&gt;_&lt;WxH&gt;_&lt;Codec&gt;.mp4</code> z.B. <code>Oderlandweg_1920x1080_h264.mp4</code></li>
+<li>Tour-Map: <code>&lt;GPX-Stem&gt;_&lt;WxH&gt;.png</code> z.B. <code>Oderlandweg_1920x1080.png</code></li>
+</ul>
+<p>Beim nächsten Render landet der Dialog wieder im selben Ordner. <strong>Cancel</strong> → kein Render läuft (spart 5-15 Min beim Animator).</p>
+<h3 id="drag-drop-berall">Drag &amp; Drop überall</h3>
+<p>Du kannst:</p>
+<ul>
+<li>GPX-Dateien in jedes Modul-Fenster ziehen</li>
+<li>Ganze Ordner mit Fotos in den Geotagger ziehen (rekursiv)</li>
+<li>Einzelne Fotos in den Geotagger ziehen</li>
+</ul>
+<h3 id="app-logo-stats-im-header">App-Logo + Stats im Header</h3>
+<p>Oben links: App-Icon + Name. In der Mitte (wenn ein GPX geladen ist): Stats-Pills (Strecke, Zeit, Aufstieg, Abstieg). Oben rechts: <strong>?</strong> (Hilfe) und <strong>⚙</strong> (Einstellungen).</p>
+<hr>
+<h2 id="9-hilfe-feedback-bug-reports">9 · Hilfe, Feedback &amp; Bug-Reports</h2>
+<h3 id="hilfe-men">Hilfe-Menü</h3>
+<p>Klick auf <strong>?</strong> oben rechts (oder macOS-Menü <strong>Hilfe</strong>) öffnet ein Modal mit fünf Aktionen:</p>
+<ol>
+<li><strong>📖 Benutzerhandbuch</strong> — öffnet die HTML-Version dieser Doku im Browser</li>
+<li><strong>🔑 Mapbox-Token einrichten</strong> — die Schritt-für-Schritt-Anleitung</li>
+<li><strong>📧 Feedback / Bug-Report an Marc</strong> — siehe unten</li>
+<li><strong>📋 Logdatei öffnen</strong> — für technische Diagnose bei Fehlern</li>
+<li><strong>ℹ Über die App</strong> — Version, Pfade, Credits</li>
+</ol>
+<h3 id="bug-reports-an-marc-senden">Bug-Reports an Marc senden</h3>
+<p>Beim Klick auf <strong>📧 Feedback / Bug-Report an Marc</strong> (oder bei einem Render-Fehler) öffnet sich ein Modal mit:</p>
+<ul>
+<li><strong>Empfänger</strong>: <code>marc@reisezoom.com</code> mit Copy-Button</li>
+<li><strong>Betreff</strong> (vorbefüllt mit App-Version + Kurz-Fehler) mit Copy-Button</li>
+<li><strong>Nachricht</strong> (vorbefüllt mit App-Version, OS, Python-Version und Log-Auszug) mit Copy-Button</li>
+</ul>
+<p><strong>Was du tun musst:</strong></p>
+<ol>
+<li>Empfänger-Adresse kopieren (📋)</li>
+<li>In dein Webmail (Gmail / Outlook / iCloud im Browser) oder Mail-Programm wechseln, neue Mail starten, Empfänger einfügen</li>
+<li>Betreff kopieren + einfügen</li>
+<li>Nachricht kopieren + einfügen</li>
+<li>Im Nachrichten-Text den Platzhalter <code>[hier deinen Text einfügen]</code> durch eine kurze Beschreibung ersetzen — was du gemacht hast, was nicht funktioniert hat</li>
+<li>Senden</li>
+</ol>
+<p><strong>Falls du ein lokales Mail-Programm hast</strong> (Mac Mail.app, Outlook Desktop, Thunderbird): Button <strong>„📧 Lokales Mail-Programm öffnen&quot;</strong> unten links — dann ist alles automatisch vorbefüllt.</p>
+<h3 id="logdatei">Logdatei</h3>
+<p>Bei Render-Fehlern öffnet sich automatisch ein Fehler-Modal mit ausklappbarem Log-Auszug + Buttons „Im Finder zeigen&quot;, „Log öffnen&quot;, „📧 An Marc senden&quot;. Die volle Logdatei findest du jederzeit unter:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/Reisezoom GPS Studio/logs/app.log</code></li>
+<li>Windows: <code>%APPDATA%\Reisezoom GPS Studio\logs\app.log</code></li>
+<li>Linux: <code>~/.local/share/Reisezoom GPS Studio/logs/app.log</code></li>
+</ul>
+<hr>
+<h2 id="10-faq">10 · FAQ</h2>
+<h3 id="kann-nicht-ge-ffnet-werden-weil-sie-von-einem-nicht-verifizierten-entwickler-stammt-macos">„Kann nicht geöffnet werden, weil sie von einem nicht verifizierten Entwickler stammt&quot; (macOS)</h3>
+<p>Die App ist nicht mit einem $99/Jahr Apple-Developer-Cert signiert. Lösung: <strong>Rechtsklick → Öffnen</strong> statt Doppelklick (siehe Installation).</p>
+<h3 id="der-computer-wurde-durch-windows-defender-gesch-tzt-windows">„Der Computer wurde durch Windows Defender geschützt&quot; (Windows)</h3>
+<p>Selbes Problem auf Windows. <strong>„Weitere Informationen&quot; → „Trotzdem ausführen&quot;</strong>.</p>
+<h3 id="beim-ersten-animator-render-dauert-s-lange">Beim ersten Animator-Render dauert&#x27;s lange</h3>
+<p>Beim allerersten Render lädt die App einmalig Chromium für die Karten-Render-Pipeline runter (~150 MB). Modal erscheint mit Fortschritts-Anzeige. Danach läuft jeder weitere Render direkt los.</p>
+<h3 id="mapbox-token-fehlt-beim-render">„Mapbox-Token fehlt&quot; beim Render</h3>
+<p>Animator + Tour-Map brauchen einen Mapbox-Token (Geotagger nicht). Im ⚙-Modal eintragen. Wenn du erstmal ohne probieren willst: OSM-Modus (Standard-Karte ohne Satellite), aber Animator-Render bleibt deaktiviert.</p>
+<h3 id="mein-raw-format-wird-nicht-erkannt">Mein RAW-Format wird nicht erkannt</h3>
+<p>Aktuell unterstützt: CR3, CR2, NEF, ARW, RAF, RW2, ORF, DNG, PEF, RWL, SRW, HEIC, HEIF. Falls dein Format fehlt: Mail an Marc, vermutlich easy zu ergänzen.</p>
+<p><strong>HEIC-Spezial:</strong> iPhone-Fotos (HEIC) funktionieren seit v0.9.57 <strong>out-of-the-box</strong> — das nötige Decoder-Plugin (<code>pillow-heif</code> mit libheif) ist im App-Bundle drin, du brauchst kein extra installiertes Tool. Bei den anderen RAW-Formaten brauchst du weiterhin <strong>ExifTool</strong> auf dem System (auf macOS via <code>brew install exiftool</code>, auf Windows die offiziellen Standalone-Builds). Wenn ExifTool fehlt, sieht der Geotagger das beim Foto-Import und überspringt die RAW-Dateien.</p>
+<h3 id="render-frisst-stunden-scheint-zu-h-ngen">Render frisst Stunden / scheint zu hängen</h3>
+<p>Animator-Render bei 4K mit 30 fps × 17 Sek = 510 Frames. Pro Frame ~3-5 Sekunden bei aktiviertem Terrain = ~30 Min realistisch für ein 17-Sek-Video.</p>
+<p>Am Ende dauert ffmpeg&#x27;s <code>+faststart</code>-Phase nochmal 2-3 Min (Dateigröße bleibt konstant — <strong>das ist kein Hänger</strong>, das ist Mapbox-Encoder-Finalisierung).</p>
+<h3 id="track-ist-falsch-positioniert-auf-der-karte">Track ist falsch positioniert auf der Karte</h3>
+<p>Wahrscheinlich Zeitzonen-Problem: Foto-Aufnahmezeit passt nicht zur GPX-Track-Zeit. Lösung im Geotagger:</p>
+<ul>
+<li>Offset-Slider verschieben bis Marker da landen wo sie hingehören</li>
+<li><strong>Kamera-Zeitzone</strong> im Offset-Dialog (✎) wählen — wenn die Bilder um genau ganze Stunden daneben liegen (typisch bei Auslandsreisen mit Kameras ohne Zeitzonen-Tag, z.B. Olympus/OM)</li>
+<li>Oder Referenz-Foto setzen (siehe Geotagger-Workflow)</li>
+</ul>
+<h3 id="wie-melde-ich-einen-bug">Wie melde ich einen Bug?</h3>
+<p><strong>Hilfe → 📧 Feedback / Bug-Report an Marc</strong> — alles vorbefüllt (siehe Sektion 7).</p>
+<hr>
+<h2 id="11-tastatur-shortcuts-macos">11 · Tastatur-Shortcuts (macOS)</h2>
+<h3 id="allgemein">Allgemein</h3>
+<table><thead><tr><th>Shortcut</th><th>Aktion</th></tr></thead><tbody><tr><td><code>Cmd + ,</code></td><td>Einstellungen öffnen</td></tr><tr><td><code>Cmd + Q</code></td><td>App beenden</td></tr><tr><td><code>Cmd + M</code></td><td>Fenster minimieren</td></tr><tr><td><code>Cmd + W</code></td><td>Fenster schließen (App läuft im Hintergrund weiter)</td></tr></tbody></table>
+<h3 id="undo-redo-seit-v0-9-66-67">Undo / Redo (seit v0.9.66/67) ⭐</h3>
+<table><thead><tr><th>Shortcut</th><th>Aktion</th></tr></thead><tbody><tr><td><code>Cmd + Z</code></td><td>Letzte Aktion rückgängig (Undo)</td></tr><tr><td><code>Cmd + Shift + Z</code></td><td>Wieder vorwärts (Redo)</td></tr></tbody></table>
+<p>Jedes Modul hat seinen <strong>eigenen Undo-Stack mit 50 Schritten</strong>:</p>
+<ul>
+<li><strong>Animator:</strong> Keyframes setzen/löschen/verschieben, Trim-Handles, Intro/Animation/Hold-Werte, Keyframe-Editor-Toggle.</li>
+<li><strong>Tour-Map:</strong> alle Sidebar-Settings (Linien-Farbe, -Breite, Glow, Stats-Box-Position, Pin-Größe, Karten-Stil…).</li>
+<li><strong>Geotagger:</strong> Foto-Offset-Slider, Referenz-Punkt, „Unterordner einbeziehen&quot;. <strong>Nicht</strong> undoable: bereits in Fotos geschriebene GPS-Tags — dafür vor dem Tagging die Backup-Checkbox aktivieren.</li>
+</ul>
+<p>Beim Wechsel zwischen Projekten wird der Undo-Stack des betroffenen Moduls geleert (es gibt kein „rückgängig&quot; über Projekt-Grenzen hinweg).</p>
+<p>Während eines kontinuierlichen Drags (Slider ziehen, Trim verschieben) wird <strong>ein</strong> Undo-Snapshot pro „Edit-Session&quot; gespeichert (Throttle 800 ms). Discrete Aktionen wie KF-Snapshot oder Checkbox-Click pushen sofort.</p>
+<h3 id="animator-timeline">Animator-Timeline</h3>
+<table><thead><tr><th>Shortcut</th><th>Aktion</th></tr></thead><tbody><tr><td><code>←</code> / <code>→</code></td><td>1 GPS-Punkt vor/zurück</td></tr><tr><td><code>Shift + ← / →</code></td><td>10 GPS-Punkte vor/zurück</td></tr><tr><td><code>Home</code> / <code>End</code></td><td>Track-Anfang / -Ende</td></tr><tr><td><code>Space</code></td><td>Probe-Lauf Start/Stop</td></tr></tbody></table>
+<p>Auf Windows/Linux entsprechend <code>Strg + …</code> statt <code>Cmd + …</code> und <code>Strg + Y</code> zusätzlich für Redo.</p>
+<hr>
+<h2 id="12-bekannte-einschr-nkungen-beta-v0-3-x">12 · Bekannte Einschränkungen (Beta v0.3.x)</h2>
+<ul>
+<li><strong>macOS</strong>: nur Apple Silicon (M1/M2/M3/M4) — kein Intel-Mac</li>
+<li><strong>App ist nicht codesigniert</strong> → Erststart-Klimmzug per Rechtsklick → Öffnen</li>
+<li><strong>Multi-Track</strong>: ein GPX pro Render — Multi-Track-Vergleich kommt später</li>
+<li><strong>Video-Overlay</strong> (live-stats über bestehendes MP4): noch nicht implementiert</li>
+<li><strong>Hochauflösendes Geocoding</strong> (Foto exakt auf Trail-Kurve): nicht implementiert; Punkte werden auf den nächstgelegenen Track-Punkt gesnapped</li>
+<li><strong>Custom-Schriften/Logos im Overlay</strong>: nicht möglich</li>
+</ul>
+<p>Vollständige Roadmap im Repo unter <code>docs/IDEAS.md</code>.</p>
+<hr>
+<h2 id="13-support-kontakt">13 · Support &amp; Kontakt</h2>
+<ul>
+<li><strong>Bug-Reports &amp; Feedback</strong>: Hilfe → 📧 (siehe Sektion 7) oder direkt <code>marc@reisezoom.com</code></li>
+<li><strong>Blog &amp; Updates</strong>: <a href="https://reisezoom.com" target="_blank" rel="noopener">reisezoom.com</a></li>
+<li><strong>YouTube-Kanal</strong>: <a href="https://www.youtube.com/@reisezoom" target="_blank" rel="noopener">@reisezoom</a></li>
+</ul>
+<p>Viel Spaß beim Rendern! 🚀</p>
+  <div class="footer">
+    Reisezoom GPS Studio · diese Doku wurde aus <code>docs/USER_GUIDE.md</code> generiert.
+  </div>
+</div>
+</body>
+</html>

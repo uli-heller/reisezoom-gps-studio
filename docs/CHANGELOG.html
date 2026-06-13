@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reisezoom GPS Studio — Versions-Verlauf</title>
+<meta name="description" content="Alle Neuerungen in Reisezoom GPS Studio — was sich für dich in jeder Version geändert hat.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: #2c2c2c;
+    background: #fafafa;
+  }
+  a { color: #ff6b35; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header.page-head {
+    text-align: center;
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  header.page-head h1 {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.5px;
+    margin-bottom: 12px; color: #1a1a1a;
+  }
+  header.page-head .lead {
+    font-size: 17px; color: #666; max-width: 580px; margin: 0 auto 18px;
+  }
+  header.page-head .download-cta {
+    display: inline-block; margin-top: 8px; padding: 10px 22px;
+    background: #ff6b35; color: #fff; border-radius: 8px;
+    font-weight: 600; font-size: 15px; transition: background .15s;
+  }
+  header.page-head .download-cta:hover { background: #e55a25; text-decoration: none; }
+
+  .version {
+    background: #fff; border: 1px solid #e6e6e6; border-radius: 12px;
+    padding: 28px 32px; margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .version.latest {
+    border-color: #ff6b35; border-width: 2px;
+    box-shadow: 0 4px 16px rgba(255,107,53,0.08);
+  }
+  .version-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 14px;
+    margin-bottom: 6px; padding-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .version-num { font-size: 24px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; }
+  .version-date { font-size: 14px; color: #888; font-variant-numeric: tabular-nums; }
+  .version-badge {
+    display: inline-block; padding: 3px 10px;
+    background: #ff6b35; color: #fff; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .version-tagline { font-size: 16px; color: #666; font-style: italic; margin: 14px 0 18px; }
+
+  .highlight {
+    background: #fff7f2; border-left: 3px solid #ff6b35;
+    padding: 14px 18px; border-radius: 6px; margin: 14px 0;
+  }
+  .highlight strong { color: #c44a1a; }
+
+  .version ul { list-style: none; margin: 8px 0 0; padding: 0; }
+  .version ul li {
+    padding: 6px 0 6px 26px; position: relative;
+    font-size: 15px; color: #444;
+  }
+  .version ul li::before {
+    content: "→"; position: absolute; left: 0;
+    color: #ff6b35; font-weight: 700;
+  }
+
+  footer.page-foot {
+    margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid #e6e6e6;
+    text-align: center; color: #888; font-size: 14px;
+  }
+  footer.page-foot a { color: #888; }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 28px 16px 64px; }
+    header.page-head h1 { font-size: 28px; }
+    .version { padding: 22px 20px; }
+    .version-num { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="page-head">
+  <h1>Reisezoom GPS Studio — Versions-Verlauf</h1>
+  <p class="lead">
+    Was sich in jeder Version geändert hat — kurz und ohne Technik-Kauderwelsch.
+  </p>
+  <a class="download-cta" href="https://reisezoom.com/reisezoom-gps-studio/">📥 App herunterladen</a>
+</header>
+
+<!-- BEGIN VERSION BLOCKS — ab hier kopierst du den Inhalt in WordPress -->
+
+<article class="version latest">
+  <div class="version-head">
+    <span class="version-num">v0.9.269</span>
+    <span class="version-date">12. Juni 2026</span>
+    <span class="version-badge">Aktuell</span>
+  </div>
+  <p class="version-tagline">Tracks aufs Wegenetz schnappen, Zeitstempel beim Klick, flackerfreies Bearbeiten der Schilder — und der wichtige Fix, dass die Reiseroute-Adresssuche wieder funktioniert.</p>
+
+  <div class="highlight">
+    <strong>🛣️ Track auf Straße/Weg legen (GPX-Inspektor)</strong> — zwei neue Werkzeuge: <strong>Strecke A→B</strong> findet die echte Straßen-/Wegeroute zwischen zwei Punkten und legt deinen Track sauber drauf (ideal, wenn das GPS-Signal abgedriftet ist); <strong>Ganzen Track snappen</strong> zieht die komplette Spur aufs nächste Wegenetz, mit einstellbarem Snap-Radius. Beim Heilen einer A→B-Strecke wird die Geschwindigkeit korrekt aus der Durchschnittsgeschwindigkeit des Abschnitts neu verteilt — im Animator läuft die geheilte Stelle dadurch nicht mehr zu schnell. Alles rückgängig machbar.<br><br>
+    <strong>🕐 Zeitstempel beim Klick auf einen Punkt</strong> — ein Klick auf einen Track-Punkt zeigt jetzt Uhrzeit und Höhe; markierst du zwei Punkte, siehst du zusätzlich die Dauer dazwischen.<br><br>
+    <strong>🚩 Schilder flackerfrei bearbeiten</strong> — beim Bearbeiten eines Schilds (besonders mit Bild) flackerte oder verschwand vorher manchmal das Bild. Das Bearbeiten ist jetzt ruhig und stabil; im Video bleibt alles flüssig wie gewohnt. Neu: die <strong>Stangen-Länge</strong> bei Zielbanner/Wegweiser ist einstellbar, der <strong>Auslöse-Zeitpunkt</strong> eines Schilds lässt sich exakt festnageln, und der Hintergrund kann auf <strong>„Keine" (transparent)</strong> gestellt werden — praktisch für Bilder ohne farbigen Rahmen.<br><br>
+    <strong>🔧 Reiseroute-Adresssuche repariert</strong> — im fertig gebauten Programm schlug die Adress- und Routensuche (Mapbox) wegen eines Zertifikat-Problems fehl. Das ist behoben — Start/Ziel per Adresse und das Berechnen der Strecke funktionieren wieder zuverlässig.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.252</span>
+    <span class="version-date">11. Juni 2026</span>
+  </div>
+  <p class="version-tagline">Großes Update: ein neues Werkzeug zum Reparieren kaputter GPS-Tracks, Video-Renders rund 10× schneller, ein eigenes „Anreise"-Modul mit echten Flugrouten und viele Detail-Verbesserungen.</p>
+
+  <div class="highlight">
+    <strong>🔍 Neu: GPX-Inspektor — Tracks reparieren</strong> — ein neues Modul, das jeden einzelnen Punkt deines Tracks auf der Karte zeigt. Du kannst <strong>GPS-Ausreißer glätten</strong> (Zacken, wo das Signal kurz wegspringt), <strong>Lücken füllen</strong> (von Hand oder entlang eines selbst gezeichneten Pfads), einzelne Punkte <strong>verschieben oder löschen</strong>. Eine Automatik findet Ausreißer auf Knopfdruck und markiert sie — du heilst sie einzeln oder alle auf einmal. Wichtig: Beim Glätten bleiben die Zeitstempel erhalten, dadurch stimmt hinterher auch die Geschwindigkeit wieder. Alles per ⌘Z rückgängig. Funktioniert auch ohne Mapbox-Token.<br><br>
+    <strong>⚡ Video-Render rund 10× schneller</strong> — das Rendern dauerte bisher unnötig lange. Die eigentliche Bremse war das Abgreifen der Einzelbilder; das läuft jetzt deutlich effizienter. Ergebnis: ein Render, der vorher Minuten brauchte, ist jetzt in einem Bruchteil der Zeit fertig — bei gleicher Bildqualität.<br><br>
+    <strong>⚙️ Neuer Einstellungs-Bereich „Qualität &amp; Export"</strong> — Frame-Qualität, Video-Codec (H.264 / H.265 / ProRes), Qualitätsstufe und Encoder-Tempo lassen sich jetzt zentral in den Einstellungen festlegen, statt verstreut in der Seitenleiste. Die Animator-Seitenleiste ist dadurch aufgeräumter.<br><br>
+    <strong>🛣️ Neu: Modul „Reiseroute"</strong> — gib Start und Ziel an, und die App berechnet die Anreise (der Straße folgend oder als Flugroute) und animiert sie wie einen Track — dein eigentliches Wander-GPX läuft dabei als dezenter „Ghost" mit.<br><br>
+    <strong>✈️ Echte Flugrouten (Großkreis)</strong> — die Flugroute folgt jetzt dem <strong>kürzesten Weg auf der Kugel</strong>, genau wie echte Langstreckenflüge: Berlin→Orlando wölbt sich z.B. korrekt über den Nordatlantik nach Norden, statt unrealistisch quer über die Karte.<br><br>
+    <strong>🚩 Wegpunkt-Schilder &amp; Foto-Pins voll anpassbar</strong> — Text-Schilder und Foto-Marker auf der Route mit eigenem Stil, Farbe, Schrift, Ein-/Ausblend-Timing und Animation.<br><br>
+    <strong>📸 Geotagger-Verbesserungen</strong> — nach Kamera filtern und gezielt taggen, Fotos von Hand auf der Karte platzieren (frei oder auf den Track einrastend), Kamera-Zeitzone für Auslandsreisen einstellen, einzelne Fotos abwählen.<br><br>
+    <strong>🔎 Zoom-Begrenzung &amp; klarere OSM-Hinweise</strong> — man kann in der Karten-Vorschau nicht mehr endlos ins Leere zoomen. Und ohne Mapbox-Token zeigen Animator, Reiseroute und Tour-Map jetzt einen klaren Hinweis „Nur mit Mapbox-Token", statt einer halben Vorschau.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.162</span>
+    <span class="version-date">5. Juni 2026</span>
+  </div>
+  <p class="version-tagline">Was du in der Vorschau siehst, kommt jetzt 1:1 im Video raus — Zoom und Linienstärke stimmen, und das fertige Video lässt sich wieder direkt in der App ansehen.</p>
+
+  <div class="highlight">
+    <strong>🔍 Render = Vorschau (Zoom &amp; Linienstärke)</strong> — bisher zeigte das fertige Video manchmal einen anderen, oft herausgezoomten Kartenausschnitt als die Live-Vorschau, und bei 4K wirkte die Track-Linie etwas dünner. Beides ist behoben: Die Zoomstufe stimmt jetzt exakt mit der Vorschau überein (im normalen Modus genauso wie mit Keyframes), und die Track-Linie ist genauso dick wie vor dem Rendern. Du musst nichts umstellen — es passt einfach.<br><br>
+    <strong>▶️ Fertiges Video wieder direkt in der App ansehen</strong> — nach dem Rendern blieb das Vorschau-Kästchen zuletzt schwarz, besonders bei Videos auf externen Festplatten. Jetzt wird das fertige Video wieder zuverlässig direkt im „Fertig“-Bereich abgespielt, egal auf welchem Laufwerk es liegt. Zusätzlich gibt es einen neuen <strong>„▶ Abspielen“-Button</strong>, der das Video im Standard-Player (z.B. QuickTime) öffnet.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.155</span>
+    <span class="version-date">30. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Workspace leeren ist aufgeräumter: ein einziges rotes ✕ neben dem GPX-Namen oben räumt alles auf einmal — in allen Modulen, inklusive der GPX-Datei.</p>
+
+  <div class="highlight">
+    <strong>🧹 „Workspace leeren" jetzt zentral als rotes ✕</strong> — bisher hatte jedes Modul (Animator, Tour-Map, Geotagger) seinen eigenen „↺ Workspace leeren"-Button, und nach dem Leeren blieb der GPX-Name oben trotzdem stehen. Jetzt sitzt ein einziges rotes ✕ direkt neben dem GPX-Namen im Modul-Header (Tooltip „Workspace leeren"). Ein Klick darauf räumt nach einer kurzen Sicherheitsabfrage <strong>alles auf einmal</strong>: GPX-Track, geladene Fotos und Match-Daten in allen Modulen — und natürlich auch den GPX-Namen selbst. Deine Einstellungen (Mapbox-Token, Kartenstil, Offsets usw.) bleiben unangetastet.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.154</span>
+    <span class="version-date">30. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Drag & Drop kennt jetzt die echten Dateipfade — auf allen Plattformen. Fotos einfach ins Geotagger-Fenster ziehen, taggen, fertig: die GPS-Koordinaten landen direkt in deinen Original-Fotos. Kein Export-Schritt mehr. Plus: TIFF-Dateien lassen sich jetzt korrekt taggen.</p>
+
+  <div class="highlight">
+    <strong>🖼️ TIFF-Tagging repariert</strong> — das Schreiben der GPS-Koordinaten in `.tif`/`.tiff`-Dateien (z.B. von Olympus/OM-Kameras) schlug bisher komplett fehl. Jetzt werden TIFFs über denselben robusten Weg wie RAW-Dateien getaggt — funktioniert zuverlässig.<br><br>
+    <strong>📍 Gezogene Fotos werden direkt im Original getaggt</strong> — bisher musste die App per Drag & Drop importierte Fotos mit internen Kopien verarbeiten (das Betriebssystem verriet beim Ziehen nur den Datei-Inhalt, nicht den Pfad). GPS landete dann in der Kopie, nicht im Original — und du musstest die getaggten Bilder anschließend separat exportieren. Jetzt löst die App den echten Original-Pfad auf und schreibt die Koordinaten **direkt ins Original**, genau wie beim „Ordner wählen"-Weg. Funktioniert auf macOS, Windows und Linux.<br><br>
+    <strong>🖼️ „Drop enthielt keine Dateien"-Aussetzer behoben</strong> — auf macOS kam es selten vor, dass ein Foto-Drop ins Leere lief. Auch das ist mit der neuen Pfad-Erkennung erledigt.<br><br>
+    <strong>🗺️ Auch GPX-, Animator- und Tour-Map-Drops profitieren</strong> — eine GPX-Datei oder Fotos in die Karten-Module zu ziehen verwendet jetzt ebenfalls zuverlässig den korrekten Quellpfad.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.73</span>
+    <span class="version-date">25. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Großes Sammel-Release seit v0.9.40: Undo/Redo in allen drei Modulen, smoother Erdkugel→Track-Flug (Mapbox-flyTo-Style, jetzt wirklich aktiv), reload-stabile Zoom-Keyframes, Trim-Handles, Intro+Hold-Phasen, HEIC-Foto-Support out-of-the-box, ExifTool gleich mit gebündelt. Plus zwei Dutzend Detail-Fixes an Keyframe-Editor, Map-Interaktion, Render-Treue zur Preview.</p>
+
+  <div class="highlight">
+    <strong>🔒 Zoom-Keyframes endlich reload-stabil</strong> — beim Neu-Laden eines Projekts (oder Wechsel zwischen Sessions) blieb der eingestellte Zoom-Punkt vorher nicht stabil: die App speicherte den Zoom relativ zu einem internen Auto-Fit-Bezugspunkt, der von Fenster-Größe + Pixel-Ratio abhing — bei minimaler Änderung sprang der KF beim nächsten Öffnen auf einen ganz anderen Zoom. Jetzt wird zusätzlich der absolute Mapbox-Zoom mitgespeichert und bevorzugt → Reload zeigt exakt die Pose, die du gesetzt hast. Für bestehende KFs einmal neu setzen (Zoom anpassen → Snapshot-Button), dann greift's auch dort.<br><br>
+    <strong>↶ Undo / Redo überall</strong> — 50 Schritte pro Modul, `Cmd+Z` / `Cmd+Shift+Z` (Mac) bzw. `Ctrl+Z` / `Ctrl+Y` (Windows). Funktioniert in Animator (KFs, Trim, Intro/Animation/Hold), Tour-Map (Farbe, Glow, Pin, Stats-Box…) und Geotagger (Offset, Referenz, Folder-Modus). Geschriebene GPS-Tags in Fotos sind nicht undoable — dafür mach vorher ein Foto-Backup über die Backup-Checkbox.<br><br>
+    <strong>🌍 Erdkugel-→-Track-Flug glatt geworden</strong> — wenn du zwei Keyframes mit großem Zoom-Unterschied setzt (z.B. Welt-Sicht → Route-Start), fährt die Kamera jetzt einen smoothen Bogen: erst etwas Zoom-Out + Pan, dann Reinzoomen auf den Track. Vorher: lineare Interpolation, der Track rutschte aus dem Sichtfeld und kam erst bei hohem Zoom zurück. Algorithmus: van-Wijk-Flug-Kurve (Mapbox-`flyTo`-Standard).<br><br>
+    <strong>🎯 Render = Preview, garantiert</strong> — Position der Keyframes im fertigen Video stimmt jetzt 1:1 mit der Preview überein. Vorher konnten Render und Preview die Intro/Animation/Hold-Phasen unterschiedlich interpretieren → KFs landeten im fertigen Video an leicht falscher Stelle. Außerdem: linker Trim-Handle verkürzt jetzt auch die Preview sofort (vorher nur den Render). Marker erscheint nicht mehr versehentlich am Ende der Intro-Hold-Zone.<br><br>
+    <strong>📷 RAW + HEIC + Video out-of-the-box</strong> — pillow-heif für HEIC und ExifTool für RAW (CR3/NEF/ARW/CR2/RAF/RW2/ORF/DNG…) sind jetzt im macOS- und Windows-Bundle. Vorher: schwarze Tiles wenn ExifTool nicht installiert war. Linux-User installieren ExifTool weiterhin selbst (Doku im Handbuch).<br><br>
+    <strong>🎬 Render-Bereich begrenzen — Trim-Handles</strong> — in der Timeline-Bar zwei graue Schieber für „nur Ausschnitt rendern". Bereich dazwischen wird hellorange hinterlegt. Keyframes ausserhalb bleiben als „Anlauf"-Setup sichtbar, der Track-Marker startet aber erst am linken Handle. Perfekt für: 30-km-Tour, davon nur die Berg-Sektion ins Video.<br><br>
+    <strong>🎞️ Intro + Animation + Hold</strong> — drei Eingabefelder steuern die Render-Länge. Intro = Sekunden bevor der Track losläuft (Setup-Shot „Erdkugel → Routenstart"), Animation = Track-Hauptteil, Hold = Sekunden nach dem Ende (Outro „rauszoomen"). Timeline zeigt's farbcodiert: hellblaue Intro-Region links, orange Hold-Region rechts.<br><br>
+    <strong>🛠 Keyframe-Editor sauberer</strong> — KFs werden nicht mehr versehentlich überschrieben wenn man die Karte ohne ausgewählten KF dreht/pant. Klick auf KF-Marker erst nötig, dann wird die Bearbeitung aktiv. Plus: Pitch-Reset-Button im KF-Editor („↺ 0°") für saubere Erdkugel-Sicht. Bug bei Zoom-Slider-Klick neben anderen KFs behoben (sprang fälschlicherweise zurück).<br><br>
+    <strong>🧭 Track vor Trim-Start zeigen</strong> — Checkbox in den Overlay-Settings. Mit ✓: Track-Linie ist auch vor dem linken Trim-Handle sichtbar (als blasse Hintergrund-Linie). Ohne: Linie startet exakt am Trim-Handle.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.67</span>
+    <span class="version-date">25. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Großes Polish-Update: Undo/Redo in allen drei Modulen, smoother Erdkugel→Track-Flug (Mapbox-flyTo-Style), Trim-Handles, Intro+Hold-Phasen, HEIC-Foto-Support out-of-the-box, ExifTool für RAW + Video gleich mit gebündelt. Dazu rund ein Dutzend Detail-Fixes an Keyframe-Editor, Map-Interaktion und Render.</p>
+
+  <div class="highlight">
+    <strong>↶ Undo / Redo überall</strong> — 50 Schritte pro Modul, `Cmd+Z` / `Cmd+Shift+Z` (Mac) bzw. `Ctrl+Z` / `Ctrl+Y` (Windows). Funktioniert in Animator (KFs, Trim, Intro/Animation/Hold), Tour-Map (Farbe, Glow, Pin, Stats-Box…) und Geotagger (Offset, Referenz, Folder-Modus). Geschriebene GPS-Tags in Fotos sind nicht undoable — dafür mach vorher ein Foto-Backup über die Backup-Checkbox.<br><br>
+    <strong>🌍 Erdkugel-→-Track-Flug glatt geworden</strong> — wenn du zwei Keyframes mit großem Zoom-Unterschied setzt (z.B. Welt-Sicht → Route-Start), fährt die Kamera jetzt einen smoothen Bogen: erst etwas Zoom-Out + Pan, dann Reinzoomen auf den Track. Vorher: lineare Interpolation, der Track rutschte aus dem Sichtfeld und kam erst bei hohem Zoom zurück. Algorithmus: van-Wijk-Flug-Kurve (Mapbox-`flyTo`-Standard).<br><br>
+    <strong>📷 RAW + HEIC + Video out-of-the-box</strong> — pillow-heif für HEIC und ExifTool für RAW (CR3/NEF/ARW/CR2/RAF/RW2/ORF/DNG…) sind jetzt im macOS- und Windows-Bundle. Vorher: schwarze Tiles wenn ExifTool nicht installiert war. Linux-User installieren ExifTool weiterhin selbst (Doku im Handbuch).<br><br>
+    <strong>🎬 Render-Bereich begrenzen — Trim-Handles</strong> — in der Timeline-Bar zwei graue Schieber für „nur Ausschnitt rendern". Bereich dazwischen wird hellorange hinterlegt. Keyframes ausserhalb bleiben als „Anlauf"-Setup sichtbar, der Track-Marker startet aber erst am linken Handle. Perfekt für: 30-km-Tour, davon nur die Berg-Sektion ins Video.<br><br>
+    <strong>🎞️ Intro + Animation + Hold</strong> — drei Eingabefelder steuern die Render-Länge. Intro = Sekunden bevor der Track losläuft (Setup-Shot „Erdkugel → Routenstart"), Animation = Track-Hauptteil, Hold = Sekunden nach dem Ende (Outro „rauszoomen"). Timeline zeigt's farbcodiert: hellblaue Intro-Region links, orange Hold-Region rechts.<br><br>
+    <strong>🛠 Keyframe-Editor sauberer</strong> — KFs werden nicht mehr versehentlich überschrieben wenn man die Karte ohne ausgewählten KF dreht/pant. Klick auf KF-Marker erst nötig, dann wird die Bearbeitung aktiv. Plus: Pitch-Reset-Button im KF-Editor („↺ 0°") für saubere Erdkugel-Sicht. Bug bei Zoom-Slider-Klick neben anderen KFs behoben (sprang fälschlicherweise zurück).<br><br>
+    <strong>🧭 Track vor Trim-Start zeigen</strong> — Checkbox in den Overlay-Settings. Mit ✓: Track-Linie ist auch vor dem linken Trim-Handle sichtbar (als blasse Hintergrund-Linie). Ohne: Linie startet exakt am Trim-Handle.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.40</span>
+    <span class="version-date">25. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Open-Source-Credits im „Über"-Modal — alle genutzten Bibliotheken (FFmpeg, Mapbox, pywebview, Pillow, gpxpy, Playwright, ExifTool) sind jetzt mit Lizenz und klickbarem Link sichtbar. Sonst keine Funktions-Änderungen — nur Compliance + Doku.</p>
+
+  <div class="highlight">
+    <strong>📋 License-Credits sichtbar</strong> — im „Über"-Modal (oben rechts → ?-Icon → „Über") findest du jetzt die Liste aller Open-Source-Komponenten, die die App verwendet. Mit Lizenz-Info und Link zur jeweiligen Projektseite. Standard-Compliance-Sache für saubere Software-Distribution, vor allem mit Blick auf späteres LGPL-Bundling.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.39</span>
+    <span class="version-date">25. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Großes Update gegenüber v0.6.9 (Mai 2026). Komplett neuer Workflow mit Kamera-Keyframe-Timeline, Sessions/Projekte, Tour-Map als drittes Modul, Auto-GPX-Detection im Geotagger, deutlich besseres Drag &amp; Drop. Plus 30+ Detail-Bugfixes seit v0.6.9.</p>
+
+  <div class="highlight">
+    <strong>🎬 Kamera-Keyframe-Timeline (v0.7.x)</strong> — Pitch, Bearing, Zoom und Map-Center pro Track-Position frei setzbar. Live-Vorschau mit Scrubber, Probe-Lauf, Drag &amp; Drop in der Timeline-Bar, Detail-Editor mit Slidern. Cinematische Kamera-Fahrten ohne After-Effects-Workflow.<br><br>
+    <strong>📁 Sessions &amp; Projekte (v0.8.x)</strong> — pro GPX-Track ein eigener Speicher mit mehreren Projekt-Varianten („Standard", „Reels-Hochformat", „Slow-Cinematic" usw.). GPX-Picker liegt jetzt global oben in der Sub-Top-Bar — alle drei Module greifen auf denselben aktiven Track zu.<br><br>
+    <strong>🗺️ Tour-Map als drittes Modul (v0.5)</strong> — statisches PNG vom Track für YouTube-Thumbnails und Community-Posts. Synchron zu Animator-Optik (gleiche Stile, Glow-Effekte, Linien-Stile).<br><br>
+    <strong>🎯 Geotagger-Workflow runder (v0.9.27+)</strong> — Auto-GPX-Detection im Foto-Ordner (Parent + Geschwister-Ordner werden gescannt), Unterordner-Checkbox, Offset-Eingabe akzeptiert <code>4s</code> / <code>4m</code> / <code>1h30m</code>, Foto-Pin in dichten Clustern mit Pulsier-Glow hervorgehoben.<br><br>
+    <strong>🔄 Tab-Wechsel hält State (v0.9.28+)</strong> — wer im Geotagger Fotos und einen Track lädt, dann in den Animator wechselt und zurückkommt, findet alles wieder vor: Foto-Liste mit Thumbs, gewählter Pin, Karten-Position. GPX-Track wird zusätzlich nach App-Neustart automatisch wiederhergestellt.<br><br>
+    <strong>📥 GPX im Foto-Drop (v0.9.32)</strong> — Fotos + GPX-Track können gemeinsam aus dem Finder reingezogen werden. Das GPX wird erkannt und im globalen Picker oben aktiv markiert, Match läuft direkt.<br><br>
+    <strong>🧯 App-Stabilität (v0.9.25/26/29/30/34/39)</strong> — Freeze beim Schließen mit Python-3.14-Watchdog behoben, Mapbox-Marker-Crash beim Tab-Wechsel-während-Lade-Zeit gefixt, Animator-Zoom-Berechnung bei Keyframes komplett überarbeitet (warten auf echten Track-Fit-Zoom statt raten).
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.28</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Polish auf v0.9.27: Slider-Snap komplett raus, Fenstergröße wird immer gemerkt, Tab-Wechsel hält den kompletten State (Karten-Pose, Foto-Liste, KF-Selection), neuer „Session schließen"-Menüpunkt, fehlende Übersetzungen nachgereicht.</p>
+
+  <div class="highlight">
+    <strong>🔄 Tab-Wechsel: alles bleibt wo es war</strong> — wenn du im Geotagger Fotos und einen Track geladen hast, in den Animator wechselst und zurückkommst, findest du alles wieder vor: Foto-Liste, gewählter Pin, Karten-Position, Zoom. Auch im Animator + Tour-Map bleibt die zuletzt gepante Karten-Pose erhalten. Im Animator zusätzlich: der ausgewählte Keyframe + die Scrubber-Position. So fühlt sich Tab-Hin-und-Her endlich nahtlos an.<br><br>
+    <strong>⏱️ Offset-Slider</strong> bewegt sich jetzt komplett stufenlos in 1-Minuten-Schritten — kein Magnet mehr an vollen Stunden. <code>1h 4min</code> bleibt <code>1h 4min</code>. Wer exakte Werte will, nutzt weiter den ✎-Button mit dem <code>4s</code>/<code>4m</code>/<code>1h30m</code>-Parser.<br><br>
+    <strong>🗗 Fenstergröße + Position</strong> werden ab jetzt immer automatisch gemerkt — keine Checkbox in den Einstellungen mehr nötig. Beim allerersten App-Start: maximiert (wie bisher). Danach: wie zuletzt verlassen.<br><br>
+    <strong>✕ „Session schließen"</strong> ist ein neuer Eintrag im Sessions/Projekt-Dropdown oben. Leert Track + Fotos + Cache und startet dich wieder leer — ohne dass du dazu die App neu starten musst.<br><br>
+    <strong>🌐 Übersetzungen</strong> für die in v0.9.27 hinzugefügten UI-Elemente (Unterordner-Checkbox, GPX-gefunden-Modal, alle Restore-Toasts) sind in DE/EN/ES nachgereicht. v0.9.27 zeigte teilweise nur rohe Translation-Keys.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.27</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Geotagger-Polish-Pack: Auto-Detect der GPX-Datei im Foto-Ordner, Unterordner-Option, sessionbasiertes Speichern des Geotagger-State, bessere Offset-Eingabe (4s/4m/4h statt nur Sekunden), Selektion in dichten Foto-Clustern sichtbar gemacht, optionaler „Fenster-Größe merken"-Modus.</p>
+
+  <div class="highlight">
+    <strong>🎯 Geotagger-Workflow deutlich runder</strong> — sieben Punkte aus einer Feedback-Mail eingearbeitet:
+    <ul style="margin-top:8px;">
+      <li><strong>GPX automatisch finden:</strong> Lädst du einen Foto-Ordner, scannt die App automatisch den Ordner selbst + Parent + Geschwister-Ordner nach GPX-Dateien. Bei einem Treffer bietet sie direkt „GPX gefunden: <em>name.gpx</em> — laden?" an. Bei mehreren: Auswahl-Modal. Praktisch wenn deine Bilder z.B. in <code>Jahr-Monat-Tag/jpeg/</code> liegen und das GPX auf Datums-Ebene.</li>
+      <li><strong>Unterordner einbeziehen:</strong> neue Checkbox unter dem Folder-Pick-Button. Default aus.</li>
+      <li><strong>Geotagger merkt sich State:</strong> letzter Track + letzte Foto-Liste werden gespeichert. Nach Modul-Wechsel oder App-Neustart sind sie wieder da. Verschwundene Files werden sauber rausgefiltert.</li>
+      <li><strong>Offset-Eingabe lesbar:</strong> der ✎-Edit-Button akzeptiert jetzt <code>4s</code>, <code>4m</code>, <code>1h30m</code>, <code>-2h</code> oder <code>1:30:00</code> — nicht nur rohe Sekunden.</li>
+      <li><strong>Offset-Slider Tot-Zone behoben:</strong> bei Werten zwischen −5 und +5 Min sprang der Slider immer auf 0. Jetzt kannst du auch ±4-Min-Offsets per Slider eingeben.</li>
+      <li><strong>Selektierter Foto-Pin nach vorn:</strong> in dichten Foto-Clustern hervorgehoben mit dickerem Ring + Glow, und kommt in der Z-Order ganz nach oben. Du siehst sofort welches Foto aktiv ist.</li>
+      <li><strong>Fenster-Größe merken:</strong> neuer Toggle im Settings-Modal. Default startet die App weiter maximiert. Aktiviert merkt sie sich die letzte Größe + Position — angenehm auf Curved-Monitors.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.26</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Behoben: App fror beim Schließen mit dem roten X-Button ein. v0.9.25's Cleanup-Handler reichte nicht — Python 3.14 wartete beim Beenden auf hängende Threads, die nie jointen. Jetzt schließt sauber via Force-Exit.</p>
+
+  <div class="highlight">
+    <strong>🧯 Freeze beim App-Schließen behoben</strong> — wer den roten X-Button klickte und vorher z.B. im Geotagger Fotos geladen hatte, konnte erleben dass die App einfror. Die App lief intern noch (Background-Worker waren längst gestoppt), aber Python's internes Shutdown wartete auf interne pywebview-Threads, die wiederum auf einen Lock warteten der nie freigegeben wurde. Jetzt beendet die App sich nach dem Cleanup direkt ohne langes Aufräumen — fühlt sich für dich exakt so an wie ein normales Schließen.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.15</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Neue Checkbox in der Timeline: KF-Pins (die gelben Dots auf dem Track) lassen sich ausblenden — für echtes WYSIWYG zwischen Preview und gerendertem Film.</p>
+
+  <div class="highlight">
+    <strong>🎯 Toggle „KF-Pins" für echtes WYSIWYG</strong> — beim Setzen + Verschieben der Keyframes sind die gelben Pins auf dem Track in der Vorschau hilfreich. Im finalen Render-Video erscheinen sie aber nie. Damit du sehen kannst wie der Film WIRKLICH aussehen wird, gibt's jetzt eine Checkbox „KF-Pins" neben „Probe-Lauf". Klick aus → Pins weg → Preview ist 1:1 der finale Render. Klick an → Pins wieder da. Default an (Editier-Hilfe).
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.14</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Im fertigen Animator-Film flackerten manchmal weiße Flächen und Farb-/Helligkeitssprünge zwischen Frames — Mapbox-Tiles waren noch im Lade-Vorgang. Jetzt wartet die Render-Engine sauber bis alle Tiles geladen sind, bevor der Frame geknipst wird.</p>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: weiße Flächen + Helligkeits-Flicker im Render</strong> — Mapbox feuert ein „render"-Event auch während Tiles noch laden. Die Render-Engine hat genau in diesem Moment den Frame fotografiert — Folge: in einigen Frames waren Tiles noch halbweiß oder der Light-Preset noch im Übergang. In der Live-Preview tauchte das nicht auf, weil die nur den aktuellen Browser-Zustand spiegelt. Jetzt wird pro Frame auf das „idle"-Event gewartet (alle Tiles geladen, alle Animationen fertig). Bei gecachten Tiles bleibt der Render-Speed gleich, bei un-cached Tiles ein paar hundert ms länger pro betroffenem Frame.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.13</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Bergauf/Bergab in den Gesamtstats waren bei GPS-Tracks deutlich überzählt — typisches Rauschen wurde als echter Anstieg interpretiert. Jetzt deutlich näher an dem, was Strava und Komoot zeigen.</p>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: realistische Höhenmeter</strong> — die alte Berechnung hat jeden Höhensprung ≥ 1 m zwischen zwei Trackpunkten als echten Anstieg/Abstieg gewertet. GPS-Höhen rauschen aber gerne mit ±5–10 m pro Sample. Folge: bei einer flachen Strecke standen 300 m+ Bergauf in den Stats, obwohl in echt nichts gestiegen ist. Neue Berechnung mit Smoothing (Fenster 5) + 3-m-Hysterese-Threshold (wie Strava). Synthetik-Test: flacher Track ±5 m Rauschen jetzt 9 m Bergauf statt 326 m. Echter 500-m-Anstieg wird sauber als 495 m erkannt.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.12</span>
+    <span class="version-date">24. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Während ein Render läuft, sperrt die App jetzt alle Bedienelemente außer Abbrechen. Damit kann man nicht aus Versehen ein anderes Modul aufmachen oder Settings ändern und den Render damit verwirren.</p>
+
+  <div class="highlight">
+    <strong>🔒 UI-Lock beim Rendern</strong> — sobald „Rendern" geklickt wird, werden Modul-Tabs, Projekt-Wechsel, Sidebar-Slider und der GPX-Picker visuell ausgegraut und reagieren nicht mehr auf Klicks. Nur die Live-Vorschau + der Cancel-Button bleiben bedienbar. Sobald der Render fertig ist (oder abgebrochen / Fehler), gibt's die UI sofort wieder frei. Gilt für Animator UND Tour-Map.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.11</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Neue „Ganzer Track"-Checkbox in der Timeline + Warnung wenn man den Keyframe-Editor mit gesetzten Keyframes ausschaltet + der mysteriöse Vollbild-Knopf an der Karte ist weg.</p>
+
+  <div class="highlight">
+    <strong>⭐ „Ganzer Track" sichtbar halten</strong> — neuer Toggle neben dem „Probe-Lauf"-Button in der Timeline-Bar. An: der komplette Track bleibt in der Vorschau immer sichtbar, egal wo der Scrubber steht. Aus (Default): Track wird zur Scrubber-Position getrimmt, wie im finalen Render. Praktisch wenn man Keyframes an einem späten Track-Punkt setzen will und trotzdem sehen möchte wohin die Route weiterläuft.
+  </div>
+
+  <div class="highlight">
+    <strong>⚠️ Warnung beim Deaktivieren des Keyframe-Editors</strong> — wenn du den Editor abschaltest und schon Keyframes gesetzt hast, kommt jetzt eine klare Warnung: „Keyframes gehen verloren! Willst du fortfahren?". Bestätigst du → Keyframes weg, klassische Kamerasteuerung kommt zurück. Abbrechen → alles bleibt wie es war. Vorher hatte das Abschalten des Editors leise das Verhalten geändert ohne Hinweis.
+  </div>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Vollbild-Knopf an der Karte</strong> — rechts unten an der Karten-Vorschau hat sich ein „Fullscreen"-Button eingeschlichen, der gar nichts gemacht hat. Versteckt. (Der kam von Mapbox' Standard-Style, wir nutzen den Modus nicht.)
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.10</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Die Karte in der Animator-Vorschau passt sich jetzt automatisch der Timeline-Höhe an: Keyframe-Editor aus → kleine Bar → größere Karte. Editor an → volle Multi-Lane → Karte rückt sich schmaler.</p>
+
+  <div class="highlight">
+    <strong>📐 Karte nutzt freien Platz</strong> — bisher hat die Vorschau-Karte immer 230 px Reserve für die Timeline-Bar gelassen, egal wie hoch diese gerade tatsächlich war. Jetzt wird die echte Bar-Höhe live gemessen (KF-Editor an/aus, ?-Hilfe geöffnet, künftige Erweiterungen) und die Karte zoomt sanft passend dazu auf bzw. ab. Refit-Button + Auflösungs-Badge wandern mit.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.9</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Bug-Fix: wenn der Keyframe-Editor aus ist, war fälschlicherweise trotzdem die volle Multi-Lane-Timeline sichtbar. Jetzt wieder ein schmaler Track wie aus dem Classic-Modus erwartet.</p>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Timeline-Optik im Classic-Modus</strong> — bei deaktiviertem Keyframe-Editor (Master-Schalter aus) bleibt jetzt nur ein dünner Track-Streifen mit Scrubber und „Probe-Lauf"-Button. Die 6 Lanes + die Cluster-Zeile sind nur sichtbar wenn der Editor an ist. Vorher hat man auch ohne Editor die volle Multi-Lane-Bar gesehen — fühlt sich falsch an wenn man eigentlich nur Pitch/Rotation per Slider klassisch einstellen will.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.8</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Doppelklick auf eine Timeline-Spur setzt jetzt einen Keyframe NUR für diese eine Property — keine Cluster-Anlage mehr wenn du nur Bearing oder nur Zoom animieren willst. Plus: greifbarer Playhead unten, Auflösungs-Badge fadet aus.</p>
+
+  <div class="highlight">
+    <strong>⭐ Per-Lane-Keyframe mit Doppelklick</strong> — bisher hat jeder Snapshot immer alle 4 Properties (Pitch, Drehung, Zoom, Position) gleichzeitig festgelegt. Wenn du nur Drehung animieren willst, musstest du den ganzen Cluster anlegen und die anderen 3 wieder löschen. Jetzt: Doppelklick auf die gewünschte Spur (z.B. 🧭 Drehung) → einzelner Keyframe mit dem aktuellen Karten-Wert. Doppelklick auf die 🎬-Cluster-Zeile oben legt wie gewohnt das ganze Bündel an.
+  </div>
+
+  <div class="highlight">
+    <strong>🎯 Playhead jetzt unten greifbar</strong> — der gelbe Playhead hatte oben einen runden Punkt, der bei Anker 0 % / 100 % genau auf dem Cluster-Marker saß. Klick erwischte oft den Cluster-Marker statt den Playhead. Jetzt: Triangle-Handle UNTERHALB der Spuren (klassische Filmschnitt-Optik). Greifbar, auch wenn Marker am selben Anker stehen.
+  </div>
+
+  <div class="highlight">
+    <strong>🎨 Auflösungs-Badge fadet aus</strong> — die „1920×1080 · 16:9"-Anzeige (links unten in der Vorschau, sowohl Animator als auch Tour-Map) ist jetzt nur kurz sichtbar nach einer Auflösungs-Änderung (2,5 s), danach blendet sie weg. Sie kommt wieder wenn du Auflösung änderst — sonst stört sie nicht.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.7</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Höhenprofil + Auflösungs-Badge in der Animator-Vorschau saßen plötzlich zu tief und ragten ins Bild — die Letterbox-Berechnung zog die Timeline-Reservefläche nicht ab. Fix: jetzt sitzt das Bild wieder sauber über der Timeline.</p>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Überlappung mit der Timeline-Bar</strong> — durch die Multi-Lane-Timeline ist unten in der Vorschau ~230 px Platz reserviert. Die JS-Berechnung der Vorschau-Größe hat diese Reserve aber nicht abgezogen — Ergebnis: das Vorschau-Rechteck wurde ein Stück zu hoch, das Höhenprofil + die Auflösungs-Anzeige rutschten visuell in die Timeline-Region. Jetzt korrekt abgezogen.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.6</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Der letzte Dauer-Hilfetext im Keyframe-Editor („Kamera folgt dem GPS-Punkt …") ist jetzt auch hinter einem <kbd>?</kbd>-Button. Sidebar wirkt damit komplett aufgeräumt.</p>
+
+  <div class="highlight">
+    <strong>🎨 Konsistente ?-Hilfe überall</strong> — bisher stand unter der „🚶 Kamera folgt dem Track"-Checkbox immer ein Erklärsatz, der sich dynamisch mit dem Häkchen änderte. Jetzt klickt man ein ? rechts neben der Checkbox, falls man die Erklärung sehen will — gleich wie alle anderen Hilfetexte in der App.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.5</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Timeline-Feinschliff: Marker am Track-Ende werden nicht mehr halb abgeschnitten — und der Detail-Editor zeigt jetzt mit Lane-Farben + Glow welcher Slider zum gewählten Keyframe gehört.</p>
+
+  <div class="highlight">
+    <strong>🎨 Jeder Editor-Slider trägt seine Lane-Farbe</strong> — der Pitch-Slider hat einen blauen Akzent-Streifen, Bearing grün, Zoom violett, Position orange. Gleiche Farben wie die Timeline-Spuren. So siehst du auch im Cluster-Modus (alle Slider sichtbar) auf einen Blick welcher Regler zu welcher Spur gehört.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Aktiver Slider leuchtet</strong> — wenn du einen einzelnen Lane-Marker selektierst (Per-Property-Edit aus v0.9.3/4), bekommt sein Slider in der Sidebar einen farbigen Glow + fett-Beschriftung. Damit ist klar „dieser Regler ist jetzt zuständig".
+  </div>
+
+  <div class="highlight">
+    <strong>🐛 Keyframes am Track-Ende waren halb abgeschnitten</strong> — die Marker rutschten bei Anker 100 % bis auf die Track-Rand-Kante und wurden zur Hälfte unsichtbar. Jetzt 14 px Inset rechts in der Timeline-Bar: Marker, Scrubber, Hold-Region und Anim-End-Trenner sitzen alle bündig im sichtbaren Bereich.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Marc hatte die Per-Property-Auswahl getestet und gemerkt, dass nicht klar war welcher Slider zu welchem Lane-Marker passt. Mit den Lane-Farben im Editor + Glow auf dem aktiven Slider ist die visuelle Brücke zwischen Timeline-Marker und Sidebar-Slider jetzt direkt sichtbar. 🌈
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.9.4</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Multi-Lane-Timeline mit eigenen Spuren für Pitch / Drehung / Zoom / Position — plus einem 🎬 Cluster-Marker ganz oben, der alle 4 zusammen verschiebt.</p>
+
+  <div class="highlight">
+    <strong>⭐ Eigene Spur pro Kamera-Eigenschaft</strong> — die Timeline-Bar hat jetzt 4 horizontale Lanes (📐 Pitch, 🧭 Drehung, 🔍 Zoom, 📍 Position) statt einer einzigen Reihe Marker. Jeder Snapshot setzt einen Marker in alle 4 Spuren am gleichen Anker — und du kannst einzelne Properties getrennt verschieben, neu zuweisen oder löschen.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Cluster-Handle ganz oben (🎬)</strong> — neue Zeile über allen Lanes, ein deutlich größerer Marker pro Anker. Klick wählt alle 4 Properties gleichzeitig aus (alle Slider sichtbar), Drag verschiebt sie zusammen, Rechtsklick löscht den ganzen Cluster. Ideal wenn du ein Snapshot-Paket nur an eine andere Stelle der Timeline schieben willst, ohne die Properties einzeln nachzuziehen.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Per-Property-Edit auf den Lane-Markern</strong> — Klick auf einen einzelnen Lane-Marker selektiert genau diese eine Eigenschaft (z.B. nur Bearing) und der Detail-Editor zeigt nur den passenden Slider. So kannst du z.B. einen Mittel-Bearing-Keyframe löschen, damit die Drehung durchgehend von Anfang bis Ende interpoliert, während Pitch/Zoom/Position an der Zwischenstation bleiben.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Reserve-Lanes für Marker &amp; Foto (Vorschau)</strong> — die Timeline hat zwei weitere Spuren (🏷 Marker, 📷 Foto) noch ausgegraut. Damit ist der Platz reserviert für künftige Features, die Pins + Foto-Overlays an Zeitpunkten der Animation einblenden können.
+  </div>
+
+  <div class="highlight">
+    <strong>🎨 Aufgeräumte Sidebar &amp; ?-Tipps statt Wand-Texten</strong> — Hilfetexte für Timeline-Tasten, Track-Punkte, Keyframe-Workflow stehen jetzt hinter einem ?-Icon. Klick blendet sie ein/aus. Sidebar verrutscht nicht mehr horizontal in andere UI-Bereiche.
+  </div>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Selektion verschwand beim Verschieben</strong> — beim Ziehen eines Lane-Markers wurde die Selektion mitten im Drag genullt. Jetzt bleibt der ausgewählte Marker durchgehend hervorgehoben.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Marc hat den Cluster-Marker als „intuitivste Variante" angeregt — direkt nachdem er die Per-Property-Variante getestet hatte. So gibt's jetzt beide Welten parallel: fein per Lane, oder bulk per Cluster. 🙌
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.8.13</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Camera-Keyframes können jetzt auch in die Hold-Phase reichen. Damit klappt z.B. „am Ende der Animation auf die ganze Route rauszoomen" — die Kamera fährt weiter, während der Track-Endpunkt schon steht.</p>
+
+  <div class="highlight">
+    <strong>⭐ Hold-Phase ist jetzt Teil der Timeline</strong> — die Timeline-Bar zeigt einen orangenen Trenner zwischen Anim- und Hold-Phase. Keyframes rechts vom Trenner liegen in der Hold-Phase: der Track-Endpunkt steht still, aber die Kamera interpoliert weiter. So kannst du am Ende deiner Animation z.B. auf die ganze Route rauszoomen, einen Schwenk machen, oder die Kamera leicht weiter rotieren lassen für ein ruhiges Outro.
+  </div>
+
+  <div class="highlight">
+    <strong>🔄 Bestehende Projekte werden automatisch migriert</strong> — wenn du in alten Projekten Keyframes gesetzt hast, werden ihre Positionen einmalig auf die neue Timeline-Skala umgerechnet (Faktor `Animations-Dauer / (Animations-Dauer + Hold)`). Visuell siehst du keinen Unterschied — die Keyframes bleiben da wo sie auf der Karte/Timeline waren.
+  </div>
+
+  <div class="highlight">
+    <strong>🎨 „Röhre" ist jetzt einer der Linien-Stile</strong> — bisher war's ein eigenes „Track-Optik"-Dropdown, das hat verwirrt. Jetzt ist „Röhre" einfach Eintrag #5 im Linien-Stil-Dropdown neben Durchgezogen / Gestrichelt / Gepunktet / Strich-Punkt. Sieht aus wie eine Linie mit hellem Highlight oben drauf — plastisch, fast wie ein Schlauch über der Landschaft.
+  </div>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Abstand-Slider tat nichts in der Vorschau</strong> — Mapbox-internes Caching hatte Folge-Updates der Dash-Werte ignoriert. Jetzt aktualisiert die Vorschau wieder live wenn du den Abstand zwischen Strichen/Punkten änderst.
+  </div>
+
+  <div class="highlight">
+    <strong>🐛 Bug-Fix: Neue Projekte erbten Settings vom vorherigen</strong> — bei neu angelegten Projekten wurden Pitch/Farbe/etc. vom zuletzt aktiven Projekt übernommen statt mit pristinen Defaults zu starten. Jetzt fängt jedes neue Projekt wieder bei den klassischen Default-Werten an.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Marc hatte den Hold ursprünglich als „Standbild am Ende" gedacht — Beta-Tester wollte aber die Kamera in der Hold-Phase weiterbewegen. Jetzt geht beides: Keine Keyframes in der Hold-Phase = klassisches Standbild, Keyframes drin = aktive Kamera-Fahrt. 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.8.10</span>
+    <span class="version-date">23. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Erste Version der Röhren-Track-Optik (Idee von Beta-Tester). Im v0.8.13-Update siehst du den finalen Stand — Röhre ist dort Eintrag im Linien-Stil-Dropdown.</p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.7.4</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Camera-Keyframes: Du kannst Pitch, Rotation und Zoom an beliebigen Punkten im Track frei setzen — die Kamera interpoliert dazwischen wie in einem echten Filmschnitt.</p>
+
+  <div class="highlight">
+    <strong>⭐ Timeline-Bar unter der Karten-Vorschau</strong> — neue Schiene mit Track-Position 0–100 %. Klick auf die Bar setzt den Scrubber + zeigt live die Kamera an dieser Stelle. Drei Buttons:
+    <ul style="margin-top:10px; margin-left:8px;">
+      <li><strong>📍 Hier Keyframe</strong> — snapshottet die aktuelle Karten-Ansicht (Position, Neigung, Drehung, Zoom) als Keyframe</li>
+      <li><strong>▶ Probe-Lauf</strong> — spielt den Track in deiner echten Animations-Dauer ab. Zweiter Klick (oder <kbd>Space</kbd>) stoppt</li>
+      <li><strong>🗑 Alle weg</strong> — zurück zum klassischen statischen Pitch + linearen Rotation-Sweep</li>
+    </ul>
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Snapshot-Workflow: einfach die Karte hinziehen wie du willst</strong> — Drag für Pan, Scrollen für Zoom, <kbd>Cmd</kbd>+Drag (Mac) oder Rechtsklick+Drag um die Karte zu kippen + drehen gleichzeitig. Wenn die Karte so steht wie du sie willst, drückst du „📍 Hier Keyframe" — Position, Pitch, Bearing und Zoom werden alle automatisch festgehalten.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Karten-Pins + Timeline-Marker parallel</strong> — jeder Keyframe erscheint als 🎥-Marker auf der Bar UND als gelber Pin direkt auf der Track-Linie in der Karte. Klick auf beides öffnet den Detail-Editor in der Sidebar (Anchor, Pitch, Bearing, Zoom-Δ als Slider zum Feintunen). Drag-Marker = Anchor verschieben.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Frei-Modus zwischen Keyframes</strong> — wenn dein Scrubber nicht direkt auf einem Keyframe steht, ist die Karte „frei": pan/zoom/cmd-drag verändern KEINEN existierenden Keyframe. Erst „📍 Hier Keyframe" legt einen neuen an. Auf einem Keyframe → Detail-Editor erscheint, Slider modifizieren genau diesen einen. Die Status-Zeile in der Bar sagt dir live in welchem Modus du gerade bist.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Tastatur-Navigation wie im Filmschnittprogramm</strong>
+    <ul style="margin-top:10px; margin-left:8px;">
+      <li><kbd>←</kbd> / <kbd>→</kbd> — ein GPS-Punkt vor/zurück (präzise Keyframe-Platzierung)</li>
+      <li><kbd>⇧</kbd> + <kbd>←</kbd>/<kbd>→</kbd> — 10er-Sprung</li>
+      <li><kbd>Home</kbd> / <kbd>End</kbd> — Track-Anfang / -Ende</li>
+      <li><kbd>Space</kbd> — Probe-Lauf starten/stoppen</li>
+      <li><kbd>Entf</kbd> — ausgewählten Keyframe löschen</li>
+    </ul>
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Track-Anker statt Zeit-Anker</strong> — Keyframes hängen an Track-Positionen, nicht an Sekunden. Wenn du die Animations-Dauer von 12 s auf 20 s ziehst, bleiben deine Keyframes „am Gipfel" und werden nicht zeitversetzt.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Idee von Beta-Tester („Kamera Neigung und Rotation mit Keyframes beeinflussen") + Marcs Erweiterung mit dem Snapshot-Workflow. 🙏 — Die Grundlage ist gelegt: Foto-Inserts und Text-Overlays landen demnächst auf der gleichen Timeline.
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.9</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">App merkt sich beim Schließen + Wieder-Öffnen jetzt zuverlässig die gewählte Auflösung.</p>
+
+  <div class="highlight">
+    <strong>⭐ Auflösung verschwindet nicht mehr beim Neustart</strong> — vorher konnte es passieren, dass z.B. 4K 16:9 beim nächsten Öffnen plötzlich als 9:16-Hochkant wieder auftauchte (oder andersrum). Width und Height wurden nicht beide gespeichert, wenn man sie nacheinander geändert hat (z.B. über die „4K"/„1080p"-Buttons). Jetzt werden alle Änderungen innerhalb des Speicher-Intervalls (200 ms) zusammengelegt — keine Vertauschung mehr.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Marc-Repro: „Ich stelle 4K 16:9 ein, schließe die App, öffne sie wieder und sie geht mit 4K 9:16 auf." Direkt gefixt. 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.8</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Du kannst den Glow um die Track-Linie jetzt selber regeln — Stärke einstellen oder ganz abschalten.</p>
+
+  <div class="highlight">
+    <strong>⭐ Neue Einstellung: Glow um die Track-Linie</strong> — der farbige Halo, der um die Track-Linie leuchtet, war bisher fest auf einen Wert programmiert. Jetzt gibt's in der Track-Sektion (Animator und Tour-Map) eine eigene Checkbox + einen Stärke-Slider von 0 bis 10 px:
+    <ul style="margin-top:10px; margin-left:8px;">
+      <li>Aus → nackte Linie ohne Aura (gut für klare, technische Optik)</li>
+      <li>Niedrig (1–3 px) → dezenter Schein, fast nicht sichtbar</li>
+      <li>Default (4 px) → wie bisher</li>
+      <li>Hoch (7–10 px) → kräftige weiche Aura, Track wirkt wie ein Leuchtstreifen</li>
+    </ul>
+    Live-Update in der Vorschau, kein Render nötig zum Vergleichen.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Direkte Marc-Frage nach v0.6.7-Test. 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.7</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Echte Punkte (statt Striche) und sauberere Track-Optik bei gestrichelten/gepunkteten Linien.</p>
+
+  <div class="highlight">
+    <strong>⭐ Punkte sind jetzt wirklich Punkte</strong> — vorher waren „gepunktete" Linien optisch ovale Striche, weil das Pattern und die abgerundeten Linien-Enden zusammen kleine Stadion-Formen produziert haben. Pattern korrigiert, jetzt sind die Punkte rund.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Kein durchscheinender Halo mehr</strong> — bei gestrichelten/gepunkteten Linien blieb der Glow-Schein um die Linie herum komplett durchgezogen, sodass der Track wie eine halb-transparente Linie mit Punkten obendrauf wirkte. Der Glow folgt jetzt dem Strich-/Punkt-Muster — jedes Element hat seine eigene Aura, zwischen den Lücken ist es sauber.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Direkter Fix nach Marcs v0.6.6-Test. 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.6</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Start/End-Pins sind jetzt in der Vorschau sichtbar, und du kannst den Strichelungs-Abstand frei einstellen.</p>
+
+  <div class="highlight">
+    <strong>⭐ Start/End-Pins in der Tour-Map-Vorschau</strong> — vorher tauchten die roten Pins erst im fertigen PNG auf, in der Live-Vorschau waren sie unsichtbar. Jetzt siehst du sofort wo Start und Ziel landen, ohne extra rendern zu müssen. (Das Häkchen „Start/End-Pins" rechts in der Sidebar steuert weiterhin sowohl Vorschau als auch Render.)
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Abstands-Regler für gestrichelte und gepunktete Linien</strong> — unter dem Linien-Stil-Dropdown erscheint ein neuer Slider (0.5×–5×), sobald du einen nicht-durchgezogenen Stil wählst. Damit zerrst du die Strich-/Punkt-Muster auseinander oder ziehst sie enger zusammen — vom dichten Punktraster bis zur weiten Punkt-Linie. Wirkt in Animator UND Tour-Map.
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Direkt-Feedback von Marc nach dem v0.6.5-Test. 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.5</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Track-Linien können jetzt gestrichelt, gepunktet oder strich-punkt sein.</p>
+
+  <div class="highlight">
+    <strong>⭐ Linien-Stil für den Track</strong> — neues Dropdown in der Track-Sektion (Animator und Tour-Map):
+    <ul style="margin-top:10px; margin-left:8px;">
+      <li><strong>Durchgezogen</strong> (Default — wie bisher)</li>
+      <li><strong>Gestrichelt</strong></li>
+      <li><strong>Gepunktet</strong></li>
+      <li><strong>Strich-Punkt</strong></li>
+    </ul>
+    Track-Endungen + Ecken sind außerdem jetzt sauber abgerundet (vorher waren sie kantig, sah man besonders bei kurzen Track-Segmenten oder dicken Linien).
+  </div>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Idee von Beta-Tester — danke! 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.4</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Stats-Boxen + Karten-Position arbeiten endlich richtig bei Auflösungs-Wechsel.</p>
+
+  <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:1.2px; color:#999; font-weight:600; margin:22px 0 6px;">Behoben</h3>
+  <ul>
+    <li><strong>Karten-Position bleibt erhalten</strong> beim Wechsel der Auflösung (z.B. von 4K auf 1080p oder 16:9 auf 9:16). Vorher wurde dein manueller Pan/Zoom dabei auf die Standard-Track-Sicht zurückgesetzt — jetzt bleibt der Ausschnitt da wo du ihn hast.</li>
+    <li><strong>Stats-Boxen skalieren mit der Auflösung</strong>: bei 4K wirkten die Statistik-Boxen vorher winzig im Frame, bei Shorts (9:16) überproportional groß. Jetzt wachsen sie automatisch mit der Render-Höhe — die Optik bleibt relativ zum Frame identisch, egal ob 1080p, 4K oder Shorts-Format.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.2</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Aufgeräumt — nur noch ein Windows-Download.</p>
+
+  <ul>
+    <li>Für Windows gibt es ab sofort nur noch den <strong>Installer</strong> (Setup-EXE). Die alte Portable-ZIP-Variante ist abgeschafft, weil sie unter Windows ein nerviges DLL-Lade-Problem hatte und User in Sackgassen geführt hat. Wer trotzdem portabel arbeiten will, kann nach der Installation einfach den Programme-Ordner kopieren.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.1</span>
+    <span class="version-date">22. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Render-Ausschnitt stimmt jetzt exakt mit der Vorschau überein.</p>
+
+  <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:1.2px; color:#999; font-weight:600; margin:22px 0 6px;">Behoben</h3>
+  <ul>
+    <li>Wenn du in der Vorschau gezoomt oder geschwenkt hast, hat das fertige Video das nicht exakt übernommen — die Karte sah immer einen Tick weiter rausgezoomt aus. Lag an einer Mapbox-Eigenheit (der Zoom hängt von der Pixel-Breite ab). Jetzt rechnet die App den Zoom auf die Render-Auflösung um, damit der Ausschnitt im Video 1:1 dem entspricht, was du in der Vorschau siehst.</li>
+  </ul>
+
+  <p style="margin-top:12px; font-size:13px; color:#666;">
+    Danke an Beta-Tester für die saubere Fehlerbeschreibung! 🙏
+  </p>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.6.0</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Komplett aufgeräumte Sidebar — alle Einstellungen sauber gruppiert und ausklappbar.</p>
+
+  <div class="highlight">
+    <strong>⭐ Sidebar neu strukturiert</strong> — jede Einstellungs-Sektion ist jetzt ausklappbar. Header anklicken → Bereich öffnet sich. Beim nächsten App-Start merkt sich die App, was du offen hattest. Sechs klar gegliederte Sektionen:
+    <ul style="margin-top:10px; margin-left:8px;">
+      <li><strong>Karte</strong> — Stil, 3D-Terrain, Beleuchtung (Sonnenuntergang, Nacht …), Beschriftungs-Filter</li>
+      <li><strong>Track</strong> — Farbe, Dicke, Schlagschatten, Detail-Stufe</li>
+      <li><strong>Overlays</strong> — Stats-Boxen + Höhenprofil</li>
+      <li><strong>Kamera</strong> — Neigung, Rotation</li>
+      <li><strong>Video-Einstellungen</strong> (im Animator) bzw. <strong>Bild-Einstellungen</strong> (im Tour-Map)</li>
+      <li><strong>Quelle</strong> — GPX laden</li>
+    </ul>
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Alpha-Kanal ist jetzt ein Karten-Stil</strong> — kein eigener Toggle mehr unter „Performance", sondern direkt im Stil-Dropdown als „Ohne Karte (Alpha-Kanal)". Wählst du den, schaltet die App den Codec automatisch auf ProRes 4444 (anders geht der Alpha-Kanal nicht in eine Datei).
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ ProRes 4444 als wählbarer Codec</strong> — neue dritte Option im Codec-Dropdown (neben H.264 und H.265). Auch ohne Alpha verwendbar — für Master-Files in Studio-Qualität, wenn du das Video später noch farb-graden oder schwer schneiden willst. Die Datei wird groß (~5–10× größer als MP4), dafür verlustfrei genug für Profi-Workflows.
+  </div>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.4.0</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Animation ohne Karte (Alpha-Kanal), Schlagschatten und Track-Punkte-Slider.</p>
+
+  <div class="highlight">
+    <strong>⭐ Animation ohne Karte (Alpha-Kanal)</strong> — die App rendert auf Wunsch nur den Track + den laufenden Punkt + Statistik-Boxen auf <em>durchsichtigem</em> Hintergrund. Das Video kannst du dann in <strong>Premiere Pro · Final Cut · DaVinci Resolve · CapCut Pro</strong> direkt über echtes Video legen — z.B. über Drohnen- oder GoPro-Material. Genau der Workflow für Outdoor-YouTuber.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Schlagschatten unter dem Track</strong> — neue Checkbox in der Karten-Sektion. Macht den Track plastisch, als würde er ein Stück über der Karte schweben. Stärke per Slider einstellbar. Funktioniert auch im Alpha-Kanal-Modus.
+  </div>
+
+  <div class="highlight">
+    <strong>⭐ Track-Punkte-Slider</strong> — neuer Schieberegler in der Sektion „Performance &amp; Output". Standard ist <em>alle Punkte aus deinem GPX</em>. Zieh ihn nach links um den Track gröber zu machen (für schnelle Test-Renders oder bewusst „pixelig-eckigen" Look). Die Vorschau verändert sich live beim Ziehen — du siehst sofort wie deine Animation aussehen wird.
+  </div>
+
+  <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:1.2px; color:#999; font-weight:600; margin:22px 0 6px;">Tipp zum schneller rendern</h3>
+  <ul>
+    <li>Render-Zeit hängt vor allem von Dauer × FPS × Auflösung ab. Wer schnell testen will: erst auf 1080p / 24fps probieren, dann auf 4K hochgehen.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.4.2</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Echter Windows-Installer — viel besserer Start unter Windows.</p>
+
+  <div class="highlight">
+    <strong>⭐ Windows-Installer (Setup-EXE)</strong> — statt einer ZIP-Datei zum Entpacken gibt es jetzt einen klassischen Installer-Wizard. Doppelklick, Sprache wählen, fertig. Eintrag im Start-Menü, sauber deinstallierbar über die Systemsteuerung.
+  </div>
+
+  <ul>
+    <li>Hinweis zur Mapbox-Token-Anleitung: Mapbox verlangt seit Mitte 2026 eine Kreditkarte beim Registrieren — auch fürs kostenlose Konto. <strong>Es wird nichts abgebucht</strong>, solange du im kostenlosen Kontingent bleibst (50.000 Karten-Aufrufe pro Monat — bei normaler Nutzung wirst du nie eine Rechnung sehen).</li>
+    <li>App-Icon ist jetzt auch unter Windows zu sehen (vorher Default-Python-Icon in der Taskleiste).</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.3.3</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Feedback geht jetzt auch ohne lokales Mail-Programm.</p>
+  <ul>
+    <li>Klick auf „Feedback / Bug-Report" öffnet ein Fenster mit Empfänger, Betreff und Body — alles per Klick kopierbar.</li>
+    <li>Wer Webmail nutzt: einfach kopieren, ins Gmail/Outlook/etc. einfügen, fertig.</li>
+    <li>Wer ein lokales Mail-Programm hat: weiterhin per Button öffnen — beides funktioniert.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.3.2</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Keine Vorinstallation mehr nötig.</p>
+  <ul>
+    <li><strong>ffmpeg ist eingebaut</strong>: Render funktioniert sofort, ohne dass du selbst etwas installieren musst.</li>
+    <li>Neue FPS-Option <strong>25 (PAL)</strong> für TV-tauglichen Content in Europa.</li>
+    <li>Bei einem Render-Fehler gibt's jetzt einen „📧 An Marc senden"-Button — Bug-Report mit App-Version, Betriebssystem und Log automatisch vorbefüllt.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.3.1</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Der ↺-Button löscht Daten, nicht deine Einstellungen.</p>
+  <ul>
+    <li>Der „↺ Workspace leeren"-Button räumt nur die geladenen Daten weg (GPX-Track, Fotos, Marker). <strong>Deine Einstellungen bleiben erhalten</strong> — Mapbox-Token, Karten-Stil, Auflösung, Codec, Position der Overlays etc.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.3.0</span>
+    <span class="version-date">21. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Modul-Reset, neues About, Reisezoom-Menü.</p>
+  <ul>
+    <li>Jedes Modul (Animator, Tour-Map, Geotagger) hat einen eigenen „↺ Modul zurücksetzen"-Button.</li>
+    <li>About-Modal mit größerem Logo und Credits-Zeile.</li>
+    <li>Im macOS-Menü „Reisezoom" gibt's jetzt direkten Zugriff auf <strong>🌐 Blog</strong> und <strong>▶ YouTube-Kanal</strong>.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.2.5</span>
+    <span class="version-date">20. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Du wählst, wohin das Video soll.</p>
+  <ul>
+    <li>Vor jedem Render fragt die App per nativem „Speichern unter"-Dialog wo das MP4 hin soll.</li>
+    <li>Das zuletzt gewählte Verzeichnis wird gemerkt → der nächste Render landet automatisch wieder dort.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.2.2</span>
+    <span class="version-date">20. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Neues Modul: Tour-Map · Builds für Windows und Linux.</p>
+  <ul>
+    <li><strong>Tour-Map-Modul</strong>: statische Karten-PNGs für YouTube-Thumbnails, Blog-Cover, Insta-Posts. Format-Presets (16:9, 4K, 9:16 Shorts, 1:1 Insta) + freie Auflösung. Statistik-Boxen, Start/End-Pins, Karten-Stil-Auswahl wie im Animator.</li>
+    <li>Die App läuft jetzt auf <strong>macOS, Windows und Linux</strong>.</li>
+  </ul>
+</article>
+
+<article class="version">
+  <div class="version-head">
+    <span class="version-num">v0.1.0</span>
+    <span class="version-date">19. Mai 2026</span>
+  </div>
+  <p class="version-tagline">Erste Version — Animator und Geotagger sind drin.</p>
+  <ul>
+    <li><strong>Animator-Modul</strong>: GPX-Track als animiertes 3D-Karten-Video. Sechs Karten-Stile, einstellbare Kamera (Neigung, Rotation, Terrain), Statistik-Boxen.</li>
+    <li><strong>Geotagger-Modul</strong>: Fotos (JPEG und alle gängigen RAW-Formate inkl. HEIC) mit GPS-Koordinaten aus einem GPX-Track versehen. Automatische Zeitzonen-Erkennung, manueller Offset oder Referenz-Foto-Modus.</li>
+  </ul>
+</article>
+
+<!-- END VERSION BLOCKS -->
+
+<footer class="page-foot">
+  <p>
+    <a href="https://reisezoom.com/reisezoom-gps-studio/">Reisezoom GPS Studio</a> ·
+    <a href="https://reisezoom.com/">Blog</a> ·
+    <a href="https://www.youtube.com/@reisezoom">YouTube</a>
+  </p>
+  <p style="margin-top:8px;">Du bist Beta-Tester? Schick mir Feedback direkt aus der App über den 💬-Button — oder per Mail an <a href="mailto:marc@reisezoom.com">marc@reisezoom.com</a>.</p>
+</footer>
+
+</div>
+
+</body>
+</html>

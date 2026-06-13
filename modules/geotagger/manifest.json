@@ -1,0 +1,8 @@
+{
+  "slug": "geotagger",
+  "name": "Geotagger",
+  "description": "Fotos automatisch mit GPS-Koordinaten taggen",
+  "icon": "◉",
+  "sort_order": 20,
+  "status": "active"
+}

@@ -1,0 +1,244 @@
+/* Reisezoom GPS Studio — GPX-Picker im Modul-Header (v0.8.2)
+ *
+ * Globale GPX-Quelle für alle Module. Wird ins Module-Header-DOM
+ * eingesetzt (statt dass jedes Modul seinen eigenen Picker in der
+ * Sidebar hat). Modul-Überschriften sind raus — der aktive Modul-Tab
+ * oben in der Topbar zeigt eh wo man ist.
+ *
+ * API (window):
+ *   loadGlobalGpx(path)      — lädt + verteilt an alle Module
+ *   clearGlobalGpx()          — schließt Track + leert Session
+ *   getGlobalGpxPath()        — aktueller Pfad oder ""
+ *   getGlobalGpxData()        — letzter Parse-Result (coords, stats, …)
+ *   onGpxLoaded(cb)           — Listener für Module
+ *   renderGpxBarInto(elem)    — fügt HTML + Event-Bindings in einen
+ *                               Container ein (von app.js nach jedem
+ *                               Modul-Mount gerufen)
+ */
+
+(function() {
+  "use strict";
+
+  // ── Globaler State ────────────────────────────────────────────────────
+  let _gpxPath = "";
+  let _gpxData = null;
+  const _gpxListeners = new Set();
+
+  window.getGlobalGpxPath = () => _gpxPath;
+  window.getGlobalGpxData = () => _gpxData;
+  window.onGpxLoaded = (cb) => { _gpxListeners.add(cb); return () => _gpxListeners.delete(cb); };
+
+  function notifyGpxLoaded() {
+    for (const cb of _gpxListeners) {
+      try { cb({ path: _gpxPath, data: _gpxData }); }
+      catch (err) { console.warn("gpx listener threw:", err); }
+    }
+  }
+
+  /** Lädt ein GPX einmal global. Master-Parse via animator_load_gpx
+   *  (liefert die breiteste Stats-Sicht inkl. elevations). Aktiviert die
+   *  Session, benachrichtigt alle Module. */
+  window.loadGlobalGpx = async function(path) {
+    if (!path) return false;
+    try {
+      if (window.applog) window.applog("info", `[loadGlobalGpx] start path=${path}`);
+      const res = await api().animator_load_gpx(path);
+      if (!res || !res.ok) {
+        if (window.applog) window.applog("error", `[loadGlobalGpx] parse fail: ${res?.error}`);
+        toast(res?.error || "GPX-Fehler", "error");
+        return false;
+      }
+      if (window.applog) window.applog("info", `[loadGlobalGpx] parsed n_coords=${res.coords?.length}`);
+      _gpxPath = path;
+      _gpxData = res;
+      if (typeof sessionActivate === "function") {
+        try { await sessionActivate(res.coords, path); }
+        catch (err) { console.warn("sessionActivate (gpx-bar):", err); }
+      }
+      // v0.9.27 (Beta-Tester-Feedback): letzten GPX-Pfad persistieren damit
+      // er beim App-Restart automatisch wiederhergestellt werden kann.
+      try { if (typeof saveSettings === "function") saveSettings({ last_gpx_path: path }); }
+      catch (_) {}
+      _renderCurrent();
+      notifyGpxLoaded();
+      return true;
+    } catch (err) {
+      console.warn("loadGlobalGpx error:", err);
+      toast("GPX konnte nicht geladen werden: " + err, "error");
+      return false;
+    }
+  };
+
+  window.clearGlobalGpx = function() {
+    // v0.9.185 — beim Leeren ALLES explizit Stück für Stück abräumen (auf der
+    // lebenden Karte), statt hinterher zu pollen ob noch was da ist:
+    // 1) Schilder (Layer + Bilder + Daten + Editor) via lebenden Animator-Handle.
+    //    window.__rzAnimSigns zeigt immer auf den aktiven Mount → closure-sicher.
+    try { if (window.__rzAnimSigns && window.__rzAnimSigns.clearAll) window.__rzAnimSigns.clearAll(); } catch (_) {}
+    // 2) GPX-Track-State
+    _gpxPath = "";
+    _gpxData = null;
+    _renderCurrent();
+    notifyGpxLoaded();
+    // 3) persistierten Zustand leeren, damit der App-Neustart wirklich LEER
+    //    hochkommt (sonst lädt app.js das zuletzt geladene GPX automatisch wieder).
+    try { if (typeof saveSettings === "function") saveSettings({ last_gpx_path: "" }); } catch (_) {}
+    if (typeof _resetActiveSession === "function") _resetActiveSession();
+  };
+
+  // ── v0.9.155: Globaler Workspace-Clear ────────────────────────────────
+  // Marc-Wunsch: statt drei modul-eigener „Workspace leeren"-Buttons ein
+  // einziges rotes ✕ neben dem GPX im Modul-Header. Ein Klick räumt ALLE
+  // Module gleichzeitig (GPX-Track, Fotos, Match-Daten, Backend-State) und
+  // leert auch den GPX-Namen oben.
+  //
+  // Jedes Modul registriert beim IIFE-Init seine eigene Reset-Funktion via
+  // registerWorkspaceResetter(fn). Die Closures der Module bleiben über
+  // Modul-Wechsel hinweg bestehen (IIFE wird nur 1× geladen, nur das DOM
+  // wird ausgetauscht) — deshalb greifen die Resetter auch für gerade nicht
+  // gemountete Module (DOM-Zugriffe sind dort guarded/no-op).
+  window.__workspaceResetters = window.__workspaceResetters || new Set();
+  window.registerWorkspaceResetter = function(fn) {
+    if (typeof fn === "function") window.__workspaceResetters.add(fn);
+  };
+
+  /** Zeigt EIN Bestätigungs-Modal, räumt dann alle Module + GPX-Bar. */
+  window.clearWorkspaceGlobal = function() {
+    // confirmClearWorkspace(null, …) → „alle Module"-Text (confirm_all)
+    if (typeof confirmClearWorkspace !== "function") {
+      // Fallback ohne Modal — sollte nie passieren
+      _runAllResetters();
+      window.clearGlobalGpx();
+      return;
+    }
+    confirmClearWorkspace(null, async () => {
+      await _runAllResetters();
+      window.clearGlobalGpx();   // GPX-Name oben + Session leeren
+    });
+  };
+
+  async function _runAllResetters() {
+    for (const fn of window.__workspaceResetters) {
+      try { await fn(); }
+      catch (err) { console.warn("workspace resetter threw:", err); }
+    }
+  }
+
+  // ── HTML-Templates ────────────────────────────────────────────────────
+  function templateEmpty() {
+    return `
+      <div class="gpxbar-empty">
+        <button class="gpxbar-pick-btn" type="button" data-gpxbar="pick-empty">
+          <span class="gpxbar-icon">📂</span>
+          <span>GPX wählen …</span>
+        </button>
+        <span class="gpxbar-hint">… oder GPX hierher ziehen.</span>
+      </div>
+    `;
+  }
+  function templateLoaded(name, fullPath, stats) {
+    const dist = stats?.distance_km != null ? fmtKm(stats.distance_km * 1000) : "—";
+    const time = stats?.duration_s != null ? fmtDur(stats.duration_s) : "—";
+    const asc  = stats?.ascent_m   != null ? "↑ " + fmtMeter(stats.ascent_m)  : "—";
+    const desc = stats?.descent_m  != null ? "↓ " + fmtMeter(stats.descent_m) : "—";
+    return `
+      <div class="gpxbar-loaded">
+        <button class="gpxbar-pick-btn gpxbar-pick-btn-compact" type="button"
+                data-gpxbar="pick" title="Anderes GPX wählen">
+          <span class="gpxbar-icon">📂</span>
+        </button>
+        <span class="gpxbar-filename" title="${escapeAttr(fullPath)}">${escapeHtml(name)}</span>
+        <span class="gpxbar-sep">·</span>
+        <span class="gpxbar-stat">${escapeHtml(dist)}</span>
+        <span class="gpxbar-stat">${escapeHtml(time)}</span>
+        <span class="gpxbar-stat">${escapeHtml(asc)}</span>
+        <span class="gpxbar-stat">${escapeHtml(desc)}</span>
+        <button class="gpxbar-close-btn gpxbar-clearws-btn" type="button" data-gpxbar="clearws"
+                title="${escapeAttr((typeof t === "function" ? t("common.clear_workspace") : "Workspace leeren"))}">✕</button>
+      </div>
+    `;
+  }
+
+  // ── Mount/Render ──────────────────────────────────────────────────────
+  let _container = null;
+
+  /** Wird von app.js nach jedem Modul-Mount gerufen. Container ist der
+   *  linke Bereich im module-header. Räumt vorherigen Inhalt + Listener
+   *  weg und baut frisch auf. */
+  window.renderGpxBarInto = function(container) {
+    _container = container;
+    _renderCurrent();
+    _bindEvents();
+    _setupDragDrop();
+  };
+
+  function _renderCurrent() {
+    if (!_container) return;
+    if (_gpxPath && _gpxData) {
+      const name = _gpxData.name || _gpxPath.split("/").pop();
+      _container.innerHTML = templateLoaded(name, _gpxPath, _gpxData.stats);
+    } else {
+      _container.innerHTML = templateEmpty();
+    }
+    _bindEvents();
+  }
+
+  function _bindEvents() {
+    if (!_container) return;
+    _container.querySelectorAll("[data-gpxbar]").forEach(el => {
+      const action = el.dataset.gpxbar;
+      el.onclick = (e) => {
+        e.preventDefault();
+        if (action === "pick-empty" || action === "pick") pickGpx();
+        else if (action === "clearws") window.clearWorkspaceGlobal();
+        else if (action === "clear") window.clearGlobalGpx();   // Legacy-Fallback
+      };
+    });
+  }
+
+  async function pickGpx() {
+    const files = await api().pick_file("open", ["GPX (*.gpx)"], false);
+    if (!files || !files.length) return;
+    await window.loadGlobalGpx(files[0]);
+  }
+
+  function _setupDragDrop() {
+    if (!_container || _container._gpxDndBound) return;
+    _container._gpxDndBound = true;
+    _container.addEventListener("dragover", (e) => {
+      if (!e.dataTransfer?.types?.includes("Files")) return;
+      e.preventDefault();
+      _container.classList.add("is-drag-over");
+    });
+    _container.addEventListener("dragleave", (e) => {
+      if (!_container.contains(e.relatedTarget)) _container.classList.remove("is-drag-over");
+    });
+    _container.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      _container.classList.remove("is-drag-over");
+      // v0.9.153: echten Originalpfad via pywebview holen (WKWebView gibt dem
+      // JS nur den Namen, kein .path). consumeNativeDropMap() pro Drop 1× rufen.
+      const nativeMap = (typeof consumeNativeDropMap === "function")
+                        ? await consumeNativeDropMap() : {};
+      const files = (e.dataTransfer && e.dataTransfer.files) || [];
+      const gpx = Array.from(files).find(f => /\.gpx$/i.test(f.name));
+      let path = null;
+      if (gpx) {
+        path = nativePathFromMap(nativeMap, gpx.name) || gpx.path || null;
+      }
+      // Auffang: JS bekam keine Files (WKWebView) → erste .gpx aus nativen Pfaden
+      if (!path) {
+        for (const k in nativeMap) {
+          if (/\.gpx$/i.test(k)) { path = nativeMap[k]; break; }
+        }
+      }
+      if (path) await window.loadGlobalGpx(path);
+    });
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+})();

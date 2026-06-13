@@ -1,0 +1,103 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.eggs/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── PyInstaller-Build-Output (riesig + reproduzierbar) ───────────────────
+build/
+dist/
+
+# ── macOS-spezifisch ──────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── App-Runtime-Artefakte ─────────────────────────────────────────────────
+# Lokale ZIP-Backups (gibts auf ~/Claude-Masterblaster/_backups/)
+_backups_photos/
+_drops/
+_renders/
+logs/
+*.log
+
+# Settings & Caches im Source-Tree (Dev-Modus schreibt sie neben app.py)
+settings.json
+
+# ── Generierte HTML-User-Guide (wird bei jedem Build neu erzeugt) ────────
+# Auskommentiert: wir committen sie, damit Win/Linux-Runner sie direkt nutzen
+# können ohne Python-Script-Run vor PyInstaller. (build.sh aktualisiert sie eh.)
+# docs/USER_GUIDE.html
+
+# ── Test-Artefakte ────────────────────────────────────────────────────────
+tests/_drop_test/
+tests/_out/
+tests/__pycache__/
+
+# ── Secrets (Belt + suspenders) ──────────────────────────────────────────
+# Wir haben keine Secrets im Source-Tree — Mapbox-Token wird per User
+# eingegeben und in ~/Library/Application Support gespeichert.
+# Trotzdem absichern für versehentliches Committen:
+*.env
+.env.local
+client_secret*.json
+*credentials*.json
+*token*.json
+
+# v0.9.0 — Sessions/Projekte-Daten (Track-bound, user-spezifisch)
+sessions.json
+sessions/
+
+
+# v0.9.61 — exiftool-Binary (~54 MB, via scripts/setup_vendor_exiftool.sh laden)
+vendor/exiftool/
+
+# v0.9.229 — gebündelter Playwright-Chromium (groß, wird beim Build neu gezogen)
+pw-browsers/
+_backups/
+
+# ── Interne Dokumente (nicht im öffentlichen Repo) ────────────────────────
+/HANDOVER.md
+/docs/HANDOVER_DEPLOYMENT.md
+/docs/IDEAS.md
+
+# ── Test-Render-Artefakte (generiert, groß) ───────────────────────────────
+tests/output/
+tests/output_retest/
+tests/report/
+*.mov
+
+# ── Weitere interne Dokumente + Tests (nicht öffentlich) ──────────────────
+HANDOVER*.md
+docs/HANDOVER_*.md
+docs/BLOGPOST_UPDATE.md
+/tests/
+
+# ── Interne/Marc-spezifische Tooling-Skripte (nicht öffentlich) ───────────
+/scripts/deploy_release.sh
+/scripts/backup.sh
+/scripts/build_keyframe_test.sh
+/scripts/render_timing.py
+/scripts/retest_bugfixes.py
+/scripts/selftest_renders.py
+/scripts/selftest_ui.py
+/scripts/make_icon.py
+/docs/DISTRIBUTION.md

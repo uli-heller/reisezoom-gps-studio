@@ -1,0 +1,8 @@
+{
+  "slug": "animator",
+  "name": "Animator",
+  "description": "GPX-Track als animiertes Video rendern",
+  "icon": "▶",
+  "sort_order": 10,
+  "status": "active"
+}

@@ -1,0 +1,79 @@
+/* Reisezoom GPS Studio — GPX-Inspektor (v0.9.233) */
+/* Nutzt das bewährte module-body-Grid (360px 1fr) wie die anderen Module:
+   .panel (Sidebar, Spalte 1) + .canvas (Karte, Spalte 2). Das Grid stretcht
+   beide auf die volle module-body-Höhe (align-content:normal=stretch) — KEIN
+   eigener Display-Override nötig (der hatte die Höhe auf 0 kollabiert). */
+#gpxi-canvas { position: absolute; inset: 0; }
+
+.gpxi-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.gpxi-panel { display: flex; flex-direction: column; gap: 7px; }
+.gpxi-stat {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+.gpxi-help {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+}
+.gpxi-sel {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+.gpxi-act, .gpxi-clear, .gpxi-reset { width: 100%; text-align: left; }
+/* Pfad-zeichnen-Box (v0.9.237) */
+.gpxi-drawbox {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px; margin: 2px 0;
+  border: 1px solid #ff9f1c; border-radius: 7px;
+  background: rgba(255,159,28,0.08);
+}
+.gpxi-drawhint { font-size: 12px; line-height: 1.4; color: var(--text); }
+/* Undo/Redo-Reihe (v0.9.238) */
+.gpxi-undorow { display: flex; gap: 6px; }
+.gpxi-undorow .btn { flex: 1; text-align: center; }
+/* Auto-Despike-Box (v0.9.239) */
+.gpxi-spikebox {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px; margin: 2px 0;
+  border: 1px solid #f59e0b; border-radius: 7px;
+  background: rgba(245,158,11,0.08);
+}
+.gpxi-spikehint { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.gpxi-spikenav { display: flex; gap: 6px; }
+.gpxi-spikenav .btn { flex: 1; text-align: center; }
+/* Empfindlichkeits-Slider (v0.9.242) */
+.gpxi-sensrow input[type="range"] { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; }
+.gpxi-sensval { flex: 0 0 auto; width: 18px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.gpxi-act { font-weight: 600; }
+.gpxi-del { color: #ffb3b3; }
+.gpxi-hr { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+.gpxi-fillrow {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+}
+.gpxi-fillrow label { flex: 1 1 auto; }
+.gpxi-fillrow input {
+  width: 56px; padding: 3px 6px; font-size: 12px;
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text);
+}
+#gpxi-save { width: 100%; }
+.gpxi-note {
+  font-size: 11px; line-height: 1.5; margin-top: 4px;
+  word-break: break-all; color: var(--text-muted);
+}
+
+/* v0.9.263 — Map-Matching-Abschnitt: kleiner Titel */
+.gpxi-mm-title { font-weight: 600; font-size: 12px; margin: 2px 0 4px; opacity: 0.92; }

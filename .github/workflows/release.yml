@@ -1,0 +1,299 @@
+name: Build & Release
+
+# Trigger (v0.9.1 angepasst — Marc-Sparmaßnahme 2026-05-23):
+# - Manuell über Actions-Tab ("Run workflow")
+# - Bei Git-Tag wie v0.2.0 → automatisches GitHub Release mit Artefakten
+#
+# Vorher lief der Workflow ALSO bei jedem main-Push (Path-Filter). Das hat
+# pro Push ~230 MB Artifact-Storage verbraucht (DMG + Windows-Setup +
+# Linux-tar.gz × 3 OS). Bei vielen Iterationen war die 0.5 GB Free-Tier-
+# Quota schnell voll. Jetzt: Build nur noch wenn es einen echten Release-
+# Tag gibt oder manuell. Reicht für unseren Workflow weil Tests lokal
+# laufen + Marc baut auch lokal vor jedem Release.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+# Cancel in-progress runs vom selben Branch/Tag
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# UTF-8 für alle Python-Steps — sonst crasht Windows-Console (cp1252)
+# beim print von ✅/🗺/etc.
+env:
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: "1"
+
+jobs:
+
+  # ────────────────────────────────────────────────────────────────────────
+  # macOS — DMG-Installer (arm64; für Intel-Macs separate Build erforderlich)
+  # ────────────────────────────────────────────────────────────────────────
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-14   # arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install Playwright Chromium ins Bundle (pw-browsers/)
+        run: |
+          # v0.9.229 — Chromium-Headless-Shell wird in den REPO-lokalen
+          # Ordner `pw-browsers/` installiert (NICHT in den User-Cache), damit
+          # die .spec ihn ins App-Bundle einbacken kann → Render läuft beim User
+          # out-of-box, kein Download beim 1. Render. app.py setzt zur Laufzeit
+          # PLAYWRIGHT_BROWSERS_PATH auf den gebündelten Pfad.
+          PLAYWRIGHT_BROWSERS_PATH="$PWD/pw-browsers" python -m playwright install chromium-headless-shell
+          ls -la pw-browsers
+
+      - name: Build User-Guide HTML
+        run: python3 scripts/build_user_guide_html.py
+
+      # v0.9.176 (Beta-Tester-Bug): exiftool MUSS auch im CI-Release gebündelt werden,
+      # sonst hat das veröffentlichte DMG kein exiftool → RAW/Video-Tagging tot.
+      - name: Vendor exiftool (macOS)
+        run: bash scripts/setup_vendor_exiftool.sh
+
+      - name: Build .app
+        run: |
+          pyinstaller ReisezoomGPSStudio.spec --clean --noconfirm
+          ls -la dist/
+
+      - name: Ad-hoc Codesign
+        run: |
+          codesign --force --deep --sign - "dist/Reisezoom GPS Studio.app" || true
+
+      - name: Build DMG
+        run: |
+          # create-dmg ist auf macos-runner schon da
+          brew install create-dmg || true
+          mkdir -p dist/dmg
+          # WICHTIG: fixer Dateiname ohne Version/arch — Shortlinks auf
+          # s.reisezoom.com zeigen exakt auf diesen Filename. Wenn sich der
+          # Name ändert, brechen die Download-Buttons im Blog-Post.
+          # Siehe docs/HANDOVER_DEPLOYMENT.md
+          DMG="dist/dmg/ReisezoomGPSStudio-macos.dmg"
+          create-dmg \
+            --volname "Reisezoom GPS Studio" \
+            --window-pos 200 120 \
+            --window-size 720 420 \
+            --icon-size 120 \
+            --icon "Reisezoom GPS Studio.app" 180 200 \
+            --app-drop-link 540 200 \
+            --no-internet-enable \
+            "$DMG" \
+            "dist/Reisezoom GPS Studio.app" || \
+          hdiutil create -volname "Reisezoom GPS Studio" \
+            -srcfolder "dist/Reisezoom GPS Studio.app" \
+            -ov -format UDZO "$DMG"
+          ls -la dist/dmg/
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReisezoomGPSStudio-macos
+          path: dist/dmg/*.dmg
+          if-no-files-found: error
+          # v0.9.1 — kurze Retention: Artifact ist nur Zwischenspeicher für
+          # den `release`-Job. Das fertige GitHub-Release hängt die Files
+          # eh dauerhaft an den Release-Tag — Artifacts sind reine CI-
+          # Pipeline-Interna, nach 7 Tagen weg.
+          retention-days: 1
+
+  # ────────────────────────────────────────────────────────────────────────
+  # Windows — .exe + .zip
+  # ────────────────────────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows .exe
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+        shell: bash
+
+      - name: Install Playwright Chromium ins Bundle (pw-browsers/)
+        shell: bash
+        run: |
+          # v0.9.229 — in REPO-lokales pw-browsers/ statt User-Cache, damit die
+          # .spec den Browser ins Bundle einbackt (Out-of-box-Render, kein
+          # Download beim 1. Render). bash-Shell explizit (wie die anderen Win-Steps).
+          PLAYWRIGHT_BROWSERS_PATH="$PWD/pw-browsers" python -m playwright install chromium-headless-shell
+          ls -la pw-browsers
+
+      - name: Build User-Guide HTML
+        run: python scripts/build_user_guide_html.py
+        shell: bash
+
+      # v0.9.176 (Beta-Tester-Bug): exiftool für den Windows-Build vendoren. Eigener
+      # PowerShell-Step (das bash-Vendor-Script braucht `unzip`, das auf den
+      # Windows-Runnern nicht garantiert ist) — Expand-Archive ist nativ da.
+      - name: Vendor exiftool (Windows)
+        shell: pwsh
+        run: |
+          # Version dynamisch holen — exiftool.org hostet nur die aktuelle Version
+          # unter dem versionierten Pfad (alte → 404). Fallback auf bekannte Version.
+          try { $ver = (Invoke-WebRequest "https://exiftool.org/ver.txt" -UseBasicParsing).Content.Trim() } catch { $ver = "" }
+          if (-not $ver) { $ver = "13.59" }
+          Write-Host "ExifTool-Version: $ver"
+          New-Item -ItemType Directory -Force -Path vendor/exiftool/windows | Out-Null
+          Invoke-WebRequest "https://exiftool.org/exiftool-${ver}_64.zip" -OutFile et.zip
+          Expand-Archive et.zip -DestinationPath vendor/exiftool/windows -Force
+          $k = "vendor/exiftool/windows/exiftool-${ver}_64/exiftool(-k).exe"
+          if (Test-Path $k) { Rename-Item $k "exiftool.exe" }
+          Get-ChildItem "vendor/exiftool/windows/exiftool-${ver}_64" | Select-Object -First 5 Name
+
+      - name: Build .exe
+        run: pyinstaller ReisezoomGPSStudio.spec --clean --noconfirm
+        shell: bash
+
+      - name: Read APP_VERSION for installer
+        # Inno-Setup will die exakte App-Version in der Setup.exe-Properties
+        # und im Uninstaller-Eintrag haben. Wir lesen sie aus app.py.APP_VERSION
+        # (single source of truth, gleicher Trick wie im PyInstaller-Spec).
+        id: appver
+        run: |
+          $line = Select-String -Path "app.py" -Pattern '^APP_VERSION\s*=\s*"([^"]+)"' | Select-Object -First 1
+          $version = $line.Matches[0].Groups[1].Value
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "Detected APP_VERSION: $version"
+        shell: pwsh
+
+      - name: Build Windows installer (Inno Setup)
+        # Inno Setup 6 ist auf windows-latest GitHub-Runner vorinstalliert
+        # (über Chocolatey). ISCC.exe nimmt das .iss-File + Version-Define
+        # und schreibt dist\ReisezoomGPSStudio-windows-setup.exe.
+        # Output-Filename ist in der .iss als OutputBaseFilename hardcoded
+        # — Shortlinks zeigen drauf, also nicht ändern.
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --no-progress -y
+          }
+          & "$iscc" "/DAppVersion=${{ steps.appver.outputs.version }}" "installer\windows_setup.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          Get-ChildItem -Path "dist\*.exe"
+        shell: pwsh
+
+      - name: Upload Windows artifact (Installer only)
+        # v0.6.2: ZIP-Portable-Variante komplett raus. Hatte Mark-of-the-Web-
+        # DLL-Loading-Problem und brauchte PowerShell-Unblock; der Installer
+        # umgeht das vollständig. Power-User die portabel arbeiten wollen
+        # können das Bundle aus dem Setup-EXE extrahieren (Inno Setup macht
+        # die Files lesbar oder über `setup.exe /EXTRACT`).
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReisezoomGPSStudio-windows
+          path: dist/ReisezoomGPSStudio-windows-setup.exe
+          if-no-files-found: error
+          retention-days: 1
+
+  # ────────────────────────────────────────────────────────────────────────
+  # Linux — AppImage / tar.gz
+  # ────────────────────────────────────────────────────────────────────────
+  build-linux:
+    name: Build Linux tar.gz
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system deps (für pywebview-Qt)
+        run: |
+          sudo apt-get update
+          # Qt6 ist Default für pywebview unter Linux
+          sudo apt-get install -y \
+            python3-pyqt5 \
+            python3-pyqt5.qtwebengine \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libxss1 libasound2
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install Playwright Chromium ins Bundle (pw-browsers/)
+        run: |
+          # v0.9.229 — in REPO-lokales pw-browsers/ statt User-Cache, damit die
+          # .spec den Browser ins Bundle einbackt (Out-of-box-Render).
+          PLAYWRIGHT_BROWSERS_PATH="$PWD/pw-browsers" python -m playwright install chromium-headless-shell
+          ls -la pw-browsers
+
+      - name: Build User-Guide HTML
+        run: python3 scripts/build_user_guide_html.py
+
+      - name: Build binary
+        run: pyinstaller ReisezoomGPSStudio.spec --clean --noconfirm
+
+      - name: Tar up
+        # Fixer Filename — s.reisezoom.com-Shortlinks zeigen exakt drauf.
+        # Siehe docs/HANDOVER_DEPLOYMENT.md
+        run: |
+          tar -czf "dist/ReisezoomGPSStudio-linux.tar.gz" -C dist ReisezoomGPSStudio
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReisezoomGPSStudio-linux
+          path: dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  # ────────────────────────────────────────────────────────────────────────
+  # Release: bei Git-Tag alle Artefakte zu einem GitHub Release hochladen
+  # ────────────────────────────────────────────────────────────────────────
+  release:
+    name: Publish GitHub Release
+    needs: [build-macos, build-windows, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: ls -la artifacts/**/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/ReisezoomGPSStudio-macos/*.dmg
+            artifacts/ReisezoomGPSStudio-windows/*.exe
+            artifacts/ReisezoomGPSStudio-linux/*.tar.gz
+          generate_release_notes: true
+          draft: false
+          prerelease: false

@@ -1,0 +1,740 @@
+/* Reisezoom GPS Studio — Timeline-Bar (v0.7.0)
+ * Optisch passend zum bestehenden Look (App-Variables aus app.css).
+ */
+
+.timeline-bar {
+  background: var(--panel-bg, #1a1a1a);
+  border-top: 1px solid var(--border, #2c2c2c);
+  padding: 12px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.timeline-bar.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Track (Bar mit Achse + Markern + Scrubber) ────────────────────────── */
+
+.timeline-track {
+  position: relative;
+  cursor: pointer;
+  /* v0.9.1: kein fixed height mehr — Lanes bestimmen jetzt die Höhe */
+}
+
+/* v0.9.1: Overlay über alle Lanes (rechts der Lane-Labels). Trägt
+   Scrubber, Hold-Region, Anim-End-Trenner. Position-Berechnungen mit
+   left: X% beziehen sich auf die Track-Region (= Lane-Track-Breite).
+   v0.9.5 — right: 14px Inset, damit Marker am Track-Ende (Anker 1.0)
+   nicht halb abgeschnitten werden. Click→Anchor-Mapping (anchorFromClientX)
+   nutzt das overlay-Rect direkt, bleibt also automatisch konsistent. */
+.timeline-track-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 84px;   /* nach .lane-label */
+  right: 14px;  /* v0.9.5 — Rand-Inset für Marker an Anker 1.0 */
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* v0.9.4 — Cluster-Row über allen Lanes.
+   Optisch deutlich abgehoben: höhere Zeile, neutrale Farbe, klar
+   sichtbarer Marker (Cluster-Icon 🎬). Ein Klick auf einen Cluster-Marker
+   selektiert ALLE 4 Property-Events am gleichen Anker; Drag bewegt sie
+   zusammen; Rechtsklick löscht den ganzen Cluster. */
+.timeline-cluster-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 209, 102, 0.07), rgba(255, 209, 102, 0.02));
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2px;
+}
+.timeline-cluster-row .cluster-label {
+  flex: 0 0 84px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 209, 102, 0.95);
+  letter-spacing: 0.3px;
+  user-select: none;
+  border-right: 1px solid rgba(255, 209, 102, 0.18);
+  background: rgba(0, 0, 0, 0.18);
+  height: 100%;
+}
+.timeline-cluster-row .cluster-track {
+  position: relative;
+  flex: 1;
+  height: 100%;
+}
+.timeline-cluster-row .cluster-axis {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 14px; /* v0.9.5 — bündig mit Marker-Bereich */
+  height: 1px;
+  margin-top: -0.5px;
+  background: rgba(255, 209, 102, 0.18);
+}
+.timeline-cluster-row .cluster-markers {
+  position: absolute;
+  /* v0.9.5 — rechts 14px Inset (gleich wie .timeline-track-overlay). */
+  top: 0; bottom: 0; left: 0; right: 14px;
+  pointer-events: none;
+}
+.timeline-cluster-row .cluster-markers .timeline-marker {
+  pointer-events: auto;
+}
+
+/* Cluster-Marker: größer + andere Farbe als Lane-Marker — kommuniziert
+   „dieser hier zieht alle 4 zusammen". */
+.timeline-marker.timeline-marker-cluster {
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255, 209, 102, 0.95);
+  background: linear-gradient(180deg, #ffdd80 0%, #e8a82a 100%);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+.timeline-marker.timeline-marker-cluster:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow:
+    0 2px 8px rgba(255, 209, 102, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+.timeline-marker.timeline-marker-cluster.is-selected {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.55),
+    0 2px 8px rgba(255, 209, 102, 0.6),
+    0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+.timeline-marker.timeline-marker-cluster .timeline-marker-icon {
+  font-size: 11px;
+}
+
+/* KF-Editor aus → Cluster-Row auch verstecken */
+.anim-timeline-host--kf-off .timeline-cluster-row {
+  display: none !important;
+}
+
+/* v0.9.1 — Multi-Lane Layout */
+.timeline-lanes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.timeline-lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.02);
+}
+/* v0.9.227 — Marker-/Foto-Reserve-Spuren entfernt (Schilder+Fotos haben ihr
+   eigenes System). Spezial-Styling war hier; Lanes existieren nicht mehr. */
+.timeline-lane .lane-label {
+  flex: 0 0 84px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-dim, #b8b8b8);
+  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.15);
+}
+.timeline-lane .lane-icon { font-size: 11px; }
+.timeline-lane .lane-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-lane .lane-track {
+  position: relative;
+  flex: 1;
+  height: 100%;
+}
+.timeline-lane .lane-axis {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 14px; /* v0.9.5 — Axis endet bündig mit dem Marker-Bereich */
+  height: 2px;
+  margin-top: -1px;
+  background: var(--lane-color, rgba(255, 255, 255, 0.10));
+  opacity: 0.25;
+  border-radius: 1px;
+}
+.timeline-lane .lane-markers {
+  position: absolute;
+  /* v0.9.5 — rechts 14px Inset (gleich wie .timeline-track-overlay) damit
+     Marker an Anker 1.0 nicht halb über den Rand schauen. */
+  top: 0; bottom: 0; left: 0; right: 14px;
+  pointer-events: none;
+}
+.timeline-lane .lane-markers .timeline-marker {
+  pointer-events: auto;
+}
+
+/* Legacy-Axis bleibt für Backward-Compat (wird in v0.9.1 NICHT mehr gerendert,
+   aber CSS-Klasse könnte noch von älterem Code referenziert werden) */
+.timeline-axis {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 107, 53, 0.18) 50%,
+    rgba(255, 255, 255, 0.08));
+  border-radius: 2px;
+  display: none;
+}
+
+/* v0.8.11 — Hold-Region: rechte Hälfte der Timeline (nach Anim-Ende) deutlich
+   sichtbar eingefärbt, damit Marc/User auf einen Blick sieht wo der Track-
+   Ablauf endet und die Hold-Phase beginnt (in der die Kamera weiter
+   interpolieren kann, der Track-Endpunkt aber stehenbleibt).
+   v0.8.12 — kräftiger gemacht + „HOLD"-Label oben in der Region. */
+.timeline-hold-region {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 107, 53, 0.10) 0,
+      rgba(255, 107, 53, 0.10) 5px,
+      transparent 5px,
+      transparent 11px),
+    linear-gradient(to right,
+      rgba(255, 107, 53, 0.14),
+      rgba(255, 107, 53, 0.08));
+  border-radius: 0 6px 6px 0;
+  pointer-events: none;
+  /* dünne Innenkante linke Seite damit der Trenner sich klar abhebt */
+  box-shadow: inset 1px 0 0 rgba(255, 107, 53, 0.45);
+}
+.timeline-hold-region::before {
+  content: "HOLD";
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(255, 107, 53, 0.85);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* v0.8.11 — Senkrechter Trenner zwischen Anim- und Hold-Phase.
+   v0.8.12 — kräftiger orange + leichtes Glow für bessere Sichtbarkeit.
+   v0.9.48 — Trenner ist NICHT mehr draggable. Sitzt visuell am End-Trim-Handle
+   und markiert wo die Hold-Phase beginnt. Slim, non-interactive. */
+.timeline-anim-end {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(90deg,
+              transparent 0%,
+              rgba(255, 107, 53, 0.95) 40%,
+              rgba(255, 107, 53, 0.95) 60%,
+              transparent 100%);
+  box-shadow: 0 0 6px rgba(255, 107, 53, 0.75);
+  pointer-events: none;
+  z-index: 4;
+}
+/* Wenn der Trenner ganz rechts steht (= keine Hold-Phase): per JS ausgeblendet,
+   Fallback-Klasse für historische Zustände bleibt. */
+.timeline-anim-end.is-at-end {
+  opacity: 0.5;
+}
+/* Kleiner Pfeil-Indikator oben am Trenner, damit klar ist DASS es ein Trenner ist */
+.timeline-anim-end::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid rgba(255, 107, 53, 0.95);
+}
+
+/* v0.9.59 — Intro-Region links auf der Timeline (Spiegel der Hold-Region).
+   Hellblau statt orange, damit man Intro klar von Hold unterscheiden kann. */
+.timeline-intro-region {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(53, 155, 255, 0.10) 0,
+      rgba(53, 155, 255, 0.10) 5px,
+      transparent 5px,
+      transparent 11px),
+    linear-gradient(to left,
+      rgba(53, 155, 255, 0.14),
+      rgba(53, 155, 255, 0.08));
+  border-radius: 6px 0 0 6px;
+  pointer-events: none;
+  /* dünne Innenkante rechte Seite damit der Trenner sich klar abhebt */
+  box-shadow: inset -1px 0 0 rgba(53, 155, 255, 0.45);
+}
+.timeline-intro-region::before {
+  content: "INTRO";
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(53, 155, 255, 0.85);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* v0.9.59 — Anim-Start-Trenner (Intro → Anim). Spiegel zum anim-end. */
+.timeline-anim-start {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(90deg,
+              transparent 0%,
+              rgba(53, 155, 255, 0.95) 40%,
+              rgba(53, 155, 255, 0.95) 60%,
+              transparent 100%);
+  box-shadow: 0 0 6px rgba(53, 155, 255, 0.75);
+  pointer-events: none;
+  z-index: 4;
+}
+.timeline-anim-start::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid rgba(53, 155, 255, 0.95);
+}
+
+.timeline-ticks {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+.timeline-tick:first-child { transform: translateX(0); }
+.timeline-tick:last-child  { transform: translateX(-100%); }
+
+.timeline-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+}
+
+/* v0.9.1 — Marker pro Lane: kleiner + farb-codiert pro Lane via
+   --lane-color (gesetzt am .timeline-lane). */
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 2px solid var(--lane-color, #ff6b35);
+  background: color-mix(in srgb, var(--lane-color, #ff6b35) 80%, #000 20%);
+  border-radius: 50%;
+  cursor: grab;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  z-index: 3;
+}
+.timeline-marker:hover {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.2);
+}
+.timeline-marker:active {
+  cursor: grabbing;
+}
+.timeline-marker.is-selected {
+  border-color: #ffd166;
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 4;
+}
+
+.timeline-marker-icon {
+  font-size: 10px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+.timeline-scrubber {
+  position: absolute;
+  /* v0.9.1: lebt im .timeline-track-overlay (= rechts der Labels).
+     left: % bezieht sich auf die Track-Region. */
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: #ffd166;
+  border-radius: 1px;
+  transform: translateX(-1px);
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
+}
+/* v0.9.8 — Grab-Handle UNTEN am Scrubber (statt Dot oben).
+   Marc-Spec: „Der playhead lässt sich nicht greifen, weil er zu dicht am
+   cluster ist." → Handle weg von den Cluster-Markern, klar an der Stelle
+   wo NIE ein Lane-Marker sitzt (unter der untersten Lane). Triangle nach
+   oben = klassische Playhead-Optik aus Filmschnitt-Programmen. */
+.scrubber-handle {
+  position: absolute;
+  bottom: -9px;
+  left: -8px;
+  width: 18px;
+  height: 12px;
+  cursor: grab;
+  pointer-events: auto;
+  z-index: 6;
+}
+.scrubber-handle::before {
+  /* Dreieck nach OBEN (Spitze zum Scrubber-Linien-Ende). */
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 1px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 11px solid #ffd166;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+.scrubber-handle:hover::before {
+  border-bottom-color: #ffe28a;
+  filter: drop-shadow(0 1px 5px rgba(255, 209, 102, 0.6));
+}
+.scrubber-handle:active { cursor: grabbing; }
+
+/* ── Status-Row (Track-Position + Tasten-Hint) ──────────────────────────── */
+
+.timeline-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim, #aaa);
+  padding: 0 2px;
+}
+
+.timeline-status {
+  font-weight: 600;
+  color: #ffd166;
+  letter-spacing: 0.2px;
+}
+
+.timeline-keynav-hint {
+  color: var(--muted, #888);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.timeline-keynav-hint kbd {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin: 0 1px;
+}
+
+/* Probe-Lauf "Playing"-Zustand: orange Hervorhebung */
+.timeline-btn-play.is-playing {
+  background: rgba(255, 107, 53, 0.85);
+  color: #fff;
+  border-color: rgba(255, 107, 53, 0.95);
+}
+
+/* ── Actions (3 Buttons unter dem Track) ───────────────────────────────── */
+
+.timeline-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-actions .btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-btn-snap {
+  /* btn-primary kommt mit eigenem Orange */
+}
+
+.timeline-btn-clear {
+  margin-left: auto;
+}
+
+/* v0.9.11 — Vollständiger-Track-Toggle neben Probe-Lauf.
+   Inline-Layout passt zu den Buttons, kein eigener Block. */
+.timeline-toggle-fulltrack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-dim, #b8b8b8);
+  cursor: pointer;
+  user-select: none;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.timeline-toggle-fulltrack input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+.timeline-toggle-fulltrack:hover {
+  color: var(--text, #eee);
+  background: rgba(255, 255, 255, 0.04);
+}
+.timeline-toggle-fulltrack:has(input:checked) {
+  color: #ffd166;
+  border-color: rgba(255, 209, 102, 0.35);
+  background: rgba(255, 209, 102, 0.08);
+}
+
+.timeline-actions .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Hint-Text (Gesten-Erklärung) ──────────────────────────────────────── */
+
+.timeline-hint {
+  font-size: 11px;
+  color: var(--muted, #888);
+  line-height: 1.4;
+  padding: 4px 2px 0;
+}
+
+.timeline-hint kbd {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin: 0 1px;
+}
+
+/* ── Wenn Timeline disabled ist (z.B. weil noch kein GPX geladen) ──────── */
+.timeline-bar.is-disabled .timeline-hint::before {
+  content: "🔒 ";
+}
+
+/* ── v0.8.16: KF-Editor aus → nur Scrubber + Probe-Lauf, Rest verstecken ──
+   Marc-Spec: „Die möglichkeit die vorschau abzuspielen muss ja auch bei
+   disabled key frame bleiben". Also Snapshot/Clear-Buttons + Marker
+   ausblenden, Play + Scrubber + Status-Zeile bleiben.
+   v0.9.9 — Lanes + Cluster-Row auch verstecken (Marc-Spec 2026-05-23:
+   „die volle timeline wird jetzt angezeigt, auch wenn der keyframe
+   editor aus ist, das ist falsch"). Stattdessen ein minimaler Track-
+   Streifen mit dünner Achse, damit der Scrubber + Probe-Lauf weiter
+   bedienbar bleiben. */
+.anim-timeline-host--kf-off .timeline-markers,
+.anim-timeline-host--kf-off .timeline-lanes,
+.anim-timeline-host--kf-off .timeline-btn-snap,
+.anim-timeline-host--kf-off .timeline-btn-clear,
+.anim-timeline-host--kf-off .timeline-hint,
+.anim-timeline-host--kf-off .timeline-anim-end,
+.anim-timeline-host--kf-off .timeline-hold-region,
+.anim-timeline-host--kf-off .timeline-anim-start,
+.anim-timeline-host--kf-off .timeline-intro-region {
+  display: none !important;
+}
+/* v0.9.9 — Mini-Track-Streifen wenn Lanes versteckt sind */
+.anim-timeline-host--kf-off #tl-track {
+  min-height: 28px;
+}
+.anim-timeline-host--kf-off #tl-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 84px;
+  right: 14px;
+  height: 3px;
+  margin-top: -1.5px;
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 107, 53, 0.22) 50%,
+    rgba(255, 255, 255, 0.08));
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   v0.9.41 — Render-Trim-Range. 2 Drag-Handles + gegrayte
+   Außenbereiche. KFs außerhalb des Trim-Bereichs werden gedimmt.
+   ───────────────────────────────────────────────────────────── */
+.timeline-trim-shade {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(10, 12, 16, 0.55);
+  pointer-events: none;
+  z-index: 3;          /* Über Markers (z=2), unter Scrubber (z=5) */
+  border-radius: 0;
+}
+.timeline-trim-shade-left  { left: 0; width: 0; }
+.timeline-trim-shade-right { right: 0; left: 100%; width: auto; }
+.timeline-trim-shade-right { /* width = (100% - left) */ }
+.timeline-trim-shade-right::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: inherit;
+}
+/* Da .timeline-trim-shade-right per `left` positioniert wird, brauchen
+   wir width: auto + right: 0 — die JS setzt nur left. */
+#tl-trim-shade-right { right: 0; }
+.timeline-trim-region {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  border-top: 2px dashed rgba(255, 209, 102, 0.55);
+  border-bottom: 2px dashed rgba(255, 209, 102, 0.55);
+  box-sizing: border-box;
+}
+/* v0.9.41 — Trim-Handle als vertikaler Balken über die volle Overlay-Höhe.
+   Große Click-Fläche, klar greifbar. Parent .timeline-track-overlay hat
+   pointer-events:none → Handles MÜSSEN explizit pointer-events:auto haben. */
+.timeline-trim-handle {
+  position: absolute;
+  /* v0.9.60 (Marc-Bug): Trim-Handle deckt nicht mehr die volle Höhe ab,
+     sondern beginnt UNTER der Cluster-Row (26 px + 2 px margin). So sind
+     KF-Marker in der Cluster-Zeile auch dann klickbar, wenn sie direkt
+     auf einem Trim-Handle-Anchor sitzen. */
+  top: 30px;
+  height: calc(100% - 30px);
+  width: 14px;
+  transform: translateX(-7px);
+  cursor: ew-resize;
+  z-index: 7;             /* über Scrubber (5) und Markers */
+  pointer-events: auto;
+  /* Balken-Look: gelbe Borders links+rechts, leicht transparenter Fill */
+  background: rgba(255, 209, 102, 0.18);
+  border-left:  2px solid rgba(255, 209, 102, 0.95);
+  border-right: 2px solid rgba(255, 209, 102, 0.95);
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.4);
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.timeline-trim-handle:hover {
+  background: rgba(255, 230, 130, 0.4);
+  box-shadow: 0 0 12px rgba(255, 230, 130, 0.7);
+}
+.timeline-trim-handle:active {
+  background: rgba(255, 230, 130, 0.6);
+}
+/* Grip-Indikator: kleine Pille mit horizontalen Linien in der Mitte */
+.trim-handle-grip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 209, 102, 0.95);
+  border: 1.5px solid rgba(0,0,0,0.55);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+.trim-handle-grip::before,
+.trim-handle-grip::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  height: 1px;
+  background: rgba(0,0,0,0.5);
+}
+.trim-handle-grip::before { top:  40%; }
+.trim-handle-grip::after  { top:  56%; }
+
+/* KFs/Cluster außerhalb des Trim-Bereichs: gedimmt aber sichtbar
+   (= „Anlauf"-Marker). */
+.timeline-marker.kf-outside-trim,
+.timeline-marker-cluster.kf-outside-trim {
+  opacity: 0.32;
+  filter: saturate(0.5);
+}
+.timeline-marker.kf-outside-trim:hover,
+.timeline-marker-cluster.kf-outside-trim:hover {
+  opacity: 0.7;   /* beim Hover wieder sichtbarer machen */
+}

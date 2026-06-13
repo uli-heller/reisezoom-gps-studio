@@ -1,0 +1,216 @@
+/* Höhen-Animator (v0.9.95) — minimaler Modul-Style. Re-uses existing
+   .anim-canvas / .panel Klassen aus app.css. Modul rendert zwei
+   Top-Level-Kinder (Panel + Canvas) direkt in den .module-body, der
+   schon ein 360px-1fr-Grid ist.
+
+   v0.9.95: Trim-Handles direkt auf der Animations-Bar (analog Animator)
+   statt separater Trim-Bar. Gelbe vertikale Balken mit Grip + Shade-
+   Overlay für den nicht-getrimmten Bereich. */
+
+/* v0.9.128 — Layout analog Animator:
+   - Container `#height-canvas-host` (class `.anim-canvas`) reserviert unten
+     Platz für die Anim-Bar via padding-bottom (76 px). Override der
+     Default-Variable `--anim-tl-h` (im Animator 230 px für Multi-Lane-
+     Timeline) — hier nur schmale Anim-Bar.
+   - `.height-viewport` ist Letterbox-Box mit Aspect-Ratio = Render-
+     Auflösung (JS setzt width/height in updateHeightViewport, analog
+     Animator). Erbt flex-center vom `.anim-canvas`.
+   - SVG füllt den Viewport (inset:0), keine bottom-76px-Krücke mehr.
+   - Anim-Bar liegt ABSOLUTE am unteren Rand des Containers
+     (innerhalb des padding-bottom-Bereichs), NICHT mehr im Viewport. */
+
+#height-canvas-host {
+  --anim-tl-h: 76px;
+  position: relative;
+  overflow: hidden;
+}
+
+.height-viewport {
+  position: relative;
+  background: #0e0e0e;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08),
+              0 12px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  /* width + height werden vom JS auf Letterbox-Größe gesetzt
+     (siehe updateHeightViewport in module.js). */
+  width: 80%;
+  height: 80%;
+}
+
+#height-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.height-empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.btn-block { width: 100%; }
+
+/* v0.9.128 — Animations-Leiste sitzt jetzt am UNTEREN Rand des Canvas-Hosts
+   (in dem padding-bottom-Bereich), nicht mehr IM Viewport. Damit ist der
+   gesamte Letterbox-Viewport für das Höhenprofil verfügbar — kein
+   Überlappen mit der Anim-Bar mehr. */
+.height-anim-bar {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  display: none; /* via JS auf 'flex' wenn Track geladen */
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.40);
+  z-index: 10;
+}
+
+.height-play-btn {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #ff6b35;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  padding: 0;
+  line-height: 1;
+}
+.height-play-btn:hover { background: #ff8052; }
+.height-play-btn:active { transform: scale(0.94); }
+
+/* Track-Wrapper: enthält Progress-Slider + Shade-Overlays + Trim-Handles.
+   Position relative damit absolute Kinder am Wrapper hängen. */
+.height-track-wrap {
+  flex: 1;
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.height-progress-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+.height-progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ff6b35;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.height-progress-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ff6b35;
+  cursor: pointer;
+}
+
+/* Shade-Overlay (außerhalb des Trim-Bereichs) — analog Animator-Timeline.
+   Halbtransparenter dunkler Schleier über dem getrimmten Track-Teil. */
+.height-trim-shade {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: rgba(10, 12, 16, 0.55);
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 4px;
+}
+.height-trim-shade-left  { left: 0; width: 0; }
+.height-trim-shade-right { left: 100%; right: 0; }
+
+/* Trim-Handles: vertikale gelbe Balken mit Grip in der Mitte
+   (analog .timeline-trim-handle aus dem Animator). */
+.height-trim-handle {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 14px;
+  transform: translateX(-7px);
+  cursor: ew-resize;
+  z-index: 5;
+  background: rgba(255, 209, 102, 0.18);
+  border-left:  2px solid rgba(255, 209, 102, 0.95);
+  border-right: 2px solid rgba(255, 209, 102, 0.95);
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.4);
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.height-trim-handle:hover {
+  background: rgba(255, 230, 130, 0.4);
+  box-shadow: 0 0 12px rgba(255, 230, 130, 0.7);
+}
+.height-trim-handle:active {
+  background: rgba(255, 230, 130, 0.6);
+}
+
+.height-trim-grip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 209, 102, 0.95);
+  border: 1.5px solid rgba(0,0,0,0.55);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+.height-trim-grip::before,
+.height-trim-grip::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  height: 1px;
+  background: rgba(0,0,0,0.5);
+}
+.height-trim-grip::before { top: 40%; }
+.height-trim-grip::after  { top: 56%; }
+
+.height-time {
+  flex: 0 0 auto;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 90px;
+  text-align: right;
+}

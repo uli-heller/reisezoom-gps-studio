@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Reisezoom GPS Studio</title>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/timeline.css">
+<!-- Modul-CSS (Cache-Buster patcht hier den ?v=... an) -->
+<link rel="stylesheet" href="../modules/animator/ui/module.css">
+<link rel="stylesheet" href="../modules/tourmap/ui/module.css">
+<link rel="stylesheet" href="../modules/geotagger/ui/module.css">
+<link rel="stylesheet" href="../modules/heightanim/ui/module.css">
+<link rel="stylesheet" href="../modules/gpxinspect/ui/module.css">
+<!-- Karten-Engines: Mapbox GL JS für Token-User, MapLibre GL JS als Fallback ohne Token (OSM-Tiles). MapLibre erbt das gleiche `mapboxgl`-Globale-Pattern, wir wrappen das in util.js. -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css" rel="stylesheet">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="assets/icon.png" alt="Reisezoom GPS Studio">
+    <div class="brand-text">
+      <div class="brand-title">Reisezoom</div>
+      <div class="brand-sub">GPS&nbsp;Studio</div>
+    </div>
+  </div>
+  <nav class="module-tabs" id="module-tabs">
+    <!-- Modul-Tabs werden via JS aus window.RZGPS_MODULES generiert -->
+  </nav>
+  <!-- v0.8.0: Projekt-Dropdown — wird via JS gefüllt wenn eine Session aktiv ist -->
+  <div class="topbar-project" id="topbar-project" hidden>
+    <button class="topbar-project-btn" id="topbar-project-btn" type="button">
+      <span class="topbar-project-icon">🗂</span>
+      <span class="topbar-project-label" id="topbar-project-label">—</span>
+      <span class="topbar-project-arrow">▾</span>
+    </button>
+    <div class="topbar-project-menu" id="topbar-project-menu" hidden>
+      <!-- via JS gefüllt -->
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-settings topbar-promo" id="topbar-youtube" title="Reisezoom auf YouTube">▶</button>
+    <button class="topbar-settings topbar-promo" id="topbar-blog" title="reisezoom.com – Blog &amp; mehr">🌐</button>
+    <button class="topbar-feedback" id="topbar-feedback" title="Feedback / Bug-Report an Marc">💬</button>
+    <button class="topbar-settings" id="topbar-help" title="Hilfe">?</button>
+    <button class="topbar-settings" id="topbar-settings" title="Einstellungen">⚙</button>
+    <span class="version" id="topbar-version">v0.2</span>
+  </div>
+</header>
+
+<main class="main" id="main">
+  <!-- Module wird via JS hier reingerendert -->
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<!-- Modal-Container, wird von Modulen befüllt -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Titel</h3>
+      <button class="modal-close" id="modal-close" title="Schließen">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script src="js/util.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/gpx-bar.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/photos.js"></script>
+<script src="js/sign_draw.js"></script>
+<script src="js/sign_dom.js"></script>
+<script src="../modules/animator/ui/module.js"></script>
+<script src="../modules/tourmap/ui/module.js"></script>
+<script src="../modules/geotagger/ui/module.js"></script>
+<script src="../modules/heightanim/ui/module.js"></script>
+<script src="../modules/gpxinspect/ui/module.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

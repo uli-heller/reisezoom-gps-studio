@@ -1,0 +1,180 @@
+name: Test Windows Install
+
+# Smoke-Test des Windows-Installers auf einer echten Windows-VM bei GitHub.
+# Lädt die Setup.exe vom letzten GitHub-Release, installiert sie silent,
+# startet die App, prüft Process + Logfile, killt sie sauber.
+#
+# Triggers:
+# - Manuell via Actions-Tab ("Run workflow")
+# - Automatisch nach jedem erfolgreichen Build-&-Release-Workflow
+#
+# Was getestet wird:
+# 1. Installer-EXE startet sauber, /VERYSILENT-Modus funktioniert
+# 2. Files landen in C:\Program Files\Reisezoom GPS Studio\
+# 3. ReisezoomGPSStudio.exe startet ohne sofortigen Crash
+# 4. Python-Init kommt durch (Logfile hat "Reisezoom GPS Studio gestartet")
+# 5. pywebview-Backend (Edge-WebView2) kann initialisieren — DAS war Beta-Testers Problem
+#
+# Was NICHT getestet wird (würde echten User brauchen):
+# - Mapbox-Token-Eingabe
+# - Echter Render-Lauf
+# - GPX-Drag-and-Drop
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build & Release"]
+    types: [completed]
+
+jobs:
+  test-install:
+    name: Install + smoke-start on Windows
+    runs-on: windows-latest
+    # Nur laufen wenn der Build-Workflow erfolgreich war (bei automatischem
+    # Trigger). Beim manuellen Trigger immer laufen.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      # `actions: read` ist nötig damit `gh run download` Artifacts vom
+      # triggering Workflow-Run (`workflow_run`-Event) abrufen darf.
+      # Ohne das: HTTP 403 "Resource not accessible by integration".
+      actions: read
+
+    steps:
+      - name: Download Setup.exe from Build-Run artifact
+        # Bei workflow_run-Trigger (auto): wir nehmen die run-id vom
+        # triggernden Build-Run direkt.
+        # Bei workflow_dispatch (manuell): wir suchen die NEUESTE erfolgreiche
+        # `Build & Release`-Run und nehmen deren run-id.
+        # Damit funktioniert der Test sowohl auto als auch manuell.
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $runId = "${{ github.event.workflow_run.id }}"
+          if (-not $runId) {
+            Write-Host "No workflow_run.id (manual trigger) — finding latest successful Build & Release run…"
+            $runId = gh run list --repo ${{ github.repository }} --workflow=release.yml --status=success -L 1 --json databaseId --jq '.[0].databaseId'
+            if (-not $runId) { throw "No successful Build & Release run found." }
+          }
+          Write-Host "Source build run-id: $runId"
+          gh run download $runId --repo ${{ github.repository }} --name "ReisezoomGPSStudio-windows" --dir artifact-win
+          # gh run download legt Files je nach Version entweder direkt in
+          # artifact-win/ oder in artifact-win/ReisezoomGPSStudio-windows/.
+          # Wir suchen rekursiv, damit's in beiden Fällen klappt.
+          $exe = Get-ChildItem -Recurse -Filter "*windows-setup.exe" | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "Available files:"
+            Get-ChildItem -Recurse | Format-Table FullName, Length -AutoSize
+            throw "Setup.exe not in artifact (expected *windows-setup.exe)."
+          }
+          # Setup.exe ins Root-Workdir kopieren, damit der nächste Step
+          # einen einfachen Pfad hat.
+          Copy-Item $exe.FullName "./$($exe.Name)"
+          Write-Host "Downloaded: $($exe.Name) ($([math]::Round($exe.Length/1MB,1)) MB)"
+
+      - name: Silent install
+        shell: pwsh
+        run: |
+          $exe = (Get-ChildItem -Filter "*windows-setup.exe" | Select-Object -First 1).FullName
+          Write-Host "Installing: $exe"
+          # Inno-Setup-Silent-Flags:
+          #   /VERYSILENT       — kein UI
+          #   /SUPPRESSMSGBOXES — keine Modal-Boxen
+          #   /NORESTART        — kein Reboot
+          #   /LOG="..."        — Setup-Log mitschreiben
+          $proc = Start-Process -FilePath $exe -ArgumentList @(
+            "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/LOG=setup-install.log"
+          ) -Wait -PassThru
+          Write-Host "Installer exit code: $($proc.ExitCode)"
+          if ($proc.ExitCode -ne 0) {
+            Write-Host "—————— Setup-Log ——————"
+            Get-Content setup-install.log -ErrorAction SilentlyContinue | Out-Host
+            throw "Installer failed with exit code $($proc.ExitCode)"
+          }
+          Write-Host "—————— Installed files ——————"
+          Get-ChildItem "C:\Program Files\Reisezoom GPS Studio\" | Select-Object Name, Length | Format-Table -AutoSize
+
+      - name: Verify critical DLLs are present
+        # Sanity-Check: die DLLs die bei Beta-Tester beim Load gescheitert sind
+        # müssen jetzt sauber installiert sein und keine MotW-Markierung tragen.
+        shell: pwsh
+        run: |
+          $base = "C:\Program Files\Reisezoom GPS Studio\_internal"
+          $required = @(
+            "$base\pythonnet\runtime\Python.Runtime.dll",
+            "$base\python312.dll",
+            "$base\VCRUNTIME140.dll",
+            "$base\webview\lib\Microsoft.Web.WebView2.Core.dll"
+          )
+          foreach ($p in $required) {
+            if (Test-Path $p) {
+              # MotW-Check: Zone.Identifier-Stream sollte FEHLEN
+              $hasMotw = (Get-Item -LiteralPath $p -Stream "Zone.Identifier" -ErrorAction SilentlyContinue) -ne $null
+              $sz = (Get-Item $p).Length
+              $mark = if ($hasMotw) { "⚠️  MotW-markiert!" } else { "✓ kein MotW" }
+              Write-Host "$mark  $p ($sz Bytes)"
+              if ($hasMotw) { throw "DLL has Mark-of-the-Web — would block load!" }
+            } else {
+              throw "MISSING: $p"
+            }
+          }
+
+      - name: Launch app + verify it stays alive
+        # App starten, 25 Sek warten, dann prüfen ob Process noch lebt UND
+        # ob die Logdatei zeigt dass Python sauber initialisiert wurde.
+        shell: pwsh
+        run: |
+          $exe = "C:\Program Files\Reisezoom GPS Studio\ReisezoomGPSStudio.exe"
+          Write-Host "Starting: $exe"
+          $proc = Start-Process -FilePath $exe -PassThru
+          $pid_ = $proc.Id
+          Write-Host "Started PID $pid_, waiting 25s for init…"
+          Start-Sleep -Seconds 25
+
+          # Check ob Process noch lebt
+          $stillRunning = $null -ne (Get-Process -Id $pid_ -ErrorAction SilentlyContinue)
+
+          # Logdatei suchen — pywebview-App schreibt nach %APPDATA% (v0.4.3+)
+          # oder nach ~/Library/Application Support/... (Legacy v0.4.2 und älter,
+          # macOS-Pfad-Schreibweise die syntaktisch auf Windows auch funktioniert).
+          $logPaths = @(
+            "$env:APPDATA\Reisezoom GPS Studio\logs\app.log",
+            "$env:LOCALAPPDATA\Reisezoom GPS Studio\logs\app.log",
+            "$HOME\Library\Application Support\Reisezoom GPS Studio\logs\app.log"
+          )
+          $logFile = $logPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+          if ($logFile) {
+            Write-Host "—————— Logdatei: $logFile ——————"
+            Get-Content $logFile -Tail 30 | Out-Host
+          } else {
+            Write-Host "⚠️  Keine Logdatei gefunden — App ist evtl. gar nicht hochgekommen."
+          }
+
+          # App killen (auch wenn sie schon tot ist — kein Error)
+          Stop-Process -Id $pid_ -Force -ErrorAction SilentlyContinue
+
+          # Bewertung
+          if (-not $stillRunning) {
+            throw "App crashed within 25 seconds. See logs above (or there are no logs at all)."
+          }
+          if (-not $logFile) {
+            throw "App stayed alive but wrote NO log — that's suspicious, Python probably never initialized."
+          }
+          $log = Get-Content $logFile -Raw
+          if ($log -notmatch "Reisezoom GPS Studio gestartet") {
+            throw "Logfile exists but doesn't contain the startup signature. Python init may have failed."
+          }
+          Write-Host "✓ App is running, Python init OK, log contains startup signature."
+
+      - name: Uninstall (cleanup)
+        if: always()
+        shell: pwsh
+        run: |
+          # Unins000.exe wird vom Inno-Setup im Install-Dir abgelegt
+          $unins = "C:\Program Files\Reisezoom GPS Studio\unins000.exe"
+          if (Test-Path $unins) {
+            Start-Process -FilePath $unins -ArgumentList "/VERYSILENT" -Wait
+            Write-Host "Uninstalled cleanly."
+          }

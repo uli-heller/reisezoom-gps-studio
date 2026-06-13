@@ -14,6 +14,13 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+### Behoben (Leo-Feedback)
+
+- **„Kamera folgt Track" stürzte beim Rendern ab** (`'TrackPoint' object is not subscriptable`).
+  Dieselbe Falle wie früher im Haupt-Render-Loop war im **Tile-Cache-Vorwärmen** übersehen
+  worden (Tupel-Zugriff statt `.lon`/`.lat` auf das TrackPoint-Objekt). Jetzt rendert „Kamera
+  folgt Track" wieder durch.
+
 ## [0.9.274] – 2026-06-13
 
 ### Behoben (Beta-Tester-Feedback)

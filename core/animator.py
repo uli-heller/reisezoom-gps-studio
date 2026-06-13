@@ -2226,7 +2226,10 @@ async def render(
                 pw_lon, pw_lat = kf_c[0], kf_c[1]
             elif cfg.camera_follow_track and len(points) > 0:
                 _idx = min(int(tprog * (len(points) - 1)), len(points) - 1)
-                pw_lon, pw_lat = points[_idx][0], points[_idx][1]
+                # v0.9.275 (Leo) — TrackPoint ist ein dataclass, NICHT subscriptable.
+                # Dieselbe Falle wie v0.9.124 im Haupt-Loop, hier im Tile-Prewarm übersehen
+                # → „'TrackPoint' object is not subscriptable" beim Render mit „Kamera folgt Track".
+                pw_lon, pw_lat = points[_idx].lon, points[_idx].lat
             else:
                 pw_lon, pw_lat = center[0], center[1]
             prewarm_samples.append([pw_bearing, pw_lon, pw_lat, pw_zoom, pw_pitch])

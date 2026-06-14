@@ -851,5 +851,7 @@
   "menu.export_gpx": "Exportar como GPX…",
   "export_gpx.done": "GPX exportado.",
   "export_gpx.no_track": "Ningún track cargado — abre un archivo primero.",
-  "export_gpx.error": "Error al exportar GPX."
+  "export_gpx.error": "Error al exportar GPX.",
+  "animator.pos.tc": "↥ centro arriba",
+  "animator.pos.cc": "✛ centro"
 }

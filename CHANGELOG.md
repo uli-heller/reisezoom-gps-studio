@@ -14,6 +14,18 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.283] – 2026-06-14
+
+### Hinzugefügt (Beta-Tester-Wunsch)
+
+- **Mittige Overlay-Positionen.** Die Statistik-Overlays (Gesamt-Werte, Live-Werte,
+  Höhenprofil) lassen sich jetzt zusätzlich zu den vier Ecken auch **oben mittig (↥)**
+  und **in der echten Bildschirm-Mitte (✛)** platzieren — ideal für eine **Titel-/
+  Eröffnungs-Karte**, bei der die Zahlen zentriert über dem Bild stehen. Gilt für
+  Animator und Tour-Map (Spiegelung); wirkt live in der WYSIWYG-Vorschau und im Video.
+  („Unten mittig" über volle Breite gab's im Höhenprofil schon — ist jetzt überall in der
+  Positions-Auswahl.)
+
 ## [0.9.282] – 2026-06-14
 
 ### Hinzugefügt (Beta-Tester/Leo-Wunsch)

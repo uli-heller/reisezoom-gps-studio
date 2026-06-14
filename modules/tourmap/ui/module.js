@@ -178,6 +178,9 @@ function mountTourmap(body, headerActions) {
                 <option value="tr">${t("animator.pos.tr")}</option>
                 <option value="bl">${t("animator.pos.bl")}</option>
                 <option value="br">${t("animator.pos.br")}</option>
+                <option value="tc">${t("animator.pos.tc")}</option>
+                <option value="cc">${t("animator.pos.cc")}</option>
+                <option value="bc">${t("animator.pos.bc")}</option>
               </select>
             </div>
             <div class="overlay-group">
@@ -187,6 +190,8 @@ function mountTourmap(body, headerActions) {
               </label>
               <select id="tmap-ov-ele-pos" class="pos-select">
                 <option value="bc">${t("animator.pos.bc")}</option>
+                <option value="tc">${t("animator.pos.tc")}</option>
+                <option value="cc">${t("animator.pos.cc")}</option>
                 <option value="tl">${t("animator.pos.tl")}</option>
                 <option value="tr">${t("animator.pos.tr")}</option>
                 <option value="bl">${t("animator.pos.bl")}</option>

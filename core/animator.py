@@ -497,8 +497,14 @@ def _overlay_css(cfg: AnimatorConfig, alpha_mode: bool = False) -> str:
   .pos-bl {{ bottom: {px(40)}; left: {px(40)}; }}
   .pos-br {{ bottom: {px(40)}; right: {px(40)}; text-align: right; }}
   .pos-bc {{ bottom: {px(40)}; left: 10%; right: 10%; }}
+  /* v0.9.283 (Beta-Tester-Wunsch) — mittige Positionen: oben-Mitte + echte Bildschirm-
+     mitte (z.B. für Titel-/Eröffnungs-Karte). Kompakte, zentrierte Box (nicht über
+     volle Breite gestreckt wie bc), Inhalt zentriert. */
+  .pos-tc {{ top: {px(40)}; left: 50%; transform: translateX(-50%); text-align: center; }}
+  .pos-cc {{ top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }}
   .stat-row {{ display: flex; justify-content: space-between; align-items: baseline; gap: {px(28)}; padding: {px(4)} 0; }}
   .pos-tr .stat-row, .pos-br .stat-row {{ justify-content: flex-end; gap: {px(18)}; }}
+  .pos-tc .stat-row, .pos-cc .stat-row {{ justify-content: center; gap: {px(18)}; }}
   .label {{ font-size: {px(11)}; letter-spacing: 1.6px; text-transform: uppercase; opacity: 0.72; font-weight: 500; }}
   .value {{ font-size: {px(22)}; font-weight: 600; font-variant-numeric: tabular-nums; }}
   .accent {{ color: {cfg.line_color}; }}
@@ -513,6 +519,8 @@ def _overlay_css(cfg: AnimatorConfig, alpha_mode: bool = False) -> str:
   /* Wenn das Höhenprofil in einer Ecke landet, kompaktere Breite (skaliert). */
   #overlay-bottom.pos-bl, #overlay-bottom.pos-br {{ width: {px(480)}; }}
   #overlay-bottom.pos-tl, #overlay-bottom.pos-tr {{ width: {px(480)}; }}
+  /* v0.9.283 — Höhenprofil mittig: feste Breite, damit die Kurve Raum hat. */
+  #overlay-bottom.pos-tc, #overlay-bottom.pos-cc {{ width: {px(560)}; }}
   .ele-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: {px(6)}; color: #fff; }}
   .ele-title {{ font-size: {px(11)}; letter-spacing: 1.6px; text-transform: uppercase; opacity: 0.72; font-weight: 500; }}
   .ele-minmax {{ font-size: {px(12)}; opacity: 0.8; font-variant-numeric: tabular-nums; }}

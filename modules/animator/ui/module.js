@@ -356,6 +356,9 @@ function mountAnimator(body, headerActions, opts) {
                 <option value="tr">${t("animator.pos.tr")}</option>
                 <option value="bl">${t("animator.pos.bl")}</option>
                 <option value="br">${t("animator.pos.br")}</option>
+                <option value="tc">${t("animator.pos.tc")}</option>
+                <option value="cc">${t("animator.pos.cc")}</option>
+                <option value="bc">${t("animator.pos.bc")}</option>
               </select>
               <div class="ov-timing" title="${t("animator.overlay.timing_tip")}">
                 <span class="ov-timing-lbl">⏱ ${t("animator.overlay.timing")}</span>
@@ -375,6 +378,9 @@ function mountAnimator(body, headerActions, opts) {
                 <option value="tr">${t("animator.pos.tr")}</option>
                 <option value="bl">${t("animator.pos.bl")}</option>
                 <option value="br">${t("animator.pos.br")}</option>
+                <option value="tc">${t("animator.pos.tc")}</option>
+                <option value="cc">${t("animator.pos.cc")}</option>
+                <option value="bc">${t("animator.pos.bc")}</option>
               </select>
               <div class="ov-timing" title="${t("animator.overlay.timing_tip")}">
                 <span class="ov-timing-lbl">⏱ ${t("animator.overlay.timing")}</span>
@@ -395,6 +401,9 @@ function mountAnimator(body, headerActions, opts) {
                 <option value="tr">${t("animator.pos.tr")}</option>
                 <option value="bl">${t("animator.pos.bl")}</option>
                 <option value="br">${t("animator.pos.br")}</option>
+                <option value="tc">${t("animator.pos.tc")}</option>
+                <option value="cc">${t("animator.pos.cc")}</option>
+                <option value="bc">${t("animator.pos.bc")}</option>
               </select>
               <div class="ov-timing" title="${t("animator.overlay.timing_tip")}">
                 <span class="ov-timing-lbl">⏱ ${t("animator.overlay.timing")}</span>

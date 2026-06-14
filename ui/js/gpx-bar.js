@@ -23,8 +23,11 @@
   // FIT/NMEA/KML/KMZ/TCX/GeoJSON öffnen — das Backend konvertiert beim Laden
   // transparent nach GPX. Filter (Picker) + Erkennungs-Regex (Drag&Drop).
   // Global auf window, damit Module (Geotagger) denselben Filter nutzen.
+  // WICHTIG (Beta-Tester-Bug v0.9.285): pywebviews Windows-Backend validiert die
+  // Filter-Beschreibung mit Regex `[\w ]+` — KEINE Sonderzeichen (Bindestrich!).
+  // „Track-Dateien" crashte → daher „Track Dateien" (nur Buchstaben + Leerzeichen).
   window.TRACK_PICK_FILTER = [
-    "Track-Dateien (*.gpx;*.fit;*.nmea;*.log;*.kml;*.kmz;*.tcx;*.geojson;*.json)",
+    "Track Dateien (*.gpx;*.fit;*.nmea;*.log;*.kml;*.kmz;*.tcx;*.geojson;*.json)",
     "GPX (*.gpx)",
   ];
   // Drag&Drop: generische .json/.txt bewusst NICHT mitnehmen (zu mehrdeutig).
@@ -141,9 +144,9 @@
       <div class="gpxbar-empty">
         <button class="gpxbar-pick-btn" type="button" data-gpxbar="pick-empty">
           <span class="gpxbar-icon">📂</span>
-          <span>GPX wählen …</span>
+          <span>Track wählen …</span>
         </button>
-        <span class="gpxbar-hint">… oder GPX hierher ziehen.</span>
+        <span class="gpxbar-hint">… oder Track (GPX/FIT/KML…) hierher ziehen.</span>
       </div>
     `;
   }
@@ -155,7 +158,7 @@
     return `
       <div class="gpxbar-loaded">
         <button class="gpxbar-pick-btn gpxbar-pick-btn-compact" type="button"
-                data-gpxbar="pick" title="Anderes GPX wählen">
+                data-gpxbar="pick" title="Anderen Track wählen">
           <span class="gpxbar-icon">📂</span>
         </button>
         <span class="gpxbar-filename" title="${escapeAttr(fullPath)}">${escapeHtml(name)}</span>

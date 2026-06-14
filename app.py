@@ -124,7 +124,7 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.284"
+APP_VERSION = "0.9.285"
 
 # v0.9.280 (Beta-Tester-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
 # kein Selbst-Update). Fragt die GitHub-Releases-API, vergleicht die Version und
@@ -708,10 +708,15 @@ class Api:
         }
 
     def open_url(self, url: str) -> dict:
-        """Öffnet eine URL im Default-Browser (für Mapbox-Hilfeseite etc.)."""
+        """Öffnet eine URL im Default-Browser (für Mapbox-Hilfeseite etc.) bzw.
+        eine mailto:-Adresse im Default-Mail-Programm.
+        v0.9.285 (Beta-Tester-Bug): mailto: war vorher nicht erlaubt → der „Lokales
+        Mail-Programm öffnen"-Button (Bug-Report) tat unter Windows nichts."""
         import webbrowser
         try:
-            if url and (url.startswith("http://") or url.startswith("https://")):
+            if not url:
+                return {"ok": False, "error": "Leere URL"}
+            if url.startswith(("http://", "https://", "mailto:")):
                 webbrowser.open(url, new=2)
                 return {"ok": True}
             return {"ok": False, "error": "Ungültige URL"}

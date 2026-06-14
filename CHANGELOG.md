@@ -14,6 +14,24 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.285] – 2026-06-14
+
+### Behoben (Beta-Tester-Feedback, kritisch)
+
+- **Windows: Track öffnen ging gar nicht mehr.** Schon beim Klick auf „Track wählen…"
+  kam `… is not a valid file filter`. Ursache: der neue Mehrformat-Datei-Filter hatte
+  als Beschreibung „Track-**Dateien**" mit Bindestrich — pywebviews Windows-Backend
+  erlaubt in Filter-Beschreibungen aber nur Buchstaben/Ziffern/Leerzeichen. Auf dem Mac
+  fiel's nicht auf (eigener Dialog). Behoben → „Track Dateien" (ohne Bindestrich).
+- **„Lokales Mail-Programm öffnen" (Bug-Report) reagierte nicht.** Der Button öffnet eine
+  `mailto:`-Adresse, die Bridge `open_url` ließ aber nur `http(s)` durch. Jetzt sind
+  `mailto:`-Links erlaubt → öffnet Thunderbird/Outlook/Mail wie erwartet.
+
+### Geändert (Beta-Tester-Wunsch)
+
+- **„GPX wählen…" heißt jetzt „Track wählen…"** (und „Track-Datei auswählen" in den Modulen),
+  da man ja nicht mehr nur GPX, sondern auch FIT/NMEA/KML/… öffnen kann.
+
 ## [0.9.284] – 2026-06-14
 
 ### Geändert (Beta-Tester-Wunsch, Feinschliff zu v0.9.283)

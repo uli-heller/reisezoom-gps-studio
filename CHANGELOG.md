@@ -16,7 +16,7 @@ Bei jeder neuen Version:
 
 ## [0.9.290] – 2026-06-15
 
-### Geändert (Beta-Tester-Feedback)
+### Geändert (Nutzer-Feedback)
 
 - **Overlay-Vorschau zeigt jetzt den Endzustand statt 50 %.** Vor dem Rendern
   standen Live-Stats (zurückgelegte Strecke/Zeit) und Höhenprofil auf **halber
@@ -25,7 +25,7 @@ Bei jeder neuen Version:
   50-km-Track). Jetzt zeigt das ruhende Standbild den **fertigen Endzustand**
   (volle Strecke, Profil komplett gefüllt) — passend zum letzten Frame des Videos.
   Probe-Lauf und Render zählen wie gehabt korrekt von 0 hoch.
-  - *Hinweis zur Garmin-Abweichung (Beta-Tester):* Unterschiede bei Distanz/Höhenmeter
+  - *Hinweis zur Garmin-Abweichung (Nutzer):* Unterschiede bei Distanz/Höhenmeter
     gegenüber Garmin sind **normal** — Garmin misst Höhe barometrisch, wir aus den
     (verrauschten) GPS-Höhen mit Glättung. Kein Fehler; betrifft alle Tools.
 
@@ -76,7 +76,7 @@ Bei jeder neuen Version:
 
 ## [0.9.286] – 2026-06-15
 
-### Behoben (Beta-Tester-Bug)
+### Behoben (Nutzer-Bug)
 
 - **„Nach Update suchen"-Fehlermeldung unlesbar.** Wenn die Update-Prüfung im
   Über-Dialog fehlschlug (z.B. „Keine Verbindung"), erschien die Toast-Meldung
@@ -120,7 +120,7 @@ Bei jeder neuen Version:
 
 ## [0.9.285] – 2026-06-14
 
-### Behoben (Beta-Tester-Feedback, kritisch)
+### Behoben (Nutzer-Feedback, kritisch)
 
 - **Windows: Track öffnen ging gar nicht mehr.** Schon beim Klick auf „Track wählen…"
   kam `… is not a valid file filter`. Ursache: der neue Mehrformat-Datei-Filter hatte
@@ -131,14 +131,14 @@ Bei jeder neuen Version:
   `mailto:`-Adresse, die Bridge `open_url` ließ aber nur `http(s)` durch. Jetzt sind
   `mailto:`-Links erlaubt → öffnet Thunderbird/Outlook/Mail wie erwartet.
 
-### Geändert (Beta-Tester-Wunsch)
+### Geändert (Nutzer-Wunsch)
 
 - **„GPX wählen…" heißt jetzt „Track wählen…"** (und „Track-Datei auswählen" in den Modulen),
   da man ja nicht mehr nur GPX, sondern auch FIT/NMEA/KML/… öffnen kann.
 
 ## [0.9.284] – 2026-06-14
 
-### Geändert (Beta-Tester-Wunsch, Feinschliff zu v0.9.283)
+### Geändert (Nutzer-Wunsch, Feinschliff zu v0.9.283)
 
 - **Overlay-Positionen vervollständigt.** Die Statistik-Boxen (Gesamt-/Live-Werte) gibt's
   jetzt in einem vollständigen **3×3-Raster**: vier Ecken plus **oben (↥)**, **unten (↧)**,
@@ -155,7 +155,7 @@ Bei jeder neuen Version:
 
 ## [0.9.283] – 2026-06-14
 
-### Hinzugefügt (Beta-Tester-Wunsch)
+### Hinzugefügt (Nutzer-Wunsch)
 
 - **Mittige Overlay-Positionen.** Die Statistik-Overlays (Gesamt-Werte, Live-Werte,
   Höhenprofil) lassen sich jetzt zusätzlich zu den vier Ecken auch **oben mittig (↥)**
@@ -167,19 +167,19 @@ Bei jeder neuen Version:
 
 ## [0.9.282] – 2026-06-14
 
-### Hinzugefügt (Beta-Tester/Leo-Wunsch)
+### Hinzugefügt (Nutzer-Wunsch)
 
 - **Andere Track-Formate öffnen — automatisch nach GPX umgewandelt.** Man öffnet jetzt
   einfach eine `.fit`, `.nmea`/`.log`, `.kml`/`.kmz`, `.tcx` oder `.geojson` wie eine GPX
   (Picker oder Drag&Drop) — die App konvertiert sie beim Laden transparent in eine GPX und
   arbeitet damit weiter. Nichts ändert sich am restlichen Workflow.
-  - **FIT** (`.fit`) — Garmin/Wahoo/Coros/Suunto/Strava (Radcomputer & Sportuhren, **Leo**)
-  - **NMEA 0183** (`.nmea`/`.log`) — Canon EOS 6D, Marine-GPS, GPS-Logger (**Beta-Tester**)
+  - **FIT** (`.fit`) — Garmin/Wahoo/Coros/Suunto/Strava (Radcomputer & Sportuhren, **Nutzer**)
+  - **NMEA 0183** (`.nmea`/`.log`) — Canon EOS 6D, Marine-GPS, GPS-Logger (**Nutzer**)
   - **KML/KMZ** (`.kml`/`.kmz`) — Google Earth / My Maps
   - **TCX** (`.tcx`) — Garmin Training Center / Strava-Export
   - **GeoJSON** (`.geojson`) — Web-/OSM-Tools
 - **„Als GPX exportieren…"** im Reisezoom-Menü. Speichert den aktuell geladenen Track als
-  echte `.gpx` — auch wenn er aus einem Fremdformat stammt. So bekommt z.B. Beta-Tester aus seiner
+  echte `.gpx` — auch wenn er aus einem Fremdformat stammt. So bekommt z.B. Nutzer aus seiner
   Canon-`.log` eine saubere GPX, ohne externen Konverter (gpsvisualizer.com & Co. entfallen).
 
 ### Geändert
@@ -189,7 +189,7 @@ Bei jeder neuen Version:
 
 ## [0.9.281] – 2026-06-14
 
-### Hinzugefügt (Beta-Tester-Wunsch)
+### Hinzugefügt (Nutzer-Wunsch)
 
 - **Aufnahmezeit aus Track übernehmen (Geotagger).** Neue Option „Aufnahmezeit aus Track
   übernehmen" unter „Manuell platzieren". Wenn man ein Foto **auf den Track einrastet**,
@@ -205,7 +205,7 @@ Bei jeder neuen Version:
 
 ## [0.9.280] – 2026-06-14
 
-### Hinzugefügt (Beta-Tester-Wunsch)
+### Hinzugefügt (Nutzer-Wunsch)
 
 - **Update-Hinweis in der App.** Beim Start prüft die App im Hintergrund, ob auf
   GitHub eine neuere Version vorliegt, und zeigt dann ein dezentes Banner unter der
@@ -220,7 +220,7 @@ Bei jeder neuen Version:
 
 ## [0.9.279] – 2026-06-14
 
-### Behoben (Beta-Tester-Feedback)
+### Behoben (Nutzer-Feedback)
 
 - **Tour-Map-Rendern stürzte komplett ab** (`TourmapConfig got unexpected keyword argument 'ghost_track_enabled'`).
   Die Ghost-Track-Felder (eigener Track blass + zweite Vergleichs-GPX) waren im Animator
@@ -233,7 +233,7 @@ Bei jeder neuen Version:
 
 ## [0.9.278] – 2026-06-13
 
-### Hinzugefügt (Leo-Feedback)
+### Hinzugefügt (Nutzer-Feedback)
 
 - **Kamera-Trägheit für „Kamera folgt Track".** Neuer Regler unter dem „🚶 Kamera folgt Track"-
   Häkchen: bei 0 % klebt die Kamera hart am aktuellen Punkt (kann bei GPS-Rauschen wackeln),
@@ -242,7 +242,7 @@ Bei jeder neuen Version:
   abgestimmt). Höhere Werte sind deutlich träger als zuvor (quadratische Kurve). Default 0 %
   (= bisheriges Verhalten unverändert).
 
-### Behoben (Leo-Feedback)
+### Behoben (Nutzer-Feedback)
 
 - **Anfang/Ende abschneiden (Trim) ging im Classic-Modus nicht.** Ohne aktivierte Keyframes
   war die Timeline ausgegraut — dadurch sahen die Trim-Handles „anders aus" und ließen sich
@@ -261,7 +261,7 @@ Bei jeder neuen Version:
 
 ## [0.9.274] – 2026-06-13
 
-### Behoben (Beta-Tester-Feedback)
+### Behoben (Nutzer-Feedback)
 
 - **Windows: kein extra Konsolenfenster mehr.** ExifTool (und ffmpeg) wurden unter
   Windows mit einem sichtbaren CMD-Fenster gestartet, das dauerhaft offen blieb. Jetzt
@@ -274,7 +274,7 @@ Bei jeder neuen Version:
 
 ### Geändert
 
-- **Linux: aus Quellcode statt fertigem Binary (Beta-Tester-Bug).** Das gefrorene Linux-Binary
+- **Linux: aus Quellcode statt fertigem Binary (Nutzer-Bug).** Das gefrorene Linux-Binary
   startete nicht (pywebview fand keine GTK-/Qt-Bindings — die lassen sich nicht zuverlässig
   ins PyInstaller-Bundle packen). Da das Projekt jetzt Open Source ist, läuft Linux sauber
   **direkt aus dem Quellcode**: System-Pakete (GTK/WebKit + ffmpeg + ExifTool) + `python app.py`.
@@ -296,7 +296,7 @@ Bei jeder neuen Version:
   Quadrat optisch im dunklen Editor und es wirkte, als gäbe es **gar keinen Color-Picker**.
   Jetzt haben alle Farb-Felder (Hintergrund, Rahmen, Text, Schatten) einen sichtbaren Rahmen.
 
-### Geändert (Schilder — Farbsteuerung vereinfacht, Beta-Tester-Feedback)
+### Geändert (Schilder — Farbsteuerung vereinfacht, Nutzer-Feedback)
 
 - **Nur noch EINE Farbe: „Hintergrund".** Die verwirrende Doppelung aus **Akzentfarbe** +
   **Hintergrund** (die technisch beide dieselbe Fläche füllten) ist aufgelöst. Es gibt jetzt
@@ -308,7 +308,7 @@ Bei jeder neuen Version:
 
 ## [0.9.269] – 2026-06-12
 
-### Hinzugefügt (Schilder — Beta-Tester-Feedback)
+### Hinzugefügt (Schilder — Nutzer-Feedback)
 
 - **Hintergrund „Keine" (transparent) bei Schildern.** Im Schild-Editor lässt sich der
   Hintergrund jetzt neben „Auto" auch auf **Keine** stellen → die Schild-Box wird komplett
@@ -316,7 +316,7 @@ Bei jeder neuen Version:
   verschwindet der **doppelte Rahmen** bei Bild-Schildern: nur noch das Foto + optionaler
   Rahmen. Wirkt in Vorschau (DOM) und Render (GPU) identisch. i18n de/en/es.
 
-### Hinzugefügt (GPX-Inspektor — Beta-Tester-Feedback)
+### Hinzugefügt (GPX-Inspektor — Nutzer-Feedback)
 
 - **Zeitstempel beim Klick auf einen Track-Punkt.** Klick auf einen Punkt (Anker A)
   zeigt jetzt Index, **Uhrzeit (lokal)** und Höhe in der Auswahl-Zeile. Bei A+B
@@ -344,19 +344,19 @@ Bei jeder neuen Version:
   den Default (0,5), egal was im Editor eingestellt war. Jetzt steht `decoScale` in
   `signs_for_render` → Render = Vorschau (WYSIWYG).
 
-### Behoben / Geändert (Reiseroute + Track-Schatten — Beta-Tester/Marc-Feedback)
+### Behoben / Geändert (Reiseroute + Track-Schatten — Nutzer/Marc-Feedback)
 
 - **Reiseroute funktioniert wieder (SSL-Zertifikats-Fix) — der eigentliche Bug.**
   Im gebündelten App-Build fand Pythons OpenSSL die CA-Zertifikate nicht → JEDER
   HTTPS-Call (Mapbox Geocoding **und** Directions) starb mit `CERTIFICATE_VERIFY_FAILED:
   unable to get local issuer certificate`. Auf dem Entwickler-Mac fiel das nicht auf
-  (System-Zertifikate vorhanden), bei Beta-Tester schon. Fix: `core/route.py` nutzt jetzt
+  (System-Zertifikate vorhanden), bei Nutzer schon. Fix: `core/route.py` nutzt jetzt
   explizit das `certifi`-CA-Bundle (ist via `requests` mitgebündelt, `cacert.pem` liegt
   im App-Bundle). Mit Beta-Testers Koordinaten verifiziert (1537 Routenpunkte über das
   certifi-only-Bundle).
 - **Reiseroute: klare Fehlermeldung statt pauschal „Start fehlt".** Bisher zeigte die
   Routenberechnung bei JEDEM Problem (Adresse nicht gefunden, Geocoding-Fehler,
-  Netz-/Token-Problem) „Start fehlt — Adresse eingeben…" → irreführend (Beta-Tester-Bugreport
+  Netz-/Token-Problem) „Start fehlt — Adresse eingeben…" → irreführend (Nutzer-Bugreport
   v0.9.252). Jetzt pro Feld die echte Ursache: „Adresse nicht gefunden", „Adresssuche
   fehlgeschlagen (Internet/Token prüfen)" inkl. Detail, oder Token-Hinweis. (Backend
   Geocoding/Directions/Flugbogen mit Token verifiziert — funktionieren.)
@@ -390,7 +390,7 @@ Bei jeder neuen Version:
   - Umgeschaltet wird automatisch beim Öffnen/Schließen des Editors bzw. Probelauf-Start.
   Der **Export war immer GPU** → die Probelauf-Vorschau ist damit weiterhin WYSIWYG.
 
-### Behoben (Bild-Schilder — Beta-Tester-Feedback)
+### Behoben (Bild-Schilder — Nutzer-Feedback)
 
 - **Bild bleibt beim Bearbeiten erhalten.** Das gecachte Bild-Element ist intern
   non-enumerable und ging beim Übernehmen einer Einstellungs-Änderung (Ecken, Text …)
@@ -500,7 +500,7 @@ Bei jeder neuen Version:
 
 ## [0.9.246] – 2026-06-11
 
-### Behoben (Beta-Tester-Feedback — Zoom-Limit + Über-Logo)
+### Behoben (Nutzer-Feedback — Zoom-Limit + Über-Logo)
 
 - **Zoom-Limit:** Man konnte in der Karten-Vorschau endlos hineinzoomen, bis nur
   noch eine schwarze Fläche zu sehen war (besonders in entlegenen Outdoor-Gebieten,
@@ -510,7 +510,7 @@ Bei jeder neuen Version:
 - **Über-Dialog:** Logo bekommt einen `onerror`-Fallback (falls das Icon mal nicht
   lädt, bleibt kein kaputtes Bild-Symbol stehen).
 
-> Offen (Beta-Tester): macOS-Menü-Konvention („Über" + „Einstellungen ⌘," ins App-Menü,
+> Offen (Nutzer): macOS-Menü-Konvention („Über" + „Einstellungen ⌘," ins App-Menü,
 > „Hilfe" nur Hilfe) + doppelter Über-Dialog — bewusst zurückgestellt (Kosmetik,
 > plattformübergreifend zu lösen).
 
@@ -634,7 +634,7 @@ Bei jeder neuen Version:
 > (`.panel` + `.canvas`) wie alle anderen Module, plus `map.resize()`-Absicherung.
 
 
-- Neues Modul **„GPX-Inspektor"** (Marc-Idee, deckt Beta-Tester-Wunsch (c) ab): zeigt
+- Neues Modul **„GPX-Inspektor"** (Marc-Idee, deckt Nutzer-Wunsch (c) ab): zeigt
   **jeden einzelnen** GPS-Punkt des Tracks auf der Karte (voller Roh-Track, nicht
   das 800-Downsample). Man wählt zwei Anker A+B (Klick) und bearbeitet den
   Abschnitt dazwischen:
@@ -654,7 +654,7 @@ Bei jeder neuen Version:
 
 ## [0.9.232] – 2026-06-10
 
-### Hinzugefügt (Geotagger — manuell platziertes Foto wieder per Zeitstempel syncen, Beta-Tester-Wunsch)
+### Hinzugefügt (Geotagger — manuell platziertes Foto wieder per Zeitstempel syncen, Nutzer-Wunsch)
 
 - Manuell auf die Karte gezogene Fotos haben jetzt einen **↺-Button** (blau,
   neben dem roten ✕). Ein Klick **hebt die manuelle Platzierung auf** und matcht
@@ -713,7 +713,7 @@ Bei jeder neuen Version:
 
 ## [0.9.228] – 2026-06-10
 
-### Hinzugefügt (Stats-Overlays — Zeitfenster pro Box, „ab Sek X bis Sek Y", Beta-Tester-Wunsch)
+### Hinzugefügt (Stats-Overlays — Zeitfenster pro Box, „ab Sek X bis Sek Y", Nutzer-Wunsch)
 
 - Jede Overlay-Box (**Gesamt**, **Live**, **Höhenprofil**) hat jetzt in der
   Sidebar ein **⏱ Zeitfenster**: zwei Felder „ab … s" und „bis … s" (in
@@ -1303,7 +1303,7 @@ Bei jeder neuen Version:
   Reisen (z.B. Vietnam, UTC+7) lagen die Fotos dann um den Zeitzonen-Versatz
   neben dem Track. Jetzt lässt sich im Offset-Dialog (✎) zusätzlich die
   **Kamera-Zeitzone** wählen — einmal eingestellt sitzt alles richtig, ohne bei
-  jedem Import nachgefragt zu werden. (Beta-Tester-Feedback, Bugreport-Punkt 4.)
+  jedem Import nachgefragt zu werden. (Nutzer-Feedback, Bugreport-Punkt 4.)
 - **Gemischte Batches bleiben korrekt** — Fotos, die ihre Zeitzone selbst im
   EXIF gespeichert haben (Handys etc.), werden von der manuellen Zeitzonen-Wahl
   **nicht** angefasst (sie sind schon auf UTC normiert). So lassen sich Handy-
@@ -1318,7 +1318,7 @@ Bei jeder neuen Version:
   neuer Drag&Drop (oder „Ordner laden") die bestehende Foto-Liste komplett
   überschrieben. Jetzt kommen die neuen Fotos **zur Liste dazu** (Dubletten mit
   gleichem Pfad werden übersprungen). Entfernen geht weiter per ✕/Backspace,
-  Leeren über das rote ✕ in der GPX-Bar. (Beta-Tester-Feedback.)
+  Leeren über das rote ✕ in der GPX-Bar. (Nutzer-Feedback.)
 - **RAW im veröffentlichten Build wieder taggbar** — die GitHub-Release-Pipeline
   hatte ExifTool **nicht** mitgebündelt (nur der lokale Build tat das), daher
   meldete das veröffentlichte DMG/Installer „exiftool fehlt" bei RAW/Video.
@@ -2201,7 +2201,7 @@ bleibt unverändert (Erde um den Track-Startpunkt). i18n DE/EN/ES angepasst.
 ### Behoben
 
 **Tour-Map 4K: Vorschau ≠ Render (Zoom/Position stimmten nicht überein)**
-(Beta-Tester-Bug). Beim Rendern in 4K war der gerenderte Ausschnitt um genau
+(Nutzer-Bug). Beim Rendern in 4K war der gerenderte Ausschnitt um genau
 eine Zoom-Stufe enger als die Vorschau — bei 1080p passte alles. Ursache:
 Das Frontend rechnet den Vorschau-Zoom via `correctedZoom()` auf die volle
 Render-Breite (z.B. 3840 px) hoch, der Headless-Render läuft aber mit einem
@@ -2219,7 +2219,7 @@ Fit-Zoom-Basis im Render selbst am echten CSS-Viewport berechnet.
 ### Geändert
 
 **Welt-Zentrieren aufgeteilt in zwei Buttons nebeneinander**
-(Marc-Wunsch nach Beta-Tester-Tests v0.9.129). Aktuelles Verhalten
+(Marc-Wunsch nach Nutzer-Tests v0.9.129). Aktuelles Verhalten
 (Track-Startpunkt) ist nicht für jeden Use-Case ideal — z.B. wenn
 man die ganze Tour als Übersicht zeigen möchte, ist der Bbox-
 Mittelpunkt besser. Jetzt sichtbar beide Optionen:
@@ -2242,7 +2242,7 @@ Fallback wenn kein Track geladen ist.
 ### Behoben
 
 **Welt-Zentrieren-Button springt nicht mehr zurück + zentriert auf
-Track-Startpunkt** (Beta-Tester-Bug-Report Beta v0.9.127). Zwei
+Track-Startpunkt** (Nutzer-Bug-Report Beta v0.9.127). Zwei
 zusammenhängende Probleme:
 
 1. **„Welt zentrieren zieht in die Mitte und springt dann raus"** —
@@ -2394,7 +2394,7 @@ und das Smart-Fade-Verhalten zwischen Zoom 4 und 8.
 ### Behoben
 
 **Render-Crash im Classic-Modus mit Kameraverfolgung** (Bug-Report
-Beta-Tester, v0.9.73 Windows): `TypeError: 'TrackPoint' object is not
+Nutzer, v0.9.73 Windows): `TypeError: 'TrackPoint' object is not
 subscriptable` in `core/animator.py` Zeile 1540. Beim Render mit
 Classic-Modus + aktivem „Kamera folgt Track" greift der Code auf
 `points[idx][0]` zu — aber `TrackPoint` ist ein `@dataclass` ohne
@@ -3362,7 +3362,7 @@ KF1 schneller Spin (Globe-Phase), KF2 Spin=0 (am Track angekommen).
 
 ### Hinzugefügt
 
-**Spin-Slider** (Beta-Tester-Idee „Erde dreht sich im Weltall"): neuer Setting
+**Spin-Slider** (Nutzer-Idee „Erde dreht sich im Weltall"): neuer Setting
 `Spin` in der Animator-Kamera-Sektion, Range −60…+60 °/s, Default 0.
 Wirkt **generisch und phase-unabhängig** — wird in Intro, Animation und
 Hold gleichermaßen pro Frame on top auf den Bearing addiert. Auf der
@@ -3766,7 +3766,7 @@ vor v0.9.63. Damit ist Backward-Compat gewährleistet.
 
 ### Behoben
 
-**Map-Bewegung schrieb ungewollt in KF1** (Beta-Tester/Marc-Bug): Beim
+**Map-Bewegung schrieb ungewollt in KF1** (Nutzer/Marc-Bug): Beim
 Animator-Mount oder Projektwechsel wurde der erste Keyframe automatisch
 selektiert (via `autoSelectFirstKfIfNeeded` aus v0.9.17). Folge: jede
 Map-Bewegung, jeder Pitch/Zoom-Slider triggerte `_syncMapStateToUi`, der
@@ -3895,7 +3895,7 @@ Affected: `modules/animator/ui/module.js` Editor-HTML + Reset-Handler,
 
 ### Hinzugefügt
 
-**Intro-Hold am Anfang, analog zum Outro-Hold** (Beta-Tester-Wunsch): Neuer
+**Intro-Hold am Anfang, analog zum Outro-Hold** (Nutzer-Wunsch): Neuer
 `intro_s`-Slider neben Dauer/Hold. Marker hält am `trim_start` für die
 angegebenen Sekunden bevor die Anim-Phase losläuft. Erlaubt langsame
 Setup-Shots / Kamera-Aufzüge (z.B. Erdkugel → Routenstart-Zoom) ohne
@@ -3931,7 +3931,7 @@ Affected:
 ### Behoben
 
 **Keyframe-Zoom-Slider sprang Scrubber zurück auf vorherigen KF**
-(Beta-Tester-Bug-Report): Mit zwei KFs (z.B. KF1 = Erdkugel, KF2 = Routenstart)
+(Nutzer-Bug-Report): Mit zwei KFs (z.B. KF1 = Erdkugel, KF2 = Routenstart)
 verschob die Zoom-Slider-Bewegung den Scrubber **zurück auf KF1**, statt
 auf dem aktiven KF zu bleiben.
 
@@ -3952,7 +3952,7 @@ Affected: `modules/animator/ui/module.js` Zoom-Slider in
 ### Behoben
 
 **HEIC-Fotos (iPhone) zeigten kein Thumbnail im Geotagger ohne installiertes
-exiftool** (Beta-Tester-Bug-Report): Vorher liefen `.heic`/`.heif` durch
+exiftool** (Nutzer-Bug-Report): Vorher liefen `.heic`/`.heif` durch
 `extract_raw_preview()` → das braucht exiftool. Wenn User kein exiftool
 hat (Default-Mac ohne Homebrew, Standard-Windows), blieben Tiles schwarz
 und der Loader lief endlos.
@@ -4364,7 +4364,7 @@ Persistiert pro Projekt in `projects.json`.
 
 ### Hinzugefügt
 
-**License-Credits im About-Modal** (Beta-Tester-Hint 2026-05-25, FFmpeg-
+**License-Credits im About-Modal** (Nutzer-Hint 2026-05-25, FFmpeg-
 LGPL-Redistribution-Pflicht): Im „Über"-Modal jetzt ein „Open-Source-
 Komponenten"-Block mit klickbaren Links zu allen genutzten Bibliotheken:
 
@@ -4786,10 +4786,10 @@ Fix in zwei Schichten:
 
 ### Hinzugefügt
 
-**Beta-Tester-Feedback-Pack** (externe Bug-/UX-Mail von Beta-Tester, 2026-05-24).
+**Nutzer-Feedback-Pack** (externe Bug-/UX-Mail von Nutzer, 2026-05-24).
 Sieben Punkte aus seinem Geotagger-Test sind eingearbeitet:
 
-- **Offset-Slider Tot-Zone behoben** (Beta-Tester-Punkt 4): `snapToHour()`
+- **Offset-Slider Tot-Zone behoben** (Nutzer-Punkt 4): `snapToHour()`
   snappt nicht mehr auf die 0-Stunde — bis v0.9.26 sprang der Slider
   bei ±5 min Magnetfeld immer auf 0, sodass man −4-Min-Offsets per
   Slider gar nicht eingeben konnte. Jetzt snappt nur noch zwischen
@@ -4844,7 +4844,7 @@ Sieben Punkte aus seinem Geotagger-Test sind eingearbeitet:
 
 - Punkt 1 (Reihenfolge „Fotos vor GPS-Track" tauschen) ist seit v0.8.1
   schon erledigt: GPX-Picker ist global oben in der Sub-Top-Bar, die
-  Geotagger-Sidebar fängt direkt mit der Foto-Sektion an. Beta-Tester hat
+  Geotagger-Sidebar fängt direkt mit der Foto-Sektion an. Nutzer hat
   eine ältere Version gesehen.
 
 ## [0.9.26] – 2026-05-24 21:15
@@ -5051,7 +5051,7 @@ Fix:
 Marc:
 > „der track soll 1:1 so im render aussehen, wie in der preview"
 
-Beta-Tester:
+Nutzer:
 > „Die Glow-Stärke hat bis 1.5 px Funktion, danach habe ich das Gefühl
 > dass sie wieder abgeschaltet wird."
 
@@ -6085,9 +6085,9 @@ Umrechnung, da Track- und Timeline-Anker identisch sind.
 
 ## [0.8.10] – 2026-05-23 11:00
 
-### Hinzugefügt (Track-Optik „3D-Wurm" — Beta-Tester-Wunsch)
+### Hinzugefügt (Track-Optik „3D-Wurm" — Nutzer-Wunsch)
 
-Beta-Tester (E-Mail):
+Nutzer (E-Mail):
 > „Mit Rund bei der GPX Spur meine ich wie ein Wurm oder Schlange,
 > sieht mehr nach 3D aus."
 
@@ -6965,9 +6965,9 @@ Marc nach v0.7.0-Test:
 
 ## [0.7.0] – 2026-05-22 19:30
 
-### Hinzugefügt (Camera-Keyframe-Timeline — Beta-Tester-Idee)
+### Hinzugefügt (Camera-Keyframe-Timeline — Nutzer-Idee)
 
-Beta-Tester:
+Nutzer:
 > „Du legst ja ein Tempo vor, hier noch eine Idee bei Kamera Neigung und
 > Rotation mit Keyframes beeinflussen."
 
@@ -7232,9 +7232,9 @@ Technisch:
 
 ## [0.6.5] – 2026-05-22 14:28
 
-### Hinzugefügt (Linien-Stil: solid / dashed / dotted / dashdot — Beta-Tester-Idee)
+### Hinzugefügt (Linien-Stil: solid / dashed / dotted / dashdot — Nutzer-Idee)
 
-Beta-Tester:
+Nutzer:
 > „Funktioniert hervorragend, noch eine Idee von mir, kann man die gpx
 > Spur unterschiedlich einstellen? Zum Beispiel Rund oder gestrichelt?"
 
@@ -7255,7 +7255,7 @@ als Default auf ALLE Track-Layer (preview-shadow/preview-glow/preview-line
 in der UI, track-shadow/track-glow/track-line im Render-HTML). Vorher
 waren das Mapbox-Defaults `butt/miter` — kantig an Endungen und scharfen
 Track-Knicken. Mit `round` sind die Track-Endungen jetzt schön
-abgerundet (das ist möglicherweise was Beta-Tester ursprünglich mit „Rund"
+abgerundet (das ist möglicherweise was Nutzer ursprünglich mit „Rund"
 meinte).
 
 Technisch:
@@ -7672,9 +7672,9 @@ Geändert an 4 Stellen, beide Mechanismen jeweils:
 
 ## [0.4.4] – 2026-05-21 21:04
 
-### Hinzugefügt (Karte ohne Beschriftungen — Bug-Report/Feature-Request Beta-Tester)
+### Hinzugefügt (Karte ohne Beschriftungen — Bug-Report/Feature-Request Nutzer)
 
-Beta-Tester nach v0.4.3-Test:
+Nutzer nach v0.4.3-Test:
 > „Hast du auch Einfluß auf das Kartenmaterial, wenn ja eine Karte ohne
 > Schriften wie Ortschaften oder Straßennamen wär doch auch schön."
 
@@ -7922,7 +7922,7 @@ Generiert aus `icon_1024.png` mit Pillow, enthält die Größen
 - Marc verlinkt aus dem Blogpost (`reisezoom.com/reisezoom-gps-studio/`)
   auf die feste URL — die ist nach jedem Deploy automatisch frisch.
 
-### Hinzugefügt (Schlagschatten unter Track — DAU-Feedback Beta-Tester)
+### Hinzugefügt (Schlagschatten unter Track — DAU-Feedback Nutzer)
 
 - Neue Checkbox „**Schlagschatten unter Track**" in der Karten-Sektion +
   Slider „**Schatten-Stärke**" (0–10 px, Default 4 px).
@@ -7944,7 +7944,7 @@ Generiert aus `icon_1024.png` mit Pillow, enthält die Größen
 - Default ist **aktiv** — bei der Default-Stärke (4 px) wirkt der Effekt
   dezent aber sichtbar, ohne aufdringlich zu sein.
 
-### Hinzugefügt (Alpha-Kanal-Render + Punkte-Dichte — DAU-Feedback Beta-Tester)
+### Hinzugefügt (Alpha-Kanal-Render + Punkte-Dichte — DAU-Feedback Nutzer)
 
 Beta-Tester (470-Punkte-Tour) hat dreifach Feedback gegeben, das in
 diesem Release komplett adressiert wird:
@@ -8042,7 +8042,7 @@ diesem Release komplett adressiert wird:
 
 ## [0.3.2] – 2026-05-21
 
-### Beta-Tester-Feedback (Beta-Tester): ffmpeg-Setup + fehlende FPS-Option
+### Beta-Tester-Feedback (Nutzer): ffmpeg-Setup + fehlende FPS-Option
 
 ### Hinzugefügt (ffmpeg out-of-the-box — keine Installation nötig)
 - **`imageio-ffmpeg`** als neue Dependency: liefert ein statisch gelinktes

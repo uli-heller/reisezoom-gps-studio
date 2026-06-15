@@ -403,7 +403,7 @@ function mountTimelineBar(opts) {
   function _bindTrimHandle(handleEl, which) {
     if (!handleEl) return;
     handleEl.addEventListener("mousedown", (e) => {
-      // v0.9.276 (Leo) — KEIN `if (!_enabled) return` mehr: der Trim (Render-Bereich)
+      // v0.9.276 (Nutzer) — KEIN `if (!_enabled) return` mehr: der Trim (Render-Bereich)
       // ist unabhängig vom Keyframe-Modus und muss auch im Classic-Modus ziehbar sein.
       e.preventDefault(); e.stopPropagation();
       const onMove = (ev) => {

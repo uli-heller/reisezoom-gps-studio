@@ -73,7 +73,7 @@ function mountGeotagger(body, headerActions) {
         <div class="section-title">${t("geotagger.section.photos")}</div>
         <button class="btn btn-block" id="gt-pick-photos">${t("geotagger.btn.pick_photos")}</button>
         <button class="btn btn-block btn-small" id="gt-pick-folder">${t("geotagger.btn.pick_folder")}</button>
-        <!-- v0.9.27 (Beta-Tester-Feedback): Unterordner-Option beim Folder-Pick -->
+        <!-- v0.9.27 (Nutzer-Feedback): Unterordner-Option beim Folder-Pick -->
         <label class="checkbox-row" style="margin-top:6px; font-size:12px;">
           <input type="checkbox" id="gt-folder-recursive">
           <span>${t("geotagger.toggle.folder_recursive")}</span>
@@ -118,7 +118,7 @@ function mountGeotagger(body, headerActions) {
           <span>${t("geotagger.place.snap_toggle", "Auf Track einrasten")}</span>
         </label>
         <div class="small-info" id="gt-snap-cmd-hint" style="margin-top:4px; opacity:0.8;">${t("geotagger.place.cmd_hint", "⌘ beim Ablegen kehrt das kurz um.")}</div>
-        <!-- v0.9.281 (Beta-Tester-Wunsch): Aufnahmezeit aus Track für eingerastete Fotos -->
+        <!-- v0.9.281 (Nutzer-Wunsch): Aufnahmezeit aus Track für eingerastete Fotos -->
         <label class="checkbox-row" style="margin-top:8px;">
           <input type="checkbox" id="gt-set-time-from-track">
           <span>${t("geotagger.place.set_time_toggle", "Aufnahmezeit aus Track übernehmen")}</span>
@@ -370,7 +370,7 @@ function mountGeotagger(body, headerActions) {
   });
 
   // Edit-Button → Modal für genauen Offset-Wert.
-  // v0.9.27 (Beta-Tester-Feedback): Text-Input mit Parser statt nur Sekunden-Zahl.
+  // v0.9.27 (Nutzer-Feedback): Text-Input mit Parser statt nur Sekunden-Zahl.
   // Akzeptiert: 4s, 4m, 1h30m, -2h, 1:30:00, oder reine Zahl (= Sekunden).
   document.getElementById("gt-off-edit").addEventListener("click", () => {
     const cur = getOffsetSeconds();
@@ -686,7 +686,7 @@ function mountGeotagger(body, headerActions) {
     ];
     const files = await api().pick_file("open", filters, true);
     if (!files || !files.length) return;
-    // v0.9.27 (Beta-Tester-Feedback): Foto-Pfade persistieren damit Modul-Wechsel
+    // v0.9.27 (Nutzer-Feedback): Foto-Pfade persistieren damit Modul-Wechsel
     // + App-Restart sie wiederherstellen kann
     saveSettings({ geotagger: { last_photos_paths: files, last_photos_dir: "" } });
     await loadPhotos(files);
@@ -697,7 +697,7 @@ function mountGeotagger(body, headerActions) {
     if (!folders || !folders.length) return;
     const folder = folders[0];
     const recursive = document.getElementById("gt-folder-recursive").checked;
-    // v0.9.27 (Beta-Tester-Feedback): Ordner + Rekursiv-State persistieren
+    // v0.9.27 (Nutzer-Feedback): Ordner + Rekursiv-State persistieren
     saveSettings({ geotagger: { last_photos_dir: folder, last_photos_paths: [], folder_recursive: recursive } });
     stopThumbPolling();
     const res = await api().geotagger_load_photos_from_folder(folder, recursive);
@@ -708,7 +708,7 @@ function mountGeotagger(body, headerActions) {
     if (res.warning) toast(res.warning, "warn", 6000);
     showGridLoader(0, photos.length);
     pollThumbs(new Set());
-    // v0.9.27 (Beta-Tester-Feedback): GPX-Auto-Detect anbieten — nur wenn aktuell
+    // v0.9.27 (Nutzer-Feedback): GPX-Auto-Detect anbieten — nur wenn aktuell
     // KEIN GPX geladen ist (sonst würde es das vom User aktiv geladene
     // einfach überschreiben, was nervig wäre)
     if (!currentGpxPath && photos.length > 0) {
@@ -716,7 +716,7 @@ function mountGeotagger(body, headerActions) {
     }
   });
 
-  /** v0.9.27 (Beta-Tester-Feedback): findet GPX-Dateien in der Nähe des
+  /** v0.9.27 (Nutzer-Feedback): findet GPX-Dateien in der Nähe des
    *  Foto-Ordners und bietet dem User an, eine davon zu laden. */
   async function offerNearbyGpx(folder) {
     try {
@@ -976,7 +976,7 @@ function mountGeotagger(body, headerActions) {
           title: t("geotagger.remove.title", "Aus Liste entfernen") }, "✕");
         rm.addEventListener("click", ev => { ev.stopPropagation(); _gtRemovePhoto(p.path); });
         thumbWrap.appendChild(rm);
-        // v0.9.232 (Beta-Tester-Wunsch): manuell platziertes Foto wieder per
+        // v0.9.232 (Nutzer-Wunsch): manuell platziertes Foto wieder per
         // Aufnahmezeit auf den Track syncen — ohne löschen/neu importieren.
         // Nur sichtbar wenn das Foto aktuell manuell platziert ist.
         if (_gtManual.has(p.path)) {
@@ -1010,7 +1010,7 @@ function mountGeotagger(body, headerActions) {
     document.querySelectorAll(".photo-tile").forEach(t => {
       t.classList.toggle("selected", t.dataset.path === path);
     });
-    // v0.9.27 (Beta-Tester-Feedback): selektierter Marker nach VORN bringen.
+    // v0.9.27 (Nutzer-Feedback): selektierter Marker nach VORN bringen.
     // Mapbox malt Marker in DOM-Order — bei dichten Cluster-Pins ist der
     // selektierte Marker sonst unter anderen verdeckt.
     markers.forEach(mk => {
@@ -1582,7 +1582,7 @@ function mountGeotagger(body, headerActions) {
     updateSummary();
   }
 
-  // v0.9.232 (Beta-Tester-Wunsch): manuelle Platzierung aufheben → Foto wird wieder
+  // v0.9.232 (Nutzer-Wunsch): manuelle Platzierung aufheben → Foto wird wieder
   // per Aufnahmezeit gegen den Track gematcht (wie frisch importiert), OHNE es
   // zu löschen und neu reinzuholen. Nur für aktuell manuell platzierte Fotos.
   function _gtResyncPhoto(path) {
@@ -1634,7 +1634,7 @@ function mountGeotagger(body, headerActions) {
     _gtUnchecked.clear();      // v0.9.164 — Tag-Auswahl zurücksetzen
     _gtManual.clear();         // v0.9.166 — manuelle Platzierungen zurücksetzen
     _gtHideTrackPopup();       // v0.9.163 — Track-Klick-Popup schließen
-    // v0.9.27 (Beta-Tester-Feedback): persistierten Foto-State auch leeren
+    // v0.9.27 (Nutzer-Feedback): persistierten Foto-State auch leeren
     try { saveSettings({ geotagger: { last_photos_dir: "", last_photos_paths: [] } }); } catch (_) {}
     // 3) Marker von der Karte entfernen
     try {
@@ -1978,7 +1978,7 @@ function mountGeotagger(body, headerActions) {
     stopThumbPolling();
 
     // ---- PHASE A: sofort lokale Pending-Tiles rendern (vor Upload!) ----
-    // v0.9.176 (Beta-Tester-Feedback): ANHÄNGEN statt ersetzen + Dubletten (gleicher
+    // v0.9.176 (Nutzer-Feedback): ANHÄNGEN statt ersetzen + Dubletten (gleicher
     // Originalpfad) überspringen.
     const RAW_RX = /\.(cr3|cr2|crw|nef|nrw|arw|srf|sr2|raf|rw2|orf|dng|pef|rwl|srw|heic|heif)$/i;
     const VIDEO_RX = /\.(mp4|mov|m4v|qt|insv|insp|mts|m2ts|lrv|3gp|avi|mkv)$/i;

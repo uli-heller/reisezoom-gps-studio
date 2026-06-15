@@ -29,7 +29,7 @@ import os
 import subprocess
 import time
 
-# v0.9.274 (Beta-Tester-Bug) — Windows: ffmpeg ohne sichtbares Konsolenfenster starten.
+# v0.9.274 (Nutzer-Bug) — Windows: ffmpeg ohne sichtbares Konsolenfenster starten.
 _WIN_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
 from dataclasses import dataclass, field
 from pathlib import Path

@@ -1,5 +1,5 @@
 // Reisezoom GPS Studio — GPX-Inspektor-Modul (v0.9.233)
-// Marc-Idee + Beta-Tester-Bug-Report (c): Track Punkt-für-Punkt zeigen und „heilen".
+// Marc-Idee + Nutzer-Bug-Report (c): Track Punkt-für-Punkt zeigen und „heilen".
 // Phase 1: alle Punkte auf der Karte, 2 Anker wählen → Heilen (Sprung glätten,
 // Position+Höhe interpolieren, Zeit behalten → Speed korrigiert sich selbst)
 // ODER Lücke füllen (neue Punkte mit interpolierter Position/Höhe/Zeit einfügen).
@@ -391,7 +391,7 @@ function mountGpxInspect(body, headerActions) {
     toast(t("gpxinspect.filled", "Lücke gefüllt: ") + inserted.length + " " + t("gpxinspect.points", "Punkte"), "success", 2200);
   }
 
-  // ── Zeit-/Punkt-Info (Beta-Tester-Wunsch v0.9.263): beim Klick auf einen Punkt
+  // ── Zeit-/Punkt-Info (Nutzer-Wunsch v0.9.263): beim Klick auf einen Punkt
   //    Index, Zeitstempel (lokal) und Höhe zeigen. _ptInfo wird in updateUI in die
   //    Auswahl-Zeile geschrieben.
   function _fmtPtTime(iso) {
@@ -819,7 +819,7 @@ function mountGpxInspect(body, headerActions) {
     if (selEl) {
       if (!haveA) selEl.textContent = t("gpxinspect.sel_none", "Keine Auswahl");
       else if (!haveB) {
-        // v0.9.263 — Zeit/Höhe des angeklickten Punktes zeigen (Beta-Tester-Wunsch).
+        // v0.9.263 — Zeit/Höhe des angeklickten Punktes zeigen (Nutzer-Wunsch).
         selEl.textContent = t("gpxinspect.sel_a_short", "Anker A: ") + _ptInfo(_selA)
           + " — " + t("gpxinspect.sel_a_next", "jetzt B klicken");
       } else {

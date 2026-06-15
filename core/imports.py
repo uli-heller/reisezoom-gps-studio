@@ -1,5 +1,5 @@
 """
-Universelle Track-Import-Schicht (v0.9.282, Beta-Tester/Leo-Wunsch).
+Universelle Track-Import-Schicht (v0.9.282, Nutzer-Wunsch).
 
 Idee: Andere GPS-Track-Formate werden beim Öffnen automatisch nach GPX
 konvertiert, sodass die ganze App (Animator, Tour-Map, Geotagger, Höhen-

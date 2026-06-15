@@ -94,7 +94,7 @@ class TourmapConfig:
     photos_size_px: int = 48
     photos_show: bool = True
 
-    # v0.9.279 (Beta-Tester-Crash-Fix) — Ghost-Felder gespiegelt vom AnimatorConfig.
+    # v0.9.279 (Nutzer-Crash-Fix) — Ghost-Felder gespiegelt vom AnimatorConfig.
     # WARUM hier nötig: app.py.tourmap_render schleift dieselben ghost_*-Params
     # durch wie animator_render. Fehlten die Felder, crashte das TourMap-Rendern
     # mit „TourmapConfig got unexpected keyword 'ghost_track_enabled'".
@@ -438,7 +438,7 @@ map.on('style.load', () => {{
   map.addLayer({{ id: 'track-line', type: 'line', source: 'track',
     layout: {{ 'line-cap': 'round', 'line-join': 'round' }},
     paint: {{ 'line-color': '{cfg.line_color}', 'line-width': {cfg.line_width:.2f}, 'line-opacity': 0.95{f",'line-dasharray':{_dasharray_mapbox(cfg.line_style, cfg.line_style_spacing)}" if _dasharray_mapbox(cfg.line_style, cfg.line_style_spacing) else ""}{",'line-z-offset':150" if cfg.enable_terrain else ''} }} }});
-  // v0.8.10 — Track-Optik „tube" (3D-Wurm, Beta-Tester-Wunsch): weißer
+  // v0.8.10 — Track-Optik „tube" (3D-Wurm, Nutzer-Wunsch): weißer
   // Highlight-Streifen oben auf der Track-Linie. Synchron zu core/animator.py.
   {("map.addLayer({ id: 'track-highlight', type: 'line', source: 'track',"
     "layout: { 'line-cap': 'round', 'line-join': 'round' },"

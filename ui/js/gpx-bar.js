@@ -23,7 +23,7 @@
   // FIT/NMEA/KML/KMZ/TCX/GeoJSON öffnen — das Backend konvertiert beim Laden
   // transparent nach GPX. Filter (Picker) + Erkennungs-Regex (Drag&Drop).
   // Global auf window, damit Module (Geotagger) denselben Filter nutzen.
-  // WICHTIG (Beta-Tester-Bug v0.9.285): pywebviews Windows-Backend validiert die
+  // WICHTIG (Nutzer-Bug v0.9.285): pywebviews Windows-Backend validiert die
   // Filter-Beschreibung mit Regex `[\w ]+` — KEINE Sonderzeichen (Bindestrich!).
   // „Track-Dateien" crashte → daher „Track Dateien" (nur Buchstaben + Leerzeichen).
   window.TRACK_PICK_FILTER = [
@@ -69,7 +69,7 @@
         try { await sessionActivate(res.coords, path); }
         catch (err) { console.warn("sessionActivate (gpx-bar):", err); }
       }
-      // v0.9.27 (Beta-Tester-Feedback): letzten GPX-Pfad persistieren damit
+      // v0.9.27 (Nutzer-Feedback): letzten GPX-Pfad persistieren damit
       // er beim App-Restart automatisch wiederhergestellt werden kann.
       try { if (typeof saveSettings === "function") saveSettings({ last_gpx_path: path }); }
       catch (_) {}

@@ -87,7 +87,7 @@ hidden = [
     "playwright",
     "playwright.async_api",
     "imageio_ffmpeg",   # gebündeltes ffmpeg-Binary für Animator-MP4-Encode
-    # v0.9.57 — pillow-heif für HEIC/HEIF-Support (Beta-Tester-Bug: iPhone-Fotos)
+    # v0.9.57 — pillow-heif für HEIC/HEIF-Support (Nutzer-Bug: iPhone-Fotos)
     "pillow_heif",
     "_pillow_heif_cffi",
 ]

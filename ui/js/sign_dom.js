@@ -3,7 +3,7 @@
  * Ersetzt das frühere Canvas→addImage-Rastern (sign_draw.js → __rzDrawSign).
  * Ein Schild ist jetzt ein echtes HTML-Element in einem mapboxgl.Marker.
  * Größe/Ecken/Rahmen/Schatten/Text = reine CSS-/Content-Updates am stehenden
- * Element → KEIN Neu-Rastern, KEIN Hochladen, KEIN Flackern (Beta-Tester-/Marc-Bug).
+ * Element → KEIN Neu-Rastern, KEIN Hochladen, KEIN Flackern (Nutzer-/Marc-Bug).
  *
  * GLEICHE Engine in Vorschau (modules/animator) UND Render (core/animator.py,
  * headless Playwright) → garantiertes WYSIWYG. Playwright-Screenshots fangen die
@@ -129,7 +129,7 @@
     var boxFill;
     if (styleName === "banner" || styleName === "signpost" || styleName === "plain") boxFill = accent;
     else boxFill = "#15171c"; // callout / pin
-    // v0.9.269 (Beta-Tester) — bg === "none": Box transparent (kein farbiger „Akzent-Rahmen"
+    // v0.9.269 (Nutzer) — bg === "none": Box transparent (kein farbiger „Akzent-Rahmen"
     // ums Bild, kein Box-Schatten). Nur der optionale Rahmen bleibt → kein doppelter Rahmen.
     var boxTransparent = (o.bg === "none");
     if (o.bg && o.bg !== "auto" && o.bg !== "none") boxFill = o.bg;

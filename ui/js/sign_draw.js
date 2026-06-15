@@ -73,7 +73,7 @@
     var pad = (o.padding != null ? Number(o.padding) : 7) * dpr;
     var borderW = (o.borderWidth != null ? Number(o.borderWidth) : 0) * dpr;
     var borderC = (o.borderColor && o.borderColor !== "none") ? o.borderColor : null;
-    // v0.9.254 (Beta-Tester-Bug #3) — der Innenabstand muss mindestens so groß wie der
+    // v0.9.254 (Nutzer-Bug #3) — der Innenabstand muss mindestens so groß wie der
     // Rahmen sein. Sonst wird der Inhalt (Bild/Text) mit nur `pad` Abstand gezeichnet,
     // der Rahmen aber bis `borderW` nach innen → das Bild liegt ÜBER dem inneren Teil
     // des Rahmens und der Rahmen wirkt „kleiner als das Bild". `pad` fließt in die
@@ -84,7 +84,7 @@
     var shadowC = o.shadowColor || "#000000";
     var shadowBlur = (o.shadowBlur != null ? Number(o.shadowBlur) : 8) * dpr;
     var shadowStrength = (o.shadowStrength != null ? Math.max(0.05, Math.min(1, Number(o.shadowStrength))) : 0.55);
-    // v0.9.254 (Beta-Tester-Bug #4) — etwas größerer vertikaler Schatten-Offset, damit der
+    // v0.9.254 (Nutzer-Bug #4) — etwas größerer vertikaler Schatten-Offset, damit der
     // Schatten auch bei geringer Weichheit (Blur) unter der Box hervorlugt. Vorher klebte
     // er bei 2px Offset hinter der opaken Box → die Stärke (Deckkraft) war unsichtbar,
     // bis man die Weichheit hochzog.
@@ -97,7 +97,7 @@
     else if (style === "pin") { boxFill = "#15171c"; textSurface = "#15171c"; decoration = "pin"; }
     else if (style === "plain") { boxFill = accent; textSurface = accent; decoration = "none"; }
     else { boxFill = "#15171c"; textSurface = "#15171c"; decoration = "tail"; } // callout
-    // v0.9.269 (Beta-Tester) — bg === "none": Box komplett TRANSPARENT (kein Füll, kein
+    // v0.9.269 (Nutzer) — bg === "none": Box komplett TRANSPARENT (kein Füll, kein
     // Box-Schatten). So liegt z.B. ein Bild ohne farbigen „Akzent-Rahmen" auf der Karte;
     // nur der optionale Rahmen bleibt → behebt den „doppelten Rahmen" bei Bild-Schildern.
     var boxTransparent = (o.bg === "none");

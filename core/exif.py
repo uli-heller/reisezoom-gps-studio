@@ -4,7 +4,7 @@ EXIF read/write für Fotos. Drei Backends:
 1. **piexif** für JPEG/TIFF — schnell, in-process, kein Subprocess.
 2. **pillow-heif** für HEIC/HEIF — in-process via Pillow-Plugin. Liefert
    Thumbnails direkt + EXIF-Bytes die wir mit piexif parsen. v0.9.57 (Marc/
-   Beta-Tester-Bug): Vorher liefen HEIC durch exiftool — wenn das nicht installiert
+   Nutzer-Bug): Vorher liefen HEIC durch exiftool — wenn das nicht installiert
    war (typisch auf Windows-User-Macs), blieben HEIC-Thumbnails leer.
 3. **exiftool** für RAW-Formate (CR3, CR2, NEF, ARW, RAF, ORF, DNG, ...) und
    als HEIC-Fallback wenn pillow-heif fehlt.
@@ -30,7 +30,7 @@ from typing import Any, Optional
 
 import piexif
 
-# v0.9.274 (Beta-Tester-Bug) — Windows: Kindprozesse (exiftool-Daemon, ffmpeg) OHNE
+# v0.9.274 (Nutzer-Bug) — Windows: Kindprozesse (exiftool-Daemon, ffmpeg) OHNE
 # sichtbares Konsolenfenster starten. Auf POSIX 0 (kein Effekt).
 _WIN_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
 
@@ -322,7 +322,7 @@ class _ExifToolDaemon:
             popen_kwargs["start_new_session"] = True
         elif os.name == "nt":
             # Windows: eigene Prozessgruppe (für sauberes terminate()) + KEIN
-            # sichtbares Konsolenfenster (Beta-Tester-Bug: exiftool-Daemon öffnete ein
+            # sichtbares Konsolenfenster (Nutzer-Bug: exiftool-Daemon öffnete ein
             # dauerhaft offenes CMD-Fenster).
             popen_kwargs["creationflags"] = (
                 getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | _WIN_NO_WINDOW)
@@ -832,7 +832,7 @@ def shift_datetime(path: str, seconds: float) -> bool:
 
 
 def set_datetime(path: str, dt) -> bool:
-    """v0.9.281 (Beta-Tester-Wunsch) — Setzt den Aufnahmezeitpunkt ABSOLUT auf `dt`
+    """v0.9.281 (Nutzer-Wunsch) — Setzt den Aufnahmezeitpunkt ABSOLUT auf `dt`
     (DateTimeOriginal/CreateDate/ModifyDate + OffsetTime*-Tags). Für Fotos, die
     auf den Track eingerastet wurden und deren eigene Uhrzeit falsch/fehlt (z.B.
     WhatsApp-Weiterleitungen): die Zeit des getroffenen Track-Punkts wird zum

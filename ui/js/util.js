@@ -38,7 +38,7 @@ function fmtSeconds(s) {
 }
 
 /**
- * v0.9.27 (Beta-Tester-Feedback): User-freundlicher Parser für Zeit-Offsets.
+ * v0.9.27 (Nutzer-Feedback): User-freundlicher Parser für Zeit-Offsets.
  * Akzeptiert verschiedene Schreibweisen, gibt Sekunden zurück (oder null bei Fehler).
  *
  * Beispiele:
@@ -186,9 +186,9 @@ function createMap(opts) {
   if (token && token.startsWith("pk.")) {
     _mapMode = "mapbox";
     mapboxgl.accessToken = token;
-    // v0.9.246/274 (Beta-Tester-Feedback): maxZoom begrenzen, sonst zoomt man bis ins
+    // v0.9.246/274 (Nutzer-Feedback): maxZoom begrenzen, sonst zoomt man bis ins
     // Daten-Nichts (schwarze Fläche), besonders in entlegenen Outdoor-Gebieten
-    // wo Satellit-Tiles früh enden. 20 reichte noch nicht (Beta-Tester bekam weiter
+    // wo Satellit-Tiles früh enden. 20 reichte noch nicht (Nutzer bekam weiter
     // Schwarz „einen Tick zu weit"), darum jetzt 18 — verhindert das Void zuverlässig.
     const map = new mapboxgl.Map(Object.assign({
       container: opts.container,

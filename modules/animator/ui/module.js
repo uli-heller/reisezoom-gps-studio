@@ -480,7 +480,7 @@ function mountAnimator(body, headerActions, opts) {
               <input type="checkbox" id="anim-camera-follow">
               <span>🚶 ${t("animator.field.camera_follow_track")}</span>
             </label>
-            <!-- v0.9.275 (Leo) — Trägheit: weiches Nachziehen statt hartem Kleben am Punkt.
+            <!-- v0.9.275 (Nutzer) — Trägheit: weiches Nachziehen statt hartem Kleben am Punkt.
                  Nur sinnvoll wenn „Kamera folgt Track" an ist. -->
             <div class="field" id="anim-follow-inertia-row">
               <label class="field-label">${t("animator.field.follow_inertia", "Kamera-Trägheit")} <span class="label-val" id="anim-follow-inertia-v">0%</span></label>
@@ -1118,7 +1118,7 @@ function mountAnimator(body, headerActions, opts) {
     },
   });
   // v0.8.17 — „Kamera folgt Track" im Classic-Modus
-  // v0.9.275/277 (Leo) — Kamera-Trägheit (0..100 %), nur sichtbar wenn „Kamera folgt Track" an.
+  // v0.9.275/277 (Nutzer) — Kamera-Trägheit (0..100 %), nur sichtbar wenn „Kamera folgt Track" an.
   // WICHTIG (Marc-Bug v0.9.277): _fiSync MUSS auch beim PROJEKTWECHSEL laufen. bindSetting
   // setzt die Follow-Checkbox dann programmatisch (kein `change`-Event) → darum `onLoad: _fiSync`
   // an der Follow-Bindung, sonst bleibt der Regler nach Projektwechsel versteckt obwohl Follow an.
@@ -1148,7 +1148,7 @@ function mountAnimator(body, headerActions, opts) {
   document.getElementById("anim-kf-enabled")?.addEventListener("change", () => {
     _animPushUndo("Keyframe-Editor umgeschaltet", { force: true });
   });
-  // v0.9.59 (Beta-Tester-Wunsch): Intro-Hold analog zum Outro-Hold
+  // v0.9.59 (Nutzer-Wunsch): Intro-Hold analog zum Outro-Hold
   bindSetting("anim-intro", _MODKEY, "intro_s", { type: "number" });
   // v0.9.18 — onLoad/onChange auf updateResButtons() koppeln, damit der
   // Quick-Picker-Button beim Session-Load + Projekt-Wechsel der Eingabe
@@ -1292,7 +1292,7 @@ function mountAnimator(body, headerActions, opts) {
   bindSetting("anim-ov-live-pos", _MODKEY, "overlay_live_position");
   bindSetting("anim-ov-ele", _MODKEY, "overlay_elevation_enabled", { type: "bool" });
   bindSetting("anim-ov-ele-pos", _MODKEY, "overlay_elevation_position");
-  // v0.9.228 — Overlay-Zeitfenster (Beta-Tester „ab Sek X bis Sek Y"). 0 = ab Start /
+  // v0.9.228 — Overlay-Zeitfenster (Nutzer „ab Sek X bis Sek Y"). 0 = ab Start /
   // bis Ende. number-Bind speichert/restored projekt-bewusst.
   bindSetting("anim-ov-totals-from", _MODKEY, "overlay_totals_from_s", { type: "number" });
   bindSetting("anim-ov-totals-to", _MODKEY, "overlay_totals_to_s", { type: "number" });
@@ -1857,7 +1857,7 @@ function mountAnimator(body, headerActions, opts) {
         layout: trackLayout,
         paint: { "line-color": color, "line-width": lw, "line-opacity": 0.95, ...dashPaint, ...zOffPaint } });
     }
-    // v0.8.10 — Röhre (Beta-Tester-Wunsch): weißer Highlight-Streifen oben auf
+    // v0.8.10 — Röhre (Nutzer-Wunsch): weißer Highlight-Streifen oben auf
     // der Linie, simuliert eine zylindrische Oberfläche → wirkt plastischer.
     // Synchron zum Render-HTML (core/animator.py track-highlight-Layer).
     // Wird immer angelegt; Sichtbarkeit steuert applyTrackStyle().
@@ -1944,7 +1944,7 @@ function mountAnimator(body, headerActions, opts) {
     }
   }
 
-  // Linien-Stil live anwenden (v0.6.5, Beta-Tester-Feature-Request).
+  // Linien-Stil live anwenden (v0.6.5, Nutzer-Feature-Request).
   // v0.6.6: zusätzlich Spacing-Slider — multipliziert die dasharray-Werte.
   // v0.6.7: dotted-Pattern auf [0.1, 2] korrigiert (Punkte statt Striche
   // dank line-cap: round). Glow-Layer wird jetzt AUCH dashed, sonst zeigt
@@ -1976,7 +1976,7 @@ function mountAnimator(body, headerActions, opts) {
     rebuildPreviewLayers();
   }
 
-  // v0.8.10 — Höhere-Tube-Optik (Marc-Spec 2026-05-23, Beta-Tester-Inspiration):
+  // v0.8.10 — Höhere-Tube-Optik (Marc-Spec 2026-05-23, Nutzer-Inspiration):
   // weißer Highlight-Streifen wenn line_style == "tube". Sonst unsichtbar.
   // v0.8.12 — liest aus line_style statt aus separatem track_style-Feld
   // (Marc-Wunsch: gehört zu den 2D-Linien-Stilen).
@@ -2465,7 +2465,7 @@ function mountAnimator(body, headerActions, opts) {
     scrubPreview(anchor);
   }
 
-  // v0.9.64 (Beta-Tester/Marc): KEINE Auto-Selektion mehr. Vorher hat der Mount
+  // v0.9.64 (Nutzer/Marc): KEINE Auto-Selektion mehr. Vorher hat der Mount
   // KF1 automatisch selektiert (v0.9.17). Folge: jede Map-Bewegung schrieb
   // via `_syncMapStateToUi` in KF1, auch wenn der User nur die Vorschau
   // verschieben wollte. Marc-Wortlaut: „Wenn man etwas ändert ohne einen KF
@@ -3101,7 +3101,7 @@ function mountAnimator(body, headerActions, opts) {
       const WORLD_PITCH = 0;          // Marc: flach von oben — Polachsen-Spin
       const WORLD_ZOOM = 0;           // Marc: ganz raus, volle Erde sichtbar
       // Center je nach Modus.
-      //   mode "start" → Track-Startpunkt (Beta-Tester-Wunsch v0.9.129): beim
+      //   mode "start" → Track-Startpunkt (Nutzer-Wunsch v0.9.129): beim
       //     Reinzoomen bleibt der Startpunkt fix, die Erde wandert nicht weg.
       //   mode "world" → Greenwich/Äquator [10, 0] = klassische Welt-Sicht
       //     „wie es vor v0.9.129 war" (Marc: „so wie es vorher war"). Die
@@ -3202,7 +3202,7 @@ function mountAnimator(body, headerActions, opts) {
             console.warn("[world-center] snapshot fehlgeschlagen", e);
           }
         }
-        // v0.9.129 — Anti-Spring-Sicherung (Beta-Tester-Bug):
+        // v0.9.129 — Anti-Spring-Sicherung (Nutzer-Bug):
         // Slider-Bump-Events können andere Listener triggern (ResizeObserver,
         // fitTrackPreview-Cascade, KF-Slider-Listener), die die Map kurz
         // an eine andere Stelle bewegen. Nach 250 ms holen wir die Welt-
@@ -3253,7 +3253,7 @@ function mountAnimator(body, headerActions, opts) {
       el.addEventListener("input", () => {
         const absZoom = parseFloat(el.value);
         lbl.textContent = absZoom.toFixed(1);
-        // v0.9.58 (Beta-Tester-Bug): _selectedKfIdx ist ein CLUSTER-Index
+        // v0.9.58 (Nutzer-Bug): _selectedKfIdx ist ein CLUSTER-Index
         // (= Index in clusterAnchors()), NICHT in der flachen events[]-Liste.
         // Vorher: `events[_selectedKfIdx]` indexierte falsch — bei 2 KFs
         // mit je 4 Property-Events traf cluster-idx=1 das 2. Event von KF1
@@ -4004,7 +4004,7 @@ function mountAnimator(body, headerActions, opts) {
       refreshPreviewTrackData();
       return;
     }
-    // v0.9.254 (Beta-Tester-Bug #5) — beim START eines Probe-Laufs das echte Schild-Timing
+    // v0.9.254 (Nutzer-Bug #5) — beim START eines Probe-Laufs das echte Schild-Timing
     // zeigen. Sonst bleiben ein gerade bearbeitetes Schild oder der „Alle Schilder
     // zeigen"-Modus aktiv → Schild wird eingeblendet und bleibt stehen. Die Force-Modi
     // leben im Schild-Scope → über die window.__rzAnimSigns.beginPreview()-Methode
@@ -4055,7 +4055,7 @@ function mountAnimator(body, headerActions, opts) {
     _previewHoldMs = holdMs;
     if (_tlBar) _tlBar.setPlaying(true);
     // v0.9.83 — Spin-Akkumulator reset für jeden neuen Probelauf
-    // v0.9.277 (Leo) — Kamera-Trägheit im Probelauf (WYSIWYG zum Render). EMA des
+    // v0.9.277 (Nutzer) — Kamera-Trägheit im Probelauf (WYSIWYG zum Render). EMA des
     // Folge-Zentrums, ZEITBASIERT gerechnet (auf 30fps-Render referenziert), damit
     // die Vorschau (≈60fps) genauso träge wirkt wie das Video.
     let _follLL = null;
@@ -4155,7 +4155,7 @@ function mountAnimator(body, headerActions, opts) {
       if (interp.center) { jumpArgs.center = interp.center.slice(); _follLL = null; }
       else if (!isClassic2 || cameraFollow2) {
         const _tgt = currentCoords[coordIdx];
-        // v0.9.277 (Leo) — Kamera-Trägheit: EMA des Folge-Zentrums, zeitbasiert auf
+        // v0.9.277 (Nutzer) — Kamera-Trägheit: EMA des Folge-Zentrums, zeitbasiert auf
         // 30fps-Render referenziert → Vorschau wirkt genauso träge wie das Video.
         const _inertia = (parseInt(document.getElementById("anim-follow-inertia")?.value, 10) || 0) / 100;
         const _kRender = Math.max(0.005, Math.pow(1 - _inertia, 2));
@@ -5399,7 +5399,7 @@ function mountAnimator(body, headerActions, opts) {
         });
       } catch (_) {}
     }
-    // v0.9.254 (Beta-Tester-Bug #1/#2) — Live-Update OHNE Layer/Source-Neuaufbau. Beim
+    // v0.9.254 (Nutzer-Bug #1/#2) — Live-Update OHNE Layer/Source-Neuaufbau. Beim
     // Editieren (Bildgröße/Ecken/Rahmen/Schatten-Slider) wurde bei JEDEM input-Event
     // _animSignsAttachToMap() gerufen → Layer + Source + alle Icon-Bilder komplett
     // abgerissen und neu gebaut → das Symbol flackerte. Hier bleiben Layer + Source
@@ -5933,7 +5933,7 @@ function mountAnimator(body, headerActions, opts) {
         if (col) col.addEventListener("input", () => { col.dataset.auto = "0"; });
         if (autoBtn && col) autoBtn.addEventListener("click", () => { col.dataset.auto = "1"; apply(); });
       }
-      // v0.9.269/270 (Beta-Tester) — Hintergrund: EINE Farbe + „Keine" (transparent). Kein Auto/Akzent mehr.
+      // v0.9.269/270 (Nutzer) — Hintergrund: EINE Farbe + „Keine" (transparent). Kein Auto/Akzent mehr.
       { const bgCol = $("#se-bg"), noneBtn = $("#se-bg-none");
         if (noneBtn && bgCol) noneBtn.addEventListener("click", () => {
           bgCol.dataset.none = "1";
@@ -6417,7 +6417,7 @@ function mountAnimator(body, headerActions, opts) {
     }
     // v0.9.260 — gibt {coords, hadInput, err} zurück, damit _routeCompute die ECHTE
     // Ursache melden kann (vorher pauschal „Start fehlt", auch bei Geocoding-Fehler/
-    // Netzproblem/leerem Treffer → Beta-Tester-Bugreport: irreführend).
+    // Netzproblem/leerem Treffer → Nutzer-Bugreport: irreführend).
     async function _routeResolve(which) {
       const input = document.getElementById(`route-${which}-input`);
       const txt = (input && input.value || "").trim();
@@ -6656,7 +6656,7 @@ function mountAnimator(body, headerActions, opts) {
       renderList: _animSignsRenderList,
       onMapClick: _animSignsOnMapClick,
       // v0.9.255 — Probe-Lauf-Start: Editor schließen + Force-Modi aus, damit das echte
-      // Schild-Timing greift (Beta-Tester-Bug #5). Diese Variablen leben in DIESEM Scope und
+      // Schild-Timing greift (Nutzer-Bug #5). Diese Variablen leben in DIESEM Scope und
       // sind aus runTimelinePreview (anderer Scope) NICHT direkt erreichbar → über diese
       // Methode zurücksetzen. (Vorher direkter Zugriff → „Can't find variable"-Crash.)
       beginPreview: () => {
@@ -6956,7 +6956,7 @@ function mountAnimator(body, headerActions, opts) {
     const descTxt = s ? Math.round(s.descent_m) + " m" : "—";
     const eleMaxTxt = s && s.ele_max != null ? Math.round(s.ele_max) + " m" : "—";
 
-    // v0.9.290 (Beta-Tester): ruhende Vorschau zeigt den ENDZUSTAND (100 %, = letzter
+    // v0.9.290 (Nutzer): ruhende Vorschau zeigt den ENDZUSTAND (100 %, = letzter
     // Frame) statt 50 %. Die alten 50 %-Demowerte sahen aus wie echte „schon
     // halbe Strecke gefahren"-Daten und verwirrten vor dem Render. Die animierte
     // Vorschau (Probe-Lauf) und der Render selbst zählen weiterhin korrekt 0→Ende.
@@ -8000,7 +8000,7 @@ function mountAnimator(body, headerActions, opts) {
       overlay_live_position: document.getElementById("anim-ov-live-pos")?.value || "bottom-left",
       overlay_elevation_enabled: !_isReiseroute && !!document.getElementById("anim-ov-ele")?.checked,
       overlay_elevation_position: document.getElementById("anim-ov-ele-pos")?.value || "bottom-right",
-      // v0.9.228 — Overlay-Zeitfenster (Beta-Tester „ab Sek X bis Sek Y"). Leeres
+      // v0.9.228 — Overlay-Zeitfenster (Nutzer „ab Sek X bis Sek Y"). Leeres
       // Feld / 0 = ab Start bzw. bis Ende.
       overlay_totals_from_s: parseFloat(document.getElementById("anim-ov-totals-from")?.value) || 0,
       overlay_totals_to_s: parseFloat(document.getElementById("anim-ov-totals-to")?.value) || 0,

@@ -467,7 +467,7 @@ async function openAboutModal() {
         <div class="muted" style="font-size:12px; margin-top:4px;">
           ${t("about.version")}&nbsp;${escapeHtml(info.version || "?")}&nbsp;·&nbsp;Python&nbsp;${escapeHtml(info.python || "?")}
         </div>
-        <!-- v0.9.280 (Beta-Tester-Wunsch) — manueller Update-Check -->
+        <!-- v0.9.280 (Nutzer-Wunsch) — manueller Update-Check -->
         <div style="margin-top:10px;">
           <button id="about-check-update" class="btn"
                   style="padding:6px 14px; border-radius:8px; background:var(--bg-3); color:var(--text); font-size:12px; font-weight:600; border:1px solid var(--border); cursor:pointer;">
@@ -513,7 +513,7 @@ async function openAboutModal() {
       </div>
 
       <!-- v0.9.40 — License-Credits für gebundelte Bibliotheken
-           (Beta-Tester-Hint 2026-05-25). FFmpeg-LGPL verlangt prominente
+           (Nutzer-Hint 2026-05-25). FFmpeg-LGPL verlangt prominente
            Attribution + Source-Link bei Distribution. -->
       <hr style="border:none; border-top:1px solid var(--border); margin:18px 0 12px;">
       <div style="font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:6px;">
@@ -671,7 +671,7 @@ async function openFirstRunMapboxModal() {
   });
 }
 
-// v0.9.280 (Beta-Tester-Wunsch) — In-App-Update-Check (Stufe 1: nur Hinweis-Banner,
+// v0.9.280 (Nutzer-Wunsch) — In-App-Update-Check (Stufe 1: nur Hinweis-Banner,
 // kein Selbst-Update). Fragt das Backend (throttelt GitHub auf alle 12 h) und
 // zeigt bei neuerer Version ein dismissbares Banner unter der Topbar. `force`
 // (manueller „Suchen"-Button im Über-Dialog) umgeht Throttle + zeigt Toast.
@@ -757,7 +757,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderTabs();
   renderMod();
 
-  // v0.9.27 (Beta-Tester-Feedback): letztes GPX automatisch wieder laden,
+  // v0.9.27 (Nutzer-Feedback): letztes GPX automatisch wieder laden,
   // damit ein App-Restart nicht den Track verliert. Async, blockiert
   // den Module-Mount nicht.
   // v0.9.28: wenn die Datei weg ist (umbenannt, gelöscht, externe Platte ab),

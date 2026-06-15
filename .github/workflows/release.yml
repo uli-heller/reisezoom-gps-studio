@@ -62,7 +62,7 @@ jobs:
       - name: Build User-Guide HTML
         run: python3 scripts/build_user_guide_html.py
 
-      # v0.9.176 (Beta-Tester-Bug): exiftool MUSS auch im CI-Release gebündelt werden,
+      # v0.9.176 (Nutzer-Bug): exiftool MUSS auch im CI-Release gebündelt werden,
       # sonst hat das veröffentlichte DMG kein exiftool → RAW/Video-Tagging tot.
       - name: Vendor exiftool (macOS)
         run: bash scripts/setup_vendor_exiftool.sh
@@ -147,7 +147,7 @@ jobs:
         run: python scripts/build_user_guide_html.py
         shell: bash
 
-      # v0.9.176 (Beta-Tester-Bug): exiftool für den Windows-Build vendoren. Eigener
+      # v0.9.176 (Nutzer-Bug): exiftool für den Windows-Build vendoren. Eigener
       # PowerShell-Step (das bash-Vendor-Script braucht `unzip`, das auf den
       # Windows-Runnern nicht garantiert ist) — Expand-Archive ist nativ da.
       - name: Vendor exiftool (Windows)

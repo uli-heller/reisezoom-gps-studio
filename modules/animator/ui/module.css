@@ -244,7 +244,7 @@
   padding: 4px 0;
   flex-wrap: wrap;  /* v0.9.228 — Timing-Zeile bricht in eigene Zeile um */
 }
-/* v0.9.228 — Overlay-Zeitfenster (Beta-Tester „ab Sek X bis Sek Y") */
+/* v0.9.228 — Overlay-Zeitfenster (Nutzer „ab Sek X bis Sek Y") */
 .ov-timing {
   flex: 1 1 100%;
   display: flex;
@@ -354,7 +354,7 @@
   display: flex;
   flex-direction: column;
 }
-/* v0.9.284 (Beta-Tester) — Höhenprofil: schmal (feste Breite) bei allen normalen
+/* v0.9.284 (Nutzer) — Höhenprofil: schmal (feste Breite) bei allen normalen
    Positionen; nur tcw/bcw (oben/unten breit) gehen über volle Breite.
    Synchron zu core/animator.py _overlay_css. */
 .overlay-preview-layer .ov-ele-box.pos-tl,
@@ -397,7 +397,7 @@
 .overlay-preview-layer .pos-tr { top: calc(40px * var(--overlay-scale));    right: calc(40px * var(--overlay-scale));  text-align: right; }
 .overlay-preview-layer .pos-bl { bottom: calc(40px * var(--overlay-scale)); left: calc(40px * var(--overlay-scale)); }
 .overlay-preview-layer .pos-br { bottom: calc(40px * var(--overlay-scale)); right: calc(40px * var(--overlay-scale));  text-align: right; }
-/* v0.9.283/284 (Beta-Tester) — mittige Positionen (synchron zu animator.py _overlay_css).
+/* v0.9.283/284 (Nutzer) — mittige Positionen (synchron zu animator.py _overlay_css).
    Kompakt+zentriert: tc/bc/cc; vertikal mittig am Rand: ml/mr; volle Breite (nur
    Höhenprofil): tcw/bcw. */
 .overlay-preview-layer .pos-tc { top: calc(40px * var(--overlay-scale)); left: 50%; transform: translateX(-50%); text-align: center; }
@@ -671,7 +671,7 @@
   border: 1px solid var(--border, rgba(255,255,255,0.14)); border-radius: 6px; }
 /* v0.9.272 — sichtbarer Rahmen um die Farb-Swatches. Ohne ihn war ein dunkler
    Hintergrund-Swatch (z.B. Sprechblase = #15171c) auf dem dunklen Panel praktisch
-   unsichtbar → wirkte wie „kein Color-Picker" (Beta-Tester/Marc-Rückfrage). */
+   unsichtbar → wirkte wie „kein Color-Picker" (Nutzer/Marc-Rückfrage). */
 .se-grid input[type="color"] { width: 40px; height: 26px; padding: 0;
   border: 1px solid var(--border, rgba(255,255,255,0.3)); border-radius: 6px;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35); background: none; cursor: pointer; }

@@ -126,7 +126,7 @@ ci18n.set_i18n_dir(I18N_DIR)
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
 APP_VERSION = "0.9.290"
 
-# v0.9.280 (Beta-Tester-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
+# v0.9.280 (Nutzer-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
 # kein Selbst-Update). Fragt die GitHub-Releases-API, vergleicht die Version und
 # meldet dem UI, ob ein neueres Release da ist. Download bleibt manuell (Shortlink).
 GITHUB_REPO = "docarzt123/reisezoom-gps-studio"
@@ -189,9 +189,9 @@ DEFAULT_SETTINGS = {
     # Token; der gespeicherte Token bleibt aber erhalten.
     "force_osm": False,
     "onboarding_done": False,      # First-Run-Modal nicht mehr zeigen
-    # v0.9.27 (Beta-Tester-Feedback): letzten GPX-Pfad über App-Restart persistieren
+    # v0.9.27 (Nutzer-Feedback): letzten GPX-Pfad über App-Restart persistieren
     "last_gpx_path": "",
-    # v0.9.280 (Beta-Tester-Wunsch): In-App-Update-Check.
+    # v0.9.280 (Nutzer-Wunsch): In-App-Update-Check.
     "update_check_enabled": True,    # beim Start GitHub-Releases prüfen
     "update_last_check": "",         # ISO-Zeit der letzten Netzabfrage (Throttle)
     "update_latest_known": "",       # zuletzt gesehene Release-Version (Cache)
@@ -222,7 +222,7 @@ DEFAULT_SETTINGS = {
         "map_style": "satellite",
         "duration_s": 12,
         "hold_s": 5,
-        # v0.9.59 (Beta-Tester-Wunsch): Intro-Hold am Anfang. Default 0 = aus.
+        # v0.9.59 (Nutzer-Wunsch): Intro-Hold am Anfang. Default 0 = aus.
         "intro_s": 0,
         "fps": 30,
         "width": 3840,        # 4K default
@@ -308,10 +308,10 @@ DEFAULT_SETTINGS = {
         "make_backup": True,
         "overwrite_existing": False,
         "adjust_photo_time": False,
-        # v0.9.281 (Beta-Tester): Aufnahmezeit (DateTimeOriginal) für eingerastete Fotos
+        # v0.9.281 (Nutzer): Aufnahmezeit (DateTimeOriginal) für eingerastete Fotos
         # aus der Track-Zeit setzen — für WhatsApp-Fotos ohne korrekte Uhrzeit.
         "set_time_from_track": False,
-        # v0.9.27 (Beta-Tester-Feedback): State-Persistenz über Modul-Wechsel + App-Restart
+        # v0.9.27 (Nutzer-Feedback): State-Persistenz über Modul-Wechsel + App-Restart
         "last_photos_dir": "",              # Letzter via Folder-Pick geladener Ordner
         "last_photos_paths": [],            # Letzte einzelne Foto-Pfade (Pick-Modus)
         "folder_recursive": False,          # Unterordner-Checkbox-State
@@ -712,7 +712,7 @@ class Api:
     def open_url(self, url: str) -> dict:
         """Öffnet eine URL im Default-Browser (für Mapbox-Hilfeseite etc.) bzw.
         eine mailto:-Adresse im Default-Mail-Programm.
-        v0.9.285 (Beta-Tester-Bug): mailto: war vorher nicht erlaubt → der „Lokales
+        v0.9.285 (Nutzer-Bug): mailto: war vorher nicht erlaubt → der „Lokales
         Mail-Programm öffnen"-Button (Bug-Report) tat unter Windows nichts."""
         import webbrowser
         try:
@@ -725,7 +725,7 @@ class Api:
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
-    # ── Update-Check (Beta-Tester-Wunsch v0.9.280) ──────────────────────────────────
+    # ── Update-Check (Nutzer-Wunsch v0.9.280) ──────────────────────────────────
 
     def check_for_update(self, force: bool = False) -> dict:
         """Prüft die GitHub-Releases-API auf eine neuere Version (Stufe 1: nur
@@ -1390,7 +1390,7 @@ class Api:
         """v0.9.282 — „Als GPX exportieren" (Menü). Nimmt den aktuell geladenen
         Track (auch wenn er aus FIT/NMEA/KML/… stammt — dann liegt eine
         konvertierte GPX im Cache) und speichert ihn per Save-Dialog als echte
-        .gpx-Datei. So bekommt z.B. Beta-Tester aus seiner Canon-NMEA-Datei eine
+        .gpx-Datei. So bekommt z.B. Nutzer aus seiner Canon-NMEA-Datei eine
         saubere GPX, ohne externen Konverter."""
         try:
             s = _load_settings()
@@ -1647,7 +1647,7 @@ class Api:
             overlay_live_position=params.get("overlay_live_position", "tr"),
             overlay_elevation_enabled=bool(params.get("overlay_elevation_enabled", True)),
             overlay_elevation_position=params.get("overlay_elevation_position", "bc"),
-            # v0.9.228 — Overlay-Zeitfenster (Beta-Tester „ab Sek X bis Sek Y")
+            # v0.9.228 — Overlay-Zeitfenster (Nutzer „ab Sek X bis Sek Y")
             overlay_totals_from_s=float(params.get("overlay_totals_from_s", 0) or 0),
             overlay_totals_to_s=float(params.get("overlay_totals_to_s", 0) or 0),
             overlay_live_from_s=float(params.get("overlay_live_from_s", 0) or 0),
@@ -2858,7 +2858,7 @@ class Api:
                     return None
                 img = Image.open(io.BytesIO(preview))
             elif cexif.is_heif(path):
-                # v0.9.57 (Beta-Tester-Bug): HEIC via pillow-heif öffnen — kein
+                # v0.9.57 (Nutzer-Bug): HEIC via pillow-heif öffnen — kein
                 # exiftool nötig. Fallback auf RAW-Preview wenn pillow-heif
                 # nicht installiert (z.B. alte Bundle-Version).
                 preview = cexif.extract_heif_thumbnail(path, size=size)
@@ -2987,7 +2987,7 @@ class Api:
             with self._thumb_lock:
                 self._thumb_queue_ready.clear()
 
-            # v0.9.176 (Beta-Tester-Feedback): Fotos ERGÄNZEN statt ersetzen + nach
+            # v0.9.176 (Nutzer-Feedback): Fotos ERGÄNZEN statt ersetzen + nach
             # Pfad deduplizieren. So fügt jeder Drop/Pick zur bestehenden Liste
             # hinzu (Entfernen geht via ✕/Backspace, Leeren via Workspace-✕).
             existing_paths = {p.get("path") for p in (self._gtg_photos or [])}
@@ -3198,7 +3198,7 @@ class Api:
         """Wie geotagger_register_photos, aber findet die Dateien selbst im Ordner.
         Unterstützt Fotos UND Videos.
 
-        v0.9.27 (Beta-Tester-Feedback): `recursive=True` durchsucht Unterordner
+        v0.9.27 (Nutzer-Feedback): `recursive=True` durchsucht Unterordner
         mit Tiefen-Limit 3 (Performance-Schutz). Default off.
         """
         try:
@@ -3227,7 +3227,7 @@ class Api:
             return {"ok": False, "error": str(e)}
 
     def geotagger_find_gpx_near(self, folder: str) -> dict:
-        """v0.9.27 (Beta-Tester-Feedback): sucht nach .gpx-Dateien in der Nähe
+        """v0.9.27 (Nutzer-Feedback): sucht nach .gpx-Dateien in der Nähe
         eines Foto-Ordners. Reihenfolge:
           1. `folder/*.gpx`
           2. `folder/../*.gpx`           (z.B. Bilder in Jahr-Monat-Tag/jpeg/,
@@ -3381,7 +3381,7 @@ class Api:
         - `overwrite_existing`: True = auch Fotos mit bereits gesetzten GPS-Tags überschreiben
         - `adjust_photo_time`: zusätzlich DateTimeOriginal um `offset_seconds` verschieben
         - `offset_seconds`: Wert wird auf alle Foto-Aufnahmezeiten addiert
-        - `set_time_from_track`: (v0.9.281, Beta-Tester) für MANUELL eingerastete Fotos die
+        - `set_time_from_track`: (v0.9.281, Nutzer) für MANUELL eingerastete Fotos die
           Track-Zeit als Aufnahmezeitpunkt (DateTimeOriginal) setzen — für Fotos mit
           falscher/fehlender Zeit (z.B. WhatsApp). Wirkt nur auf `manual`-Matches mit
           `matched_time_utc`, lässt zeitlich gematchte Fotos unangetastet.
@@ -3542,7 +3542,7 @@ class Api:
                                     float(m["alt"]) if m.get("alt") is not None else None,
                                     ts)
                     log.info("_write_worker_run: [%d/%d] write_gps OK → %s", idx + 1, len(items), m.get("path"))
-                    # v0.9.281 (Beta-Tester): Aufnahmezeit aus Track setzen — NUR für manuell
+                    # v0.9.281 (Nutzer): Aufnahmezeit aus Track setzen — NUR für manuell
                     # eingerastete Fotos mit Track-Zeit (z.B. WhatsApp ohne korrekte Zeit).
                     if set_time_from_track and m.get("manual") and ts is not None:
                         try:

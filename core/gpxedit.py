@@ -1,5 +1,5 @@
 """
-GPX-Inspektor / Track-Editing (v0.9.233 — Marc-Idee, Beta-Tester-Bug-Report (c)).
+GPX-Inspektor / Track-Editing (v0.9.233 — Marc-Idee, Nutzer-Bug-Report (c)).
 
 Lädt den VOLLEN Roh-Track (jeder GPS-Punkt, NICHT das 800-Downsample der
 Render-Pipeline) und schreibt einen editierten Track zurück. Die eigentliche

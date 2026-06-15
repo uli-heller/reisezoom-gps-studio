@@ -18,7 +18,7 @@ import subprocess
 import sys
 import time
 
-# v0.9.274 (Beta-Tester-Bug) — Windows: ffmpeg ohne sichtbares Konsolenfenster starten.
+# v0.9.274 (Nutzer-Bug) — Windows: ffmpeg ohne sichtbares Konsolenfenster starten.
 _WIN_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -100,7 +100,7 @@ class AnimatorConfig:
     map_style: str = "satellite"        # key in MAP_STYLES
     duration_s: int = 12
     hold_s: int = 5
-    # v0.9.59 (Beta-Tester-Wunsch): Intro-Hold analog zu hold_s, aber AM ANFANG.
+    # v0.9.59 (Nutzer-Wunsch): Intro-Hold analog zu hold_s, aber AM ANFANG.
     # Marker steht intro_s Sekunden am trim_start bevor die Anim-Phase beginnt.
     # Erlaubt langsame Setup-Shots/Kamera-Aufzüge vor dem Track-Start.
     intro_s: int = 0
@@ -109,7 +109,7 @@ class AnimatorConfig:
     height: int = 1080
     pitch: float = 40.0                 # 0 = flat top-down, 85 = max
     rotation: float = 20.0              # Bearing-Sweep über Animation
-    # v0.9.82 (Beta-Tester-Idee „Erde rotiert in Globe-View") — Spin in deg/sec.
+    # v0.9.82 (Nutzer-Idee „Erde rotiert in Globe-View") — Spin in deg/sec.
     # Wird PRO FRAME on top auf den interpolierten Bearing addiert, in ALLEN
     # Phasen (Intro/Anim/Hold). 0 = aus. Positive Werte = im Uhrzeigersinn,
     # negative = gegen den Uhrzeigersinn. Wirkt zusätzlich zu `rotation`
@@ -124,7 +124,7 @@ class AnimatorConfig:
     enable_terrain: bool = True         # bei flat-light-Karten oft False
     line_color: str = "#ff6b35"
     line_width: float = 3.5             # Track-Linien-Dicke in px (Glow = 3× davon)
-    # Linien-Stil (v0.6.5, Beta-Tester-Feature-Request):
+    # Linien-Stil (v0.6.5, Nutzer-Feature-Request):
     # "solid"    — durchgezogene Linie (Default)
     # "dashed"   — gestrichelt
     # "dotted"   — gepunktet
@@ -132,11 +132,11 @@ class AnimatorConfig:
     # Implementiert via Mapbox `line-dasharray` (in Liniendicken-Einheiten) für
     # die Mapbox-Variante und via SVG `stroke-dasharray` (in Pixeln) für Alpha.
     line_style: str = "solid"
-    # Spacing-Faktor für dash/dotted/dashdot (v0.6.6, Beta-Tester-Folge-Idee).
+    # Spacing-Faktor für dash/dotted/dashdot (v0.6.6, Nutzer-Folge-Idee).
     # Multipliziert alle Werte im dasharray-Pattern. 1.0 = Default, 0.5 =
     # dichter, 2.0 = weiter. Wirkt nicht bei "solid".
     line_style_spacing: float = 1.0
-    # v0.8.10 — Beta-Tester-Wunsch „3D-Wurm-Look": Track-Linie kriegt
+    # v0.8.10 — Nutzer-Wunsch „3D-Wurm-Look": Track-Linie kriegt
     # zusätzlich einen helleren Highlight-Streifen in der Mitte, der
     # die Linie zylindrisch aussehen lässt (wie eine 3D-Schlange).
     # "flat" (default): klassische 2D-Linie. "tube": mit Highlight oben.
@@ -147,7 +147,7 @@ class AnimatorConfig:
     # Bbox-Center zu bleiben. Im Keyframe-Modus wird pro Keyframe entschieden
     # (Field `center` im KF) und dieser globale Toggle wird ignoriert.
     camera_follow_track: bool = False
-    # v0.9.275 (Leo) — Trägheit beim „Kamera folgt Track": 0 = hart am Punkt (wackelt
+    # v0.9.275 (Nutzer) — Trägheit beim „Kamera folgt Track": 0 = hart am Punkt (wackelt
     # bei GPS-Rauschen), 1 = sehr träge/weich (Kamera zieht sanft nach). Exponentielle
     # Glättung des Folge-Zentrums über die Frames.
     camera_follow_inertia: float = 0.0
@@ -166,7 +166,7 @@ class AnimatorConfig:
     overlay_live_position: str = "tr"
     overlay_elevation_enabled: bool = True
     overlay_elevation_position: str = "bc"
-    # v0.9.228 — Zeitfenster pro Overlay-Box (Beta-Tester-Wunsch „anzeigen ab Sek X
+    # v0.9.228 — Zeitfenster pro Overlay-Box (Nutzer-Wunsch „anzeigen ab Sek X
     # bis Sek Y"). In VIDEO-Sekunden (intro + anim + hold). from_s default 0 =
     # ab Start; to_s default 0 = bis Ende (kein oberes Limit). Der Render-Loop
     # ruft window.__overlayTiming(videoSekunde) pro Frame → Box wird ein-/
@@ -480,7 +480,7 @@ def _overlay_has_timing(cfg: "AnimatorConfig") -> bool:
 
 def _overlay_timing_js(cfg: "AnimatorConfig") -> str:
     """<script> das die Overlay-Boxen nach Video-Sekunde ein-/ausblendet
-    (Beta-Tester-Wunsch). Render-Loop ruft window.__overlayTiming(tSekunde) pro
+    (Nutzer-Wunsch). Render-Loop ruft window.__overlayTiming(tSekunde) pro
     Frame. to<=0 = bis Ende; Default 0/0 = immer sichtbar (kein Eingriff)."""
     wins = _overlay_windows(cfg)
     return (
@@ -525,7 +525,7 @@ def _overlay_css(cfg: AnimatorConfig, alpha_mode: bool = False) -> str:
   .pos-tr {{ top: {px(40)}; right: {px(40)}; text-align: right; }}
   .pos-bl {{ bottom: {px(40)}; left: {px(40)}; }}
   .pos-br {{ bottom: {px(40)}; right: {px(40)}; text-align: right; }}
-  /* v0.9.283/284 (Beta-Tester-Wunsch) — mittige Positionen. Kompakte, zentrierte Boxen
+  /* v0.9.283/284 (Nutzer-Wunsch) — mittige Positionen. Kompakte, zentrierte Boxen
      (nicht über volle Breite gestreckt), Inhalt zentriert:
        tc = oben mittig · bc = unten mittig · cc = Bildschirm-Mitte
        ml = links mittig · mr = rechts mittig (vertikal zentriert am Seitenrand)
@@ -552,7 +552,7 @@ def _overlay_css(cfg: AnimatorConfig, alpha_mode: bool = False) -> str:
     display: flex; flex-direction: column;
   }}
   /* Wenn das Höhenprofil in einer Ecke landet, kompaktere Breite (skaliert). */
-  /* v0.9.284 (Beta-Tester) — Höhenprofil: schmal (feste Breite) bei allen normalen
+  /* v0.9.284 (Nutzer) — Höhenprofil: schmal (feste Breite) bei allen normalen
      Positionen; nur „oben breit"/„unten breit" (tcw/bcw) gehen über volle Breite. */
   #overlay-bottom.pos-tl, #overlay-bottom.pos-tr, #overlay-bottom.pos-bl,
   #overlay-bottom.pos-br, #overlay-bottom.pos-tc, #overlay-bottom.pos-bc,
@@ -1233,7 +1233,7 @@ map.on('style.load', () => {{
   // line-dasharray für gestrichelte/gepunktete Stile.
   {("map.addLayer({id:'track-glow',type:'line',source:'track',"
     "layout:{'line-cap':'round','line-join':'round'},"
-    # v0.9.20 — Glow-line-width skaliert mit glow_strength (Beta-Tester-Feedback:
+    # v0.9.20 — Glow-line-width skaliert mit glow_strength (Nutzer-Feedback:
     # „ab 1.5px wieder abgeschaltet" — Mapbox-line-blur sättigt visuell bei
     # hohen Werten weil Peak-Alpha sinkt). Lösung: gs steuert jetzt auch die
     # Linien-Breite. Formel `(2.0 + 0.21 × gs)` ergibt bei gs=4 (Default)
@@ -1321,7 +1321,7 @@ window.advanceFrame = (idx, brg, lon, lat, zm, pt) => {{
 // VORHER: `map.once('render', ...)` feuerte beim ALLERERSTEN render-Event nach
 // advanceFrame(). Dieses Event kann aber noch IM Tile-Lade-Vorgang fallen —
 // dann sieht der Screenshot weiße/halbtransparente Placeholder-Tiles. Marc +
-// Beta-Tester haben das als „Farb-/Helligkeits-Schwankung + weiße Flächen" in den
+// Nutzer haben das als „Farb-/Helligkeits-Schwankung + weiße Flächen" in den
 // gerenderten Filmen gemeldet (Preview war OK, weil Preview ohne diese Wait-
 // Mechanik nur den aktuellen Browser-State zeigt).
 // JETZT: `map.on('idle')` feuert erst wenn alle Tiles geladen + alle Renders
@@ -2382,7 +2382,7 @@ async def render(
                 pw_lon, pw_lat = kf_c[0], kf_c[1]
             elif cfg.camera_follow_track and len(points) > 0:
                 _idx = min(int(tprog * (len(points) - 1)), len(points) - 1)
-                # v0.9.275 (Leo) — TrackPoint ist ein dataclass, NICHT subscriptable.
+                # v0.9.275 (Nutzer) — TrackPoint ist ein dataclass, NICHT subscriptable.
                 # Dieselbe Falle wie v0.9.124 im Haupt-Loop, hier im Tile-Prewarm übersehen
                 # → „'TrackPoint' object is not subscriptable" beim Render mit „Kamera folgt Track".
                 pw_lon, pw_lat = points[_idx].lon, points[_idx].lat
@@ -2503,10 +2503,10 @@ async def render(
                     _gpu = "unknown"
                 _log.warning("⏱ RENDER-TIMING aktiv | GPU-Renderer: %s | %dx%d @ %dfps | %d Frames",
                              _gpu, cfg.width, cfg.height, cfg.fps, total_frames)
-            # v0.9.275 (Leo) — Trägheit beim „Kamera folgt Track": exponentielle Glättung
+            # v0.9.275 (Nutzer) — Trägheit beim „Kamera folgt Track": exponentielle Glättung
             # des Folge-Zentrums über die Frames. inertia 0 → k=1 (hart, wie bisher),
             # inertia 1 → k≈0.03 (sehr weich, Kamera zieht sanft nach).
-            # v0.9.277 (Leo: „100 % zu wenig träge") — quadratische Kurve + tieferer Boden,
+            # v0.9.277 (Nutzer: „100 % zu wenig träge") — quadratische Kurve + tieferer Boden,
             # damit hohe Werte spürbar weicher ziehen (100 % ≈ k 0.005 → sehr träge).
             _foll_inertia = max(0.0, min(1.0, float(getattr(cfg, "camera_follow_inertia", 0.0))))
             _foll_k = max(0.005, (1.0 - _foll_inertia) ** 2)
@@ -2575,7 +2575,7 @@ async def render(
                     # v0.9.124 — TrackPoint ist ein dataclass, NICHT subscriptable.
                     _tlon = points[idx].lon
                     _tlat = points[idx].lat
-                    # v0.9.275 (Leo) — Trägheit: Folge-Zentrum glätten (gegen GPS-Wackeln).
+                    # v0.9.275 (Nutzer) — Trägheit: Folge-Zentrum glätten (gegen GPS-Wackeln).
                     if _foll_lon is None or _foll_k >= 0.999:
                         _foll_lon, _foll_lat = _tlon, _tlat
                     else:
@@ -2628,7 +2628,7 @@ async def render(
                 await page.evaluate(
                     f"window.advanceFrame({idx}, {bearing}, {frame_lon}, {frame_lat}, {frame_zoom}, {pitch_f})"
                 )
-                # v0.9.228 — Overlay-Zeitfenster (Beta-Tester): Box pro Video-Sekunde
+                # v0.9.228 — Overlay-Zeitfenster (Nutzer): Box pro Video-Sekunde
                 # ein-/ausblenden. Nur wenn überhaupt ein Fenster gesetzt ist.
                 if _ov_timed:
                     await page.evaluate(

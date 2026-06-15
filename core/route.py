@@ -33,7 +33,7 @@ _MAPBOX_BASE = "https://api.mapbox.com"
 _HTTP_TIMEOUT = 20  # Sekunden
 
 
-# v0.9.261 (Beta-Tester-Bug) — SSL-CA-Bundle aus `certifi`. Im PyInstaller-Bundle findet
+# v0.9.261 (Nutzer-Bug) — SSL-CA-Bundle aus `certifi`. Im PyInstaller-Bundle findet
 # Pythons OpenSSL die System-Zertifikate NICHT → jeder HTTPS-Call (Mapbox Geocoding +
 # Directions) starb mit „CERTIFICATE_VERIFY_FAILED: unable to get local issuer
 # certificate". `certifi` ist über `requests` mitgebündelt; sein cacert.pem liegt im

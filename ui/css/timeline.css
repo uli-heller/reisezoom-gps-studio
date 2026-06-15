@@ -16,7 +16,7 @@
 .timeline-bar.is-disabled {
   pointer-events: none;
 }
-/* v0.9.276 (Leo) — Der Trim (Render-Anfang/-Ende) ist unabhängig vom Keyframe-Modus
+/* v0.9.276 (Nutzer) — Der Trim (Render-Anfang/-Ende) ist unabhängig vom Keyframe-Modus
    und MUSS auch im Classic-Modus (KF-Editierung aus) voll bedienbar sein + normal
    aussehen. Darum NICHT die ganze Timeline ausgrauen (das machte die Trim-Handles
    blass + klick-tot) — nur die Keyframe-Editierung ist über die deaktivierten Buttons
@@ -629,7 +629,7 @@
 .anim-timeline-host--kf-off #tl-track {
   min-height: 28px;
 }
-/* v0.9.277 (Leo) — DER eigentliche Trim-Classic-Bug: die Trim-Handles haben
+/* v0.9.277 (Nutzer) — DER eigentliche Trim-Classic-Bug: die Trim-Handles haben
    top:30px / height:calc(100% - 30px) (Platz für die Keyframe-Cluster-Zeile). Im
    Classic-Modus (kf-off) kollabiert der Track auf 28px → calc(28px-30px) wird negativ
    → Handles schrumpfen auf 0 = unsichtbar + nicht ziehbar. Hier über den ganzen

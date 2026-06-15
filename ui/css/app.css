@@ -1151,7 +1151,7 @@ input[type="color"] {
   color: var(--text);
   font-size: 13px;
   box-shadow: var(--shadow);
-  /* v0.9.286 (Beta-Tester-Bug): über ALLE Modals (.modal-overlay z-index:1000),
+  /* v0.9.286 (Nutzer-Bug): über ALLE Modals (.modal-overlay z-index:1000),
      sonst liegt z.B. die „Update-Prüfung fehlgeschlagen"-Meldung hinter dem
      Blur-Backdrop des Über-Dialogs und ist unlesbar. */
   z-index: 2000;
@@ -1345,7 +1345,7 @@ input[type="color"] {
   cursor: pointer;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
 }
-/* v0.9.27 (Beta-Tester-Feedback): GPX-Auto-Detect Auswahl-Modal */
+/* v0.9.27 (Nutzer-Feedback): GPX-Auto-Detect Auswahl-Modal */
 .modal-gpx-pick-list {
   display: flex;
   flex-direction: column;
@@ -1387,7 +1387,7 @@ input[type="color"] {
 }
 
 .photo-marker.selected {
-  /* v0.9.27 (Beta-Tester-Feedback): deutlich stärker hervorheben — größerer
+  /* v0.9.27 (Nutzer-Feedback): deutlich stärker hervorheben — größerer
      Marker, dickere Border, pulsierender Glow. Plus Z-Order-Push im JS. */
   width: 20px;
   height: 20px;
@@ -2236,7 +2236,7 @@ body.is-rendering .modal-overlay * {
 .osm-block-body { font-size: 13px; line-height: 1.55; color: var(--text-muted, #93a1b0); margin-bottom: 18px; }
 .osm-block-overlay .osm-block-cta { min-width: 180px; }
 
-/* v0.9.280 (Beta-Tester-Wunsch) — Update-Hinweis-Banner unter der Topbar.
+/* v0.9.280 (Nutzer-Wunsch) — Update-Hinweis-Banner unter der Topbar.
    Dezent, accent-getönt, mit Download- und Ausblenden-Button. */
 .update-banner {
   display: flex;

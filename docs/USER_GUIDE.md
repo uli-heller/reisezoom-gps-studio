@@ -165,6 +165,8 @@ Höhen und Zeitstempel werden — soweit im Format vorhanden — übernommen (wi
 
 **Als GPX exportieren:** Über das Menü **Reisezoom → „Als GPX exportieren…"** speicherst du den aktuell geladenen Track als echte `.gpx`-Datei — auch wenn er aus einem anderen Format kam. Praktisch, wenn du z.B. aus einer Kamera-`.log` eine saubere GPX brauchst.
 
+**Als CSV exportieren:** Über **Reisezoom → „Als CSV exportieren…"** bekommst du denselben Track als Tabelle (`index,lat,lon,ele,time`, Zeit als ISO-UTC). Ideal für Tabellenkalkulation, eigene Auswertungen oder den Import in andere Tools.
+
 > Hinweis: Eine `.json` wird nur dann erkannt, wenn sie wie ein GeoJSON-Track aussieht; eine `.txt` nur, wenn echte NMEA-Sätze (`$GP…`) drinstehen.
 
 ---
@@ -507,7 +509,7 @@ ExifTool läuft als Daemon im Hintergrund — RAW-Verarbeitung ist ~8× schnelle
 ## 7 · Modul: GPX-Inspektor — Track reparieren 🔍 (seit v0.9.233)
 
 ### Was es macht
-Zeigt **jeden einzelnen Punkt** deines Tracks auf der Karte (den vollen Roh-Track, nicht das geglättete Vorschau-Downsample) und lässt dich kaputte Stellen reparieren: GPS-Ausreißer glätten, Lücken füllen, einzelne Punkte verschieben oder löschen. Braucht **keinen** Mapbox-Token (geht auch im OSM-Modus). Speichert als neue Datei `<name>_geheilt.gpx` — dein Original bleibt unangetastet.
+Zeigt **jeden einzelnen Punkt** deines Tracks auf der Karte (den vollen Roh-Track, nicht das geglättete Vorschau-Downsample) und lässt dich kaputte Stellen reparieren: GPS-Ausreißer glätten, Lücken füllen, einzelne Punkte verschieben oder löschen. Braucht **keinen** Mapbox-Token (geht auch im OSM-Modus). Speichert als neue Datei `<name>_geheilt.gpx` — dein Original bleibt unangetastet. Öffnet **alle importierbaren Formate** (GPX, FIT, KML/KMZ, TCX, GeoJSON, NMEA/`.LOG`) — Fremdformate werden automatisch nach GPX konvertiert (seit v0.9.296).
 
 ### Werkzeuge
 
@@ -526,8 +528,26 @@ Zeigt **jeden einzelnen Punkt** deines Tracks auf der Karte (den vollen Roh-Trac
 - **Ganzen Track snappen** — die komplette Spur per Map Matching auf nahe Wege (folgt der Form der Spur). Mit **Snap-Radius** (5–50 m) einstellbar.
 Mit dem **Such-Radius** (5–50 m, Slider) stellst du ein, wie weit ein Punkt vom Weg entfernt sein darf, um noch gesnappt zu werden: klein = nur sehr nah am Weg, groß = fängt mehr GPS-Drift, kann aber eher auf eine **parallele** Straße springen. Position wird gesnappt, **Zeit und Höhe werden über die neue Länge verteilt**, alles ist **rückgängig machbar** (⌘Z). Lange Tracks werden automatisch in Stücke zerlegt (Mapbox-Limit). Findet die App in dem Radius **keinen** Weg, passiert nichts und du bekommst eine klare Meldung. **Wichtig:** nur sinnvoll, wenn der Track tatsächlich Wegen/Straßen folgt — bei **Querfeldein-Wanderungen** kann es die Spur verfälschen. Braucht **Internet + Mapbox-Token**.
 
-### 🔎 Ausreißer automatisch finden
-Statt von Hand zu suchen: **🔎 Ausreißer automatisch finden** scannt den ganzen Track nach GPS-Sprüngen, die wegspringen *und wieder zurückkommen*, und markiert sie **orange**. Mit **‹ / Nächster ›** springst du von einem zum nächsten, **🩹 Alle heilen** glättet sie auf einmal. Der **Empfindlichkeits-Regler** (1–10) stellt ein, wie streng gesucht wird — niedrig = nur krasse Sprünge, hoch = auch kleine Zacken; die Markierung aktualisiert sich live beim Ziehen. (Echte **Lücken** werden bewusst nicht markiert — die füllst du mit „Lücke füllen".)
+### 🩹 Auto-Heilen: Ausreißer + Lücken (seit v0.9.295)
+Statt von Hand zu suchen: **🩹 Auto-Heilen** scannt den ganzen Track und zeigt als **Vorschau auf der Karte**, was es tun würde — bevor etwas geändert wird:
+- **🟠 Ausreißer** (orange) — GPS-Sprünge, die wegspringen *und wieder zurückkommen*. Werden beim Heilen geglättet.
+- **🟣 Lücken** (magenta, gestrichelte Linie + helle Geister-Punkte) — größere Aussetzer/Dropouts ohne Punkte dazwischen. Werden beim Heilen mit interpolierten Punkten gefüllt (Position, Höhe und Zeit).
+
+Mit **‹ / Nächster ›** springst du durch die Ausreißer, **🩹 Alle heilen** wendet beides auf einmal an. Der **Empfindlichkeits-Regler** (1–10) stellt ein, wie streng gesucht wird (niedrig = nur krasse Sprünge/große Lücken, hoch = auch kleine), der **Füll-Abstand** bestimmt, wie dicht Lücken aufgefüllt werden — beide aktualisieren die Vorschau live. Alles lässt sich mit **⌘Z** rückgängig machen.
+
+### ⛰ Höhe korrigieren (Karte statt GPS) — seit v0.9.292
+GPS-Höhenwerte sind oft verrauscht — gerade bei wenig Empfang springt die Höhe um ein paar Meter hin und her, und am Ende stehen viel zu viele **Höhenmeter** in den Stats (z. B. 1800 statt 1400). Hier kannst du die **glatte Gelände-Höhe aus der Mapbox-Karte** (digitales Höhenmodell) mit deiner GPS-Höhe mischen — und siehst dabei **genau, was passiert**:
+
+1. **🗺 Höhenprofil aus Karte laden** — die App fährt einmal kurz auf den ganzen Track (lädt die Höhen-Kacheln) und liest für jeden Punkt die Karten-Höhe aus.
+2. **Unter der Karte** erscheint ein **Höhenprofil** mit drei Linien übereinander: **GPS (orange, dünn)** = dein Original, **Karte/Mapbox (blau, dünn)** = das glatte Gelände, und die **fette grüne Ergebnis-Linie** = das, was rauskäme.
+3. Mit dem Regler **GPS ⟷ Karte** mischst du live: ganz rechts (100 %) = reine Karten-Höhe (sehr glatt), ganz links (0 %) = unverändertes GPS, Standard **70 %**. Die grüne Linie und die Höhenmeter-Anzeige (GPS / Karte / Ergebnis) wandern sofort mit.
+4. Passt es? **⛰ Diese Höhe übernehmen** schreibt die grüne Linie in den Track. Danach **💾 speichern** — die korrigierte Höhe landet im GPX und greift überall (Animator, Tour-Map, Höhen-Animator).
+
+> Braucht einen **Mapbox-Token** (Einstellungen) und Internet — ohne Token ist der „Laden"-Button ausgegraut. Das Übernehmen lässt sich mit **⌘Z** rückgängig machen. Wenn du danach Punkte änderst (löschst/einfügst), verwirft sich das Profil automatisch — einfach neu laden.
+
+**Zoom-Sync & klickbare Punkte (seit v0.9.293):** Karte und Höhenprofil hängen zusammen — **zoomst/verschiebst du die Karte**, zeigt das Profil automatisch nur den sichtbaren Abschnitt; **Mausrad über dem Profil** zoomt, **Ziehen** verschiebt, und die Karte zieht jeweils mit. **Mauszeiger verknüpft (seit v0.9.294):** Fährst du mit der Maus über die **Karte**, zeigt ein **senkrechter Balken im Höhenprofil**, wo du gerade bist; fährst du über das **Profil**, erscheint ein **weißer Ring auf dem Track**. So findest du Stellen blitzschnell, ohne zu klicken.
+
+**Einzelklick auf einen Punkt** (Karte oder Profil) zeigt ein **kleines Info-Feld direkt am Punkt** (ohne den Hintergrund abzudunkeln) mit allen Daten (Position, Höhe GPS + Karte, Zeit, Distanz, Geschwindigkeit, Steigung) und Buttons „Als Anker A/B". Klickst du einen anderen Punkt, wandert das Feld dorthin. **Doppelklick** setzt den Anker direkt — der schnelle Weg fürs Heilen.
 
 ### Rückgängig
 **⌘Z** macht jede Bearbeitung rückgängig, **⌘⇧Z** stellt wieder her (oder die ↩︎/↪︎-Buttons). Beim Laden eines neuen Tracks startet die Historie frisch.

@@ -1565,7 +1565,11 @@ function mountTourmap(body, headerActions) {
     // BACKEND-FORMEL fitten — so ist die Vorschau exakt deckungsgleich mit
     // dem späteren PNG (WYSIWYG).
     updateViewport();
-    fitTrackToView(true);
+    // v0.9.295 (Nutzer-Feedback Beta-Tester, synchron zu animator/drawPreview): Track-Ansicht
+    // beim Laden DIREKT setzen (Sprung statt Fly-in) — sofort der ganze Track sichtbar,
+    // kein ruckelndes Reinzoomen auf schwächeren Rechnern.
+    fitTrackToView._lastFitTs = 0;
+    fitTrackToView(false);
 
     // v0.8.5: rebuildPreviewLayers DIREKT — wir sind im onMapReady-Path
     // garantiert nach load-Event. isStyleLoaded() ist Mapbox-intern

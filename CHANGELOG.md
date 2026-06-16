@@ -14,6 +14,32 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.297] – 2026-06-16
+### Hinzugefügt
+- **Track als CSV exportieren.** Neuer Menüpunkt **Reisezoom → „Als CSV exportieren…"** speichert den aktuell geladenen Track als Tabelle (`index,lat,lon,ele,time`, Zeit als ISO-UTC) — ergänzend zum bestehenden GPX-Export. Praktisch für Tabellenkalkulation und eigene Auswertungen.
+- **Geteilte Export-Logik (`core/trackio.py`).** Track→GPX/CSV-String lebt jetzt in einem einzigen Modul, das die App **und** das Web-Tool (`gps-studio.reisezoom.com`) gemeinsam nutzen — keine doppelte Pflege.
+
+## [0.9.296] – 2026-06-15
+### Behoben (Nutzer-Bug)
+- **GPX-Inspektor lädt jetzt auch importierte Formate (.LOG/.fit/.kml/…).** Vorher gab der Inspektor bei z. B. einer Kamera-`.LOG`-Datei „not well-formed (invalid token)" und zeigte den Track nicht an (Geotagger/Animator funktionierten, weil sie konvertieren). Jetzt konvertiert auch der Inspektor Fremdformate zuerst nach GPX (wie alle anderen Lade-Pfade). Das „Geheilte GPX" wird dabei neben der konvertierten Datei abgelegt.
+### Geändert (Nutzer-Feedback)
+- **Animator & Tour-Map: Track-Ansicht beim Laden ohne Fly-in.** Beim Laden/Wechseln eines Tracks springt die Karte jetzt **direkt** auf den ganzen Track (+ Rand), statt von der Weltkugel hereinzufliegen. Man sieht sofort den Track, und auf schwächeren Rechnern ruckelt kein animiertes Reinzoomen mehr. (Die 🌍-Welt-Buttons bleiben bewusst Globus-Ansicht für das Kino-Intro.)
+
+## [0.9.295] – 2026-06-15
+### Hinzugefügt (Nutzer-Wunsch)
+- **GPX-Inspektor: Auto-Heilen mit Lücken-Füllen + Vorschau auf dem ganzen Track.** Der frühere „Ausreißer automatisch finden"-Button heißt jetzt **„🩹 Auto-Heilen: Ausreißer + Lücken"** und findet zusätzlich zu GPS-Ausreißern (🟠 orange) auch **Lücken/Dropouts** (🟣 magenta, gestrichelte Füll-Linie + Geister-Punkte) — als **Vorschau auf der ganzen Karte, bevor** etwas geändert wird. „Alle heilen" glättet dann die Ausreißer **und** füllt die Lücken mit interpolierten Punkten (Position/Höhe/Zeit). Empfindlichkeit + Füll-Abstand steuern Erkennung und Dichte live.
+### Geändert (Nutzer-Wunsch)
+- **GPX-Inspektor: tolerantere Klicks auf der Karte.** Das Punkt-Info-Feld öffnet/wandert jetzt schon, wenn man **nah** an einen Punkt klickt (18 px Radius) — nicht mehr nur bei 100-%-Treffer. Gilt auch für Doppelklick (Anker).
+### Hinzugefügt (Nutzer-Wunsch)
+- **GPX-Inspektor: verknüpfter Hover-Cursor Karte ↔ Höhenprofil.** Bewegt man die Maus über die **Karte**, zeigt ein **vertikaler Balken im Höhenprofil**, wo man gerade ist (nächster Track-Punkt). Umgekehrt markiert ein **weißer Ring auf dem Track**, wenn man mit der Maus über das **Höhenprofil** fährt. So sieht man sofort, welche Stelle der Karte welcher Stelle im Profil entspricht — ohne Klicken.
+
+## [0.9.293] – 2026-06-15
+### Hinzugefügt (Nutzer-Wunsch)
+- **GPX-Inspektor: Höhenprofil ↔ Karte zoom-synchron.** Zoomt/pant man die Karte, zeigt das Höhenprofil automatisch nur den sichtbaren Track-Abschnitt — und umgekehrt: Mausrad über dem Profil zoomt, Ziehen pant, beides zieht die Karte mit. So gehören Karte und Profil zusammen.
+- **GPX-Inspektor: klickbare Punkte + Info-Feld am Punkt.** Einzelklick auf einen Punkt (auf der **Karte oder im Höhenprofil**) zeigt jetzt ein **leichtes Info-Feld direkt am Punkt** (dunkelt den Hintergrund **nicht** ab) mit allen Daten (Index, Position, Höhe GPS + Karte, Zeit, Distanz ab Start, Abstand/Geschwindigkeit/Steigung zum vorigen) und Buttons „Als Anker A/B". Auf der Karte ist es ein Popup, das am Punkt hängt und beim Pannen/Zoomen mitwandert; im Profil eine schwebende Box an der Klickstelle. Klickt man einen neuen Punkt, wandert das Feld dorthin. Die Punkt-Daten stehen damit nicht mehr klein in der Sidebar. **Doppelklick** setzt den Anker weiterhin direkt (Schnellweg für den Heilen-Workflow). Im eingezoomten Profil werden die einzelnen Punkte als anklickbare Kreise gezeichnet.
+### Geändert (Nutzer-Feedback)
+- **GPX-Inspektor: Höhenkorrektur jetzt mit sichtbarem Höhenprofil.** Statt eines „blinden" Buttons (v0.9.291) zeigt der Inspektor jetzt **unter der Karte ein Höhenprofil** mit drei Linien übereinander: **GPS (Original, dünn orange)**, **Karte/Mapbox (dünn blau)** und die **fette Ergebnis-Linie (grün)**, die live mit dem Regler **GPS ⟷ Karte** wandert. So sieht man genau, was die Mischung macht, bevor man sie übernimmt. Ablauf: **🗺 Höhenprofil aus Karte laden** (sampelt einmal das Mapbox-Terrain) → Regler schieben (Linie + Höhenmeter-Anzeige GPS/Karte/Ergebnis aktualisieren sofort) → **⛰ Diese Höhe übernehmen** (mit Undo) → speichern. Das Profil verwirft sich automatisch, wenn sich der Track ändert (z. B. Punkte gelöscht/eingefügt).
+
 ## [0.9.290] – 2026-06-15
 
 ### Geändert (Nutzer-Feedback)

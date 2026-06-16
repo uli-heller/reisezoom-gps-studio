@@ -5,6 +5,91 @@
    eigener Display-Override nötig (der hatte die Höhe auf 0 kollabiert). */
 #gpxi-canvas { position: absolute; inset: 0; }
 
+/* v0.9.292 — Höhenprofil-Streifen unter der Karte: Canvas-Section wird Flex-Spalte,
+   Karte oben (flex:1), Profil unten (feste Höhe). Karte braucht dann position:relative
+   statt absolute, damit der Flex-Fluss greift. */
+#gpxi-canvaswrap { display: flex; flex-direction: column; min-height: 0; position: relative; }
+#gpxi-canvaswrap > #gpxi-canvas { position: relative; inset: auto; flex: 1 1 auto; min-height: 0; }
+.gpxi-eleprof {
+  flex: 0 0 auto;
+  background: var(--surface, #1b1f24);
+  border-top: 1px solid var(--border);
+  padding: 6px 10px 8px;
+  box-sizing: border-box;
+  position: relative;
+}
+/* v0.9.294 — verknüpfter Hover-Cursor (vertikaler Balken im Profil) */
+.gpxi-ep-cursor {
+  position: absolute; width: 0; border-left: 1.5px solid #ffffff;
+  pointer-events: none; z-index: 4; opacity: .85;
+  box-shadow: 0 0 4px rgba(0,0,0,.6);
+}
+.gpxi-eleprof-head {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  font-size: 11px; color: var(--text-muted); margin-bottom: 4px;
+}
+.gpxi-eleprof-title { font-weight: 600; color: var(--text); }
+.gpxi-eleleg { display: inline-flex; align-items: center; gap: 5px; }
+.gpxi-sw { width: 16px; border-top: 2px solid; display: inline-block; }
+.gpxi-sw-gps { border-top-color: #f2a33c; }
+.gpxi-sw-dem { border-top-color: #4aa3ff; }
+.gpxi-sw-res { border-top: 4px solid #36c275; }
+.gpxi-eleprof-info { margin-left: auto; color: var(--text); }
+.gpxi-eleprof-svg { display: block; width: 100%; height: 130px; }
+.gpxi-ep-grid { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .5; }
+.gpxi-ep-line { fill: none; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.gpxi-ep-gps { stroke: #f2a33c; stroke-width: 1.5; opacity: .85; }
+.gpxi-ep-dem { stroke: #4aa3ff; stroke-width: 1.5; opacity: .85; }
+.gpxi-ep-res { stroke: #36c275; stroke-width: 3; }
+/* v0.9.293 — klickbare Punkte, Anker-Marker, Cursor */
+.gpxi-eleprof-svg { cursor: crosshair; touch-action: none; }
+.gpxi-ep-dot { fill: #36c275; stroke: #0c2f1c; stroke-width: 0.5; vector-effect: non-scaling-stroke; opacity: .9; }
+.gpxi-ep-dot-sel { fill: #fff; stroke: #36c275; stroke-width: 1.5; }
+.gpxi-ep-anchor { stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.gpxi-ep-anchor-a { stroke: #2ecc71; }
+.gpxi-ep-anchor-b { stroke: #e74c3c; }
+/* Punkt-Detail-Modal */
+.gpxi-pm-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.gpxi-pm-tbl td { padding: 5px 8px; border-bottom: 1px solid var(--border); }
+.gpxi-pm-k { color: var(--text-muted); white-space: nowrap; }
+.gpxi-pm-v { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* v0.9.293 — leichtes Punkt-Info-Feld (Karten-Popup + schwebende Profil-Box) */
+.gpxi-pinfo { font-size: 12px; min-width: 210px; }
+.gpxi-pi-head { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.gpxi-pinfo .gpxi-pm-tbl td { padding: 3px 6px; }
+.gpxi-pi-actions { display: flex; gap: 6px; margin-top: 7px; }
+.gpxi-pi-actions .btn { flex: 1; padding: 4px 6px; font-size: 12px; }
+/* schwebende Box im Profil/Canvas */
+.gpxi-pinfo-float {
+  position: absolute; z-index: 6;
+  background: var(--surface, #1b1f24);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.45);
+}
+.gpxi-pi-x {
+  position: absolute; top: 4px; right: 5px;
+  background: none; border: none; color: var(--text-muted);
+  font-size: 13px; cursor: pointer; line-height: 1; padding: 2px 4px;
+}
+.gpxi-pi-x:hover { color: var(--text); }
+/* Mapbox/MapLibre-Popup ans dunkle Theme angleichen */
+.gpxi-pinfo-pop .mapboxgl-popup-content,
+.gpxi-pinfo-pop .maplibregl-popup-content {
+  background: var(--surface, #1b1f24);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.45);
+}
+.gpxi-pinfo-pop .mapboxgl-popup-tip,
+.gpxi-pinfo-pop .maplibregl-popup-tip { border-top-color: var(--surface, #1b1f24); border-bottom-color: var(--surface, #1b1f24); }
+.gpxi-pinfo-pop .mapboxgl-popup-close-button,
+.gpxi-pinfo-pop .maplibregl-popup-close-button { color: var(--text-muted); font-size: 16px; }
+
 .gpxi-empty {
   color: var(--text-muted);
   font-size: 13px;

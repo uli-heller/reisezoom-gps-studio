@@ -718,6 +718,18 @@ async function exportCurrentGpx() {
 }
 window.exportCurrentGpx = exportCurrentGpx;
 
+// v0.9.297 — „Als CSV exportieren" (Menü). Gleiche core.trackio-Logik wie das Web.
+async function exportCurrentCsv() {
+  let res;
+  try { res = await api().export_current_csv(); }
+  catch (_) { toast(t("export_csv.error"), "warn"); return; }
+  if (!res) return;
+  if (res.cancelled) return;
+  if (res.ok) toast(t("export_csv.done"), "success");
+  else toast(res.error === "Kein Track geladen." ? t("export_csv.no_track") : (res.error || t("export_csv.error")), "warn");
+}
+window.exportCurrentCsv = exportCurrentCsv;
+
 window.addEventListener("DOMContentLoaded", async () => {
   await whenApiReady();
   await loadSettings();

@@ -84,6 +84,7 @@ from core import photos as cphotos  # v0.9.74: Foto-Pins für Animator + Tour-Ma
 from core import route as croute  # v0.9.205: Anreise/Flug-Route (Directions/Arc)
 from core import heightanim as cheight  # v0.9.92: Höhen-Animator-Modul (Phase 1, Skelett)
 from core import gpxedit as cgpxedit  # v0.9.233: GPX-Inspektor (Track heilen/füllen)
+from core import trackio as ctrackio  # v0.9.297: Track→GPX/CSV-String (geteilt mit Web)
 
 
 # Pfade: in PyInstaller-Bundle liegt UI in sys._MEIPASS, sonst im Source-Tree.
@@ -124,7 +125,7 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.290"
+APP_VERSION = "0.9.297"
 
 # v0.9.280 (Nutzer-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
 # kein Selbst-Update). Fragt die GitHub-Releases-API, vergleicht die Version und
@@ -1412,6 +1413,33 @@ class Api:
             log.exception("export_current_gpx fehlgeschlagen")
             return {"ok": False, "error": str(e)}
 
+    def export_current_csv(self) -> dict:
+        """v0.9.297 — „Als CSV exportieren" (Menü). Nimmt den aktuell geladenen
+        Track (auch aus FIT/NMEA/KML/…) und speichert ihn als CSV
+        (index,lat,lon,ele,time). Nutzt core.trackio — dieselbe Funktion wie der
+        Web-Endpoint (single source)."""
+        try:
+            s = _load_settings()
+            src = str(s.get("last_gpx_path", "") or "")
+            if not src or not os.path.exists(src):
+                return {"ok": False, "error": "Kein Track geladen."}
+            gpx_path = self._ensure_gpx(src)
+            pts, _ = cgpx.parse_gpx(gpx_path)
+            text = ctrackio.to_csv_string(pts)
+            default_name = os.path.splitext(os.path.basename(src))[0] + ".csv"
+            dest = self.pick_save_path(default_name, str(Path.home()), ["CSV (*.csv)"])
+            if not dest:
+                return {"ok": False, "cancelled": True}
+            if not dest.lower().endswith(".csv"):
+                dest += ".csv"
+            with open(dest, "w", encoding="utf-8", newline="") as f:
+                f.write(text)
+            log.info("export_current_csv: %s → %s", gpx_path, dest)
+            return {"ok": True, "path": dest}
+        except Exception as e:
+            log.exception("export_current_csv fehlgeschlagen")
+            return {"ok": False, "error": str(e)}
+
     # ── Animator ──────────────────────────────────────────────────────────────
 
     def animator_load_gpx(self, path: str) -> dict:
@@ -2653,7 +2681,15 @@ class Api:
     def gpxinspect_load(self, path: str) -> dict:
         """Vollen Roh-Track laden (alle Punkte inkl. ele + time) für den Editor."""
         try:
-            return cgpxedit.load_points(path)
+            # v0.9.295 (Bug Beta-Tester): Fremdformate (.LOG/.fit/.kml/…) zuerst nach GPX
+            # konvertieren — wie alle anderen Lade-Pfade. Sonst gibt gpxpy bei einer
+            # rohen .LOG-Datei „not well-formed (invalid token)". Der konvertierte
+            # Pfad wird zurückgegeben, damit „Geheiltes GPX speichern" daneben landet.
+            gpx_path = self._ensure_gpx(path)
+            res = cgpxedit.load_points(gpx_path)
+            if isinstance(res, dict) and res.get("ok"):
+                res["src"] = gpx_path
+            return res
         except Exception as e:
             log.error("gpxinspect_load: %s\n%s", e, traceback.format_exc())
             return {"ok": False, "error": str(e)}
@@ -4018,6 +4054,8 @@ def main() -> None:
         def _open_youtube(): _trigger_js("window.pywebview && window.pywebview.api.open_url('https://www.youtube.com/@reisezoom')")
         # v0.9.282 — „Als GPX exportieren" (auch für importierte FIT/NMEA/KML-Tracks)
         def _export_gpx_from_menu(): _trigger_js("window.exportCurrentGpx && window.exportCurrentGpx()")
+        # v0.9.297 — „Als CSV exportieren" (gleiche core.trackio-Logik wie das Web)
+        def _export_csv_from_menu(): _trigger_js("window.exportCurrentCsv && window.exportCurrentCsv()")
         # v0.9.288 — Topbar aufgeräumt → diese Aktionen leben jetzt im Menü.
         def _open_track_from_menu():    _trigger_js("window.pickGpx && window.pickGpx()")
         def _open_feedback_from_menu(): _trigger_js("window.openBugReportModal && window.openBugReportModal('Feedback (Menü)')")
@@ -4040,6 +4078,7 @@ def main() -> None:
         _menu_blog       = _strings.get("menu.blog", "Blog (reisezoom.com)")
         _menu_youtube    = _strings.get("menu.youtube", "YouTube-Kanal")
         _menu_export_gpx = _strings.get("menu.export_gpx", "Als GPX exportieren…")
+        _menu_export_csv = _strings.get("menu.export_csv", "Als CSV exportieren…")
 
         # v0.9.288 — aufgeräumte Menüstruktur (Marc): Dokument-Aktionen unter
         # „Datei", alles Hilfe/Web/Über unter „Hilfe" — mit Trennlinien gruppiert.
@@ -4047,6 +4086,7 @@ def main() -> None:
             Menu(_menu_file, [
                 MenuAction(_menu_open_track, _open_track_from_menu),
                 MenuAction(_menu_export_gpx, _export_gpx_from_menu),
+                MenuAction(_menu_export_csv, _export_csv_from_menu),
                 MenuSeparator(),
                 MenuAction(_menu_settings, _open_settings_from_menu),
             ]),

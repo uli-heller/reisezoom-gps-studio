@@ -7483,7 +7483,13 @@ function mountAnimator(body, headerActions, opts) {
       applog("info", "[drawPreview] no preview-track source — rebuilding layers");
       rebuildPreviewLayers();
     }
-    fitTrackPreview(true);
+    // v0.9.295 (Nutzer-Feedback Beta-Tester): Track-Ansicht beim Laden DIREKT setzen
+    // (Sprung statt 500-ms-Fly-in von der Weltkugel) — man sieht sofort den ganzen
+    // Track + Rand, und auf schwächeren Rechnern ruckelt kein Reinzoomen mehr.
+    // _lastFitTs zurücksetzen, damit der nicht-animierte Fit nicht vom
+    // Anti-Cascade-Guard (≤700 ms) übersprungen wird.
+    fitTrackPreview._lastFitTs = 0;
+    fitTrackPreview(false);
     // v0.7.0: Camera-Keyframe-Pins neu zeichnen wenn Track sich ändert
     rebuildCameraKeyframePins();
     // v0.7.1: Status-Label updaten + key-nav binden (idempotent)

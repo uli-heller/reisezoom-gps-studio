@@ -30,9 +30,18 @@ function mountGpxInspect(body, headerActions) {
   let _spikes = [];                 // [{a,b,from,to}] a=Anker vor, b=Anker nach
   let _spikeSet = new Set();        // Punkt-Indizes die als Ausreißer markiert sind
   let _spikeIdx = -1;               // aktuell anvisierter Ausreißer (für Navigation)
+  let _gaps = [];                   // v0.9.294 — erkannte Lücken [{a,b,dist}] (b=a+1) für Auto-Heilen
   let _despikeRan = false;          // wurde schon mind. 1× gesucht? (Slider live-Update)
   let _dragging = false;            // ziehe gerade den ausgewählten Punkt? (v0.9.243)
   let _dragMoved = false;           // hat sich beim Ziehen wirklich was bewegt?
+  let _demEles = null;              // v0.9.292 — gesampelte Mapbox-Gelände-Höhe pro Punkt (oder null)
+  // v0.9.293 — Höhenprofil-Zoom (Fenster in Punkt-Indizes) + Karten-Sync + Punkt-Modal
+  let _profI0 = 0, _profI1 = 0;     // sichtbares Index-Fenster im Profil
+  let _syncing = false;             // Reentrancy-Schutz Karte<->Profil
+  let _profDraw = null;             // letzte Zeichen-Parameter fürs Hit-Testing
+  let _maplib = null;               // Karten-Lib (mapboxgl/maplibregl) für Popup
+  let _ptPopup = null;              // Mapbox-Popup mit Punkt-Info (Karte)
+  let _clickTimer = null;           // Einzel-/Doppelklick-Entscheidung
 
   // v0.9.238 — Undo/Redo (Cmd+Z / Cmd+Shift+Z) für ALLE Track-Edits.
   // Snapshot/Restore auf der kompletten _points-Liste. Vor jeder Operation
@@ -110,9 +119,10 @@ function mountGpxInspect(body, headerActions) {
           <div class="gpxi-note muted">${t("gpxinspect.match_hint", "Nur sinnvoll, wenn der Track Wegen/Straßen folgt. Braucht Internet + Mapbox-Token.")}</div>
           <hr class="gpxi-hr">
           <button class="btn gpxi-act" id="gpxi-despike"
-            title="${t("gpxinspect.despike_tip", "Durchsucht den ganzen Track automatisch nach GPS-Ausreißern (Punkte, die wegspringen und zurückkommen) und markiert sie. Du kannst durchsteppen oder alle auf einmal heilen.")}">
-            🔎 ${t("gpxinspect.despike", "Ausreißer automatisch finden")}</button>
-          <div class="gpxi-fillrow gpxi-sensrow" title="${t("gpxinspect.sens_tip", "Wie empfindlich nach Ausreißern gesucht wird. Niedrig = nur krasse Sprünge, hoch = auch kleine Zacken. Während du ziehst, aktualisiert sich die Markierung.")}">
+            title="${t("gpxinspect.despike_tip", "Durchsucht den ganzen Track nach GPS-Ausreißern (orange) UND Lücken/Dropouts (magenta gestrichelt). Zeigt als Vorschau auf der Karte, was geheilt würde — dann Alle heilen.")}">
+            🩹 ${t("gpxinspect.despike", "Auto-Heilen: Ausreißer + Lücken")}</button>
+          <div class="gpxi-note muted">${t("gpxinspect.heal_legend", "Vorschau: 🟠 Ausreißer (werden geglättet) · 🟣 Lücken (werden gefüllt)")}</div>
+          <div class="gpxi-fillrow gpxi-sensrow" title="${t("gpxinspect.sens_tip", "Wie empfindlich gesucht wird. Niedrig = nur krasse Sprünge/große Lücken, hoch = auch kleine. Während du ziehst, aktualisiert sich die Vorschau.")}">
             <label>${t("gpxinspect.sens", "Empfindlichkeit")}</label>
             <input type="range" id="gpxi-sens" min="1" max="10" step="1" value="5">
             <span id="gpxi-sens-val" class="gpxi-sensval">5</span>
@@ -132,12 +142,35 @@ function mountGpxInspect(body, headerActions) {
             <input type="number" id="gpxi-spacing" min="2" max="500" step="1" value="20"> m
           </div>
           <hr class="gpxi-hr">
+          <div class="gpxi-mm-title">⛰ ${t("gpxinspect.ele_title", "Höhe korrigieren")}</div>
+          <div class="gpxi-note muted">${t("gpxinspect.ele_hint", "GPS-Höhe ist verrauscht (Höhenmeter oft zu hoch). Lade das Höhenprofil aus der Karte — unter der Karte siehst du dann beide Linien übereinander und mischst sie mit dem Regler. Die fette Linie ist das Ergebnis. Braucht Mapbox-Token + Internet.")}</div>
+          <button class="btn gpxi-act" id="gpxi-ele-load">🗺 ${t("gpxinspect.ele_load", "Höhenprofil aus Karte laden")}</button>
+          <div class="gpxi-fillrow gpxi-sensrow">
+            <label>${t("gpxinspect.ele_weight", "GPS ⟷ Karte")}</label>
+            <input type="range" id="gpxi-ele-weight" min="0" max="100" step="5" value="70" disabled>
+            <span id="gpxi-ele-weight-val" class="gpxi-sensval">70 %</span>
+          </div>
+          <button class="btn btn-primary gpxi-act" id="gpxi-ele-apply" disabled>⛰ ${t("gpxinspect.ele_apply", "Diese Höhe übernehmen")}</button>
+          <div class="gpxi-note muted" id="gpxi-ele-result"></div>
+          <hr class="gpxi-hr">
           <button class="btn btn-primary" id="gpxi-save" disabled>💾 ${t("gpxinspect.save", "Geheiltes GPX speichern")}</button>
           <button class="btn gpxi-reset" id="gpxi-reset" disabled>↩︎ ${t("gpxinspect.reset", "Änderungen verwerfen")}</button>
           <div class="gpxi-note muted" id="gpxi-note"></div>
         </div>
     </div>
-    <section class="canvas"><div id="gpxi-canvas"></div></section>
+    <section class="canvas" id="gpxi-canvaswrap">
+      <div id="gpxi-canvas"></div>
+      <div id="gpxi-ele-profile" class="gpxi-eleprof" hidden>
+        <div class="gpxi-eleprof-head">
+          <span class="gpxi-eleprof-title">⛰ ${t("gpxinspect.ele_profile_title", "Höhenprofil")}</span>
+          <span class="gpxi-eleleg"><i class="gpxi-sw gpxi-sw-gps"></i>${t("gpxinspect.ele_leg_gps", "GPS (Original)")}</span>
+          <span class="gpxi-eleleg"><i class="gpxi-sw gpxi-sw-dem"></i>${t("gpxinspect.ele_leg_map", "Karte (Mapbox)")}</span>
+          <span class="gpxi-eleleg"><i class="gpxi-sw gpxi-sw-res"></i>${t("gpxinspect.ele_leg_res", "Ergebnis")}</span>
+          <span class="gpxi-eleprof-info" id="gpxi-eleprof-info"></span>
+        </div>
+        <svg class="gpxi-eleprof-svg" id="gpxi-eleprof-svg" viewBox="0 0 1000 150" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </div>
+    </section>
   `;
 
   // ── Map ──────────────────────────────────────────────────────────────────
@@ -155,6 +188,7 @@ function mountGpxInspect(body, headerActions) {
       return;
     }
     map = made.map;
+    _maplib = made.lib;   // v0.9.293 — für Punkt-Info-Popup
     try { map.addControl(new made.lib.NavigationControl(), "top-right"); } catch (_) {}
     onMapReady(map, () => {
       if (isUnmounted) return;
@@ -166,6 +200,15 @@ function mountGpxInspect(body, headerActions) {
         map.addSource("gpxi-line", { type: "geojson", data: emptyLine });
         map.addLayer({ id: "gpxi-line-lyr", type: "line", source: "gpxi-line",
           paint: { "line-color": "#3aa0ff", "line-width": 2.4, "line-opacity": 0.85 } });
+        // v0.9.294 — Lücken-Heil-Vorschau (andersfarbig): gestrichelte Füll-Linie + Geister-Punkte.
+        map.addSource("gpxi-gapfill", { type: "geojson", data: emptyLine });
+        map.addLayer({ id: "gpxi-gapfill-lyr", type: "line", source: "gpxi-gapfill",
+          paint: { "line-color": "#e879f9", "line-width": 3, "line-dasharray": [1.5, 1.2], "line-opacity": 0.95 } });
+        map.addSource("gpxi-gapfill-pts", { type: "geojson", data: emptyFC });
+        map.addLayer({ id: "gpxi-gapfill-pts-lyr", type: "circle", source: "gpxi-gapfill-pts", paint: {
+          "circle-radius": 3, "circle-color": "#e879f9", "circle-opacity": 0.55,
+          "circle-stroke-width": 1, "circle-stroke-color": "#86198f",
+        } });
         map.addSource("gpxi-pts", { type: "geojson", data: emptyFC });
         map.addLayer({ id: "gpxi-pts-lyr", type: "circle", source: "gpxi-pts", paint: {
           // Zoom-Interpolate MUSS oben stehen (Mapbox erlaubt kein zoom-interpolate
@@ -197,10 +240,33 @@ function mountGpxInspect(body, headerActions) {
           "circle-radius": 5.5, "circle-color": "#ff9f1c",
           "circle-stroke-width": 2, "circle-stroke-color": "#fff",
         } });
+        // v0.9.294 — Hover-Marker (verknüpft mit dem Höhenprofil-Cursor).
+        map.addSource("gpxi-hover", { type: "geojson", data: emptyFC });
+        map.addLayer({ id: "gpxi-hover-lyr", type: "circle", source: "gpxi-hover", paint: {
+          "circle-radius": 7, "circle-color": "rgba(255,255,255,0.0)",
+          "circle-stroke-width": 3, "circle-stroke-color": "#ffffff",
+        } });
       } catch (e) { applog && applog("warn", "[gpxinspect] layer add: " + e); }
-      map.on("click", "gpxi-pts-lyr", onPointClick);
-      // Allgemeiner Karten-Klick: im Zeichnen-Modus = Stützpunkt setzen.
-      map.on("click", onMapClickDraw);
+      // v0.9.291 — Terrain-DEM für die Höhenkorrektur (queryTerrainElevation).
+      // Nur mit Mapbox-Token (raster-dem ist mapbox://). Bei pitch 0 (Top-Down)
+      // ändert das die Optik nicht — wir brauchen's nur als Höhen-Datenquelle.
+      if (typeof isMapboxMode === "function" && isMapboxMode()) {
+        try {
+          if (!map.getSource("gpxi-dem")) {
+            map.addSource("gpxi-dem", { type: "raster-dem",
+              url: "mapbox://mapbox.mapbox-terrain-dem-v1", tileSize: 512, maxzoom: 14 });
+          }
+          map.setTerrain({ source: "gpxi-dem", exaggeration: 1.0 });
+        } catch (e) { applog && applog("warn", "[gpxinspect] terrain: " + e); }
+      }
+      // v0.9.294 — tolerante Klicks: nächster Punkt im Pixel-Radius (statt layer-gebunden).
+      map.on("click", onMapClick);
+      map.on("dblclick", onMapDbl);   // Doppelklick = Anker setzen
+      // v0.9.293 — Karte bewegt/zoomt → Höhenprofil auf den sichtbaren Abschnitt syncen.
+      map.on("moveend", onMapMoveSyncProfile);
+      // v0.9.294 — Maus über der Karte → Position im Höhenprofil zeigen (verknüpfter Cursor).
+      map.on("mousemove", onMapHover);
+      map.on("mouseout", () => setHover(null));
       // Ausgewählten Punkt (Anker A, Einzel-Auswahl) per Drag verschieben (v0.9.243).
       map.on("mousedown", "gpxi-pts-lyr", onPointMouseDown);
       map.on("mousemove", onDragMove);
@@ -237,11 +303,12 @@ function mountGpxInspect(body, headerActions) {
     if (isUnmounted) return;
     if (!res || !res.ok) { toast((res && res.error) || "GPX-Fehler", "error", 5000); return; }
     _points = (res.points || []).map(p => ({ lat: p.lat, lon: p.lon, ele: p.ele, time: p.time }));
-    _srcPath = path;
+    _srcPath = res.src || path;   // v0.9.295 — konvertierter GPX-Pfad (Fremdformate), sonst Original
     _hasTime = !!res.has_time; _hasEle = !!res.has_ele;
     _selA = _selB = null; _dirty = false;
     _drawMode = false; _drawPts = [];
     clearSpikes();
+    _eleInvalidate();   // v0.9.292 — neues Track → altes Höhenprofil verwerfen
     if (_undo) _undo.reset();
     renderAll();
     try { renderDraw(); } catch (_) {}
@@ -253,11 +320,14 @@ function mountGpxInspect(body, headerActions) {
     _points = []; _srcPath = null; _selA = _selB = null; _dirty = false;
     try { if (map && map.getSource("gpxi-line")) map.getSource("gpxi-line").setData({ type: "Feature", geometry: { type: "LineString", coordinates: [] } }); } catch (_) {}
     try { if (map && map.getSource("gpxi-pts")) map.getSource("gpxi-pts").setData({ type: "FeatureCollection", features: [] }); } catch (_) {}
+    _eleInvalidate();
     updateUI();
   }
 
   function renderAll() {
     if (!map) return;
+    // v0.9.292 — DEM-Profil wird ungültig sobald sich die Punktzahl ändert (Indizes verschieben sich).
+    if (_demEles && _demEles.length !== _points.length) _eleInvalidate();
     try {
       const line = { type: "Feature", geometry: { type: "LineString", coordinates: _points.map(p => [p.lon, p.lat]) } };
       if (map.getSource("gpxi-line")) map.getSource("gpxi-line").setData(line);
@@ -293,24 +363,51 @@ function mountGpxInspect(body, headerActions) {
   }
 
   // ── Auswahl ─────────────────────────────────────────────────────────────────
-  function onPointClick(e) {
-    if (_drawMode) return;   // im Zeichnen-Modus keine Anker-Änderung
-    const f = e.features && e.features[0];
-    if (!f) return;
-    const i = f.properties.i;
+  // v0.9.294 — Klick-Toleranz (Marc): nicht nur exakt auf dem Punkt, sondern auch
+  // wenn man nah dran ist. Wir suchen den nächsten Punkt im Pixel-Radius statt das
+  // Klick-Event an den Punkt-Layer zu binden. Einzelklick = Info-Feld (verzögert),
+  // Doppelklick = Anker direkt.
+  const _HIT_TOL_PX = 18;
+  function _nearestIdxToPoint(px, py, tolPx) {
+    if (!map || !_points.length) return -1;
+    const tol2 = tolPx * tolPx;
+    let best = -1, bestD = tol2;
+    for (let i = 0; i < _points.length; i++) {
+      let sp; try { sp = map.project([_points[i].lon, _points[i].lat]); } catch (_) { continue; }
+      const dx = sp.x - px, dy = sp.y - py, d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+  }
+  function onMapClick(e) {
+    if (_drawMode) { onMapClickDraw(e); return; }
+    if (_dragMoved) { _dragMoved = false; return; }   // Klick direkt nach Drag schlucken
+    const i = _nearestIdxToPoint(e.point.x, e.point.y, _HIT_TOL_PX);
+    if (i < 0) return;
+    if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; }
+    _clickTimer = setTimeout(() => { _clickTimer = null; showPointInfoMap(i); }, 240);
+  }
+  function onMapDbl(e) {
+    if (_drawMode) return;
+    const i = _nearestIdxToPoint(e.point.x, e.point.y, _HIT_TOL_PX);
+    if (i < 0) return;
+    try { e.preventDefault(); } catch (_) {}   // kein Karten-Doppelklick-Zoom, wenn ein Punkt nah ist
+    if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; }
+    selectAnchor(i);
+  }
+  // Anker-Logik (A → B → neu), aus onPointClick herausgezogen.
+  function selectAnchor(i) {
     if (_selA === null) { _selA = i; }
     else if (_selB === null) {
       if (i === _selA) return;
       _selB = i;
       if (_selB < _selA) { const tmp = _selA; _selA = _selB; _selB = tmp; }
-    } else {
-      _selA = i; _selB = null;   // dritter Klick = neue Auswahl starten
-    }
-    renderPoints();
-    updateUI();
+    } else { _selA = i; _selB = null; }
+    renderPoints(); updateUI();
+    if (_profDraw) drawEleProfile();   // Anker-Marker im Profil mitziehen
   }
 
-  function clearSelection() { _selA = _selB = null; renderPoints(); updateUI(); }
+  function clearSelection() { _selA = _selB = null; renderPoints(); updateUI(); if (_profDraw) drawEleProfile(); }
 
   // ── Punkt verschieben (Drag, v0.9.243) ───────────────────────────────────────
   // Nur der ausgewählte grüne Anker A (Einzel-Auswahl) ist ziehbar. Zeit + Höhe
@@ -724,6 +821,65 @@ function mountGpxInspect(body, headerActions) {
 
   function clearSpikes() {
     _spikes = []; _spikeSet = new Set(); _spikeIdx = -1; _despikeRan = false;
+    _gaps = []; try { renderGaps(); } catch (_) {}
+  }
+
+  // v0.9.294 — Lücken erkennen: ungewöhnlich lange Segmente (GPS-Dropouts), die KEINE
+  // Ausreißer sind. Baseline = unteres Perzentil der Abstände (robust, auch wenn der
+  // Track viele Lücken hat). Schwelle skaliert mit dem Empfindlichkeits-Slider.
+  function detectGaps() {
+    const P = _points, n = P.length;
+    if (n < 2) return [];
+    const seg = new Array(n - 1);
+    for (let i = 0; i < n - 1; i++) seg[i] = _haversine(P[i], P[i + 1]);
+    const sorted = [...seg].sort((a, b) => a - b);
+    const base = sorted[Math.floor(sorted.length * 0.25)] || sorted[0] || 0;  // typischer „guter" Abstand
+    const sens = Math.max(1, Math.min(10, parseFloat((document.getElementById("gpxi-sens") || {}).value) || 5));
+    const lerp = (a, b) => a + (b - a) * (sens - 1) / 9;
+    const GAP_FACTOR = lerp(10, 4);     // 1 = nur riesige Lücken, 10 = auch kleinere
+    const GAP_FLOOR = lerp(200, 40);    // absolute Mindest-Lückenweite in m
+    const TH = Math.max(GAP_FLOOR, base * GAP_FACTOR);
+    const gaps = [];
+    for (let i = 0; i < n - 1; i++) {
+      if (seg[i] > TH && !_spikeSet.has(i) && !_spikeSet.has(i + 1)) {
+        gaps.push({ a: i, b: i + 1, dist: seg[i] });
+      }
+    }
+    return gaps;
+  }
+  // Wie viele Punkte würden in eine Lücke eingefügt (für Vorschau-Zähler + Anwenden).
+  function _gapFillCount(dist, spacing) {
+    return Math.max(1, Math.min(2000, Math.round(dist / spacing) - 1));
+  }
+  function _gapSpacing() {
+    let s = parseFloat((document.getElementById("gpxi-spacing") || {}).value) || 20;
+    return Math.max(2, Math.min(500, s));
+  }
+  // Vorschau der Lücken-Füllung auf die Karte (gestrichelte Linie + Geister-Punkte).
+  function renderGaps() {
+    if (!map || !map.getSource("gpxi-gapfill")) return;
+    const lines = [], ghosts = [];
+    const spacing = _gapSpacing();
+    let ghostBudget = 600;   // Geister-Punkte gesamt begrenzen (Performance)
+    for (const g of _gaps) {
+      const A = _points[g.a], B = _points[g.b];
+      if (!A || !B) continue;
+      lines.push([[A.lon, A.lat], [B.lon, B.lat]]);
+      if (ghostBudget > 0) {
+        const n = Math.min(_gapFillCount(g.dist, spacing), ghostBudget, 120);
+        for (let k = 1; k <= n; k++) {
+          const tt = k / (n + 1);
+          ghosts.push({ type: "Feature", geometry: { type: "Point", coordinates: [A.lon + (B.lon - A.lon) * tt, A.lat + (B.lat - A.lat) * tt] } });
+        }
+        ghostBudget -= n;
+      }
+    }
+    try {
+      map.getSource("gpxi-gapfill").setData(lines.length
+        ? { type: "Feature", geometry: { type: "MultiLineString", coordinates: lines } }
+        : { type: "Feature", geometry: { type: "LineString", coordinates: [] } });
+      map.getSource("gpxi-gapfill-pts").setData({ type: "FeatureCollection", features: ghosts });
+    } catch (_) {}
   }
 
   function runDespike(opts) {
@@ -734,12 +890,27 @@ function mountGpxInspect(body, headerActions) {
     _spikes = groups; _spikeIdx = -1;
     _spikeSet = new Set();
     for (const g of groups) for (let k = g.from; k <= g.to; k++) _spikeSet.add(k);
+    // v0.9.294 — zusätzlich Lücken erkennen (nach Spikes, damit _spikeSet steht) + Vorschau.
+    _gaps = detectGaps();
     _selA = _selB = null;
-    renderPoints(); updateUI();
+    renderPoints(); renderGaps(); updateUI();
     if (silent) return;
-    if (!groups.length) { toast(t("gpxinspect.spike_none", "Keine Ausreißer gefunden 👍"), "info", 2800); return; }
-    toast(t("gpxinspect.spike_marked", "Ausreißer markiert: ") + groups.length, "success", 2600);
-    gotoSpike(0);
+    const nS = groups.length, nG = _gaps.length;
+    if (!nS && !nG) { toast(t("gpxinspect.heal_none", "Nichts zu heilen gefunden 👍"), "info", 2800); return; }
+    const spacing = _gapSpacing();
+    const fillPts = _gaps.reduce((s, g) => s + _gapFillCount(g.dist, spacing), 0);
+    toast(t("gpxinspect.heal_marked", "Gefunden: %s Ausreißer, %g Lücken (~%p Füllpunkte)")
+      .replace("%s", nS).replace("%g", nG).replace("%p", fillPts), "success", 3400);
+    if (nS) gotoSpike(0);
+    else if (nG) _zoomToGap(0);
+  }
+  function _zoomToGap(k) {
+    const g = _gaps[k]; if (!g || !map) return;
+    const A = _points[g.a], B = _points[g.b];
+    try {
+      map.fitBounds([[Math.min(A.lon, B.lon), Math.min(A.lat, B.lat)], [Math.max(A.lon, B.lon), Math.max(A.lat, B.lat)]],
+        { padding: 120, duration: 500, maxZoom: 17 });
+    } catch (_) {}
   }
 
   function gotoSpike(k) {
@@ -762,9 +933,9 @@ function mountGpxInspect(body, headerActions) {
   }
 
   function healAllSpikes() {
-    if (!_spikes.length) return;
-    _pushUndo(t("gpxinspect.despike", "Ausreißer heilen"));
-    // Heilen verschiebt nur (kein Splice) → Indizes bleiben gültig, Reihenfolge egal.
+    if (!_spikes.length && !_gaps.length) return;
+    _pushUndo(t("gpxinspect.heal_all", "Auto-Heilen"));
+    // 1) Ausreißer geraderücken — verschiebt nur (kein Splice) → Indizes bleiben gültig.
     for (const g of _spikes) {
       const A = _points[g.a], B = _points[g.b], span = g.b - g.a;
       for (let k = g.a + 1; k < g.b; k++) {
@@ -775,10 +946,490 @@ function mountGpxInspect(body, headerActions) {
         // Zeit bleibt → Geschwindigkeit korrigiert sich selbst.
       }
     }
-    const cnt = _spikes.length;
+    const nS = _spikes.length;
+    // 2) Lücken füllen — Splice ändert Indizes, also von HINTEN nach VORNE einfügen.
+    const spacing = _gapSpacing();
+    let fillPts = 0;
+    const gapsDesc = [..._gaps].sort((a, b) => b.a - a.a);
+    for (const g of gapsDesc) {
+      const A = _points[g.a], B = _points[g.b];
+      if (!A || !B) continue;
+      const dist = _haversine(A, B);
+      const n = _gapFillCount(dist, spacing);
+      const tA = A.time ? Date.parse(A.time) : null;
+      const tB = B.time ? Date.parse(B.time) : null;
+      const inserted = [];
+      for (let k = 1; k <= n; k++) {
+        const tt = k / (n + 1);
+        inserted.push({
+          lat: A.lat + (B.lat - A.lat) * tt,
+          lon: A.lon + (B.lon - A.lon) * tt,
+          ele: (A.ele != null && B.ele != null) ? (A.ele + (B.ele - A.ele) * tt) : (A.ele != null ? A.ele : null),
+          time: (tA != null && tB != null) ? new Date(tA + (tB - tA) * tt).toISOString() : null,
+        });
+      }
+      _points.splice(g.a + 1, 0, ...inserted);   // b = a+1 → reines Einfügen
+      fillPts += inserted.length;
+    }
+    const nG = _gaps.length;
     _dirty = true; clearSpikes(); _selA = _selB = null;
     renderAll(); updateUI();
-    toast(t("gpxinspect.spike_healed", "Ausreißer geheilt: ") + cnt, "success", 2600);
+    toast(t("gpxinspect.heal_done", "Geheilt: %s Ausreißer, %g Lücken (+%p Punkte)")
+      .replace("%s", nS).replace("%g", nG).replace("%p", fillPts), "success", 3200);
+  }
+
+  // ── Höhe korrigieren: Höhenprofil GPS vs. Karte zeigen + live mischen ────────
+  // v0.9.292 (Nutzer-Feedback zu v0.9.291: „man sieht nicht was passiert") —
+  // Einmal die Gelände-Höhe pro Punkt samplen (queryTerrainElevation) und unter
+  // der Karte GPS- + Karten-Linie übereinander zeichnen; der Regler mischt live
+  // eine fette Ergebnis-Linie. „Übernehmen" schreibt sie in _points[].ele.
+  function _eleGain(eles) {
+    // Geglättet (Fenster 5) + 3-m-Schwelle, analog core/gpx.py.
+    const v = eles.filter(e => e != null && isFinite(e));
+    if (v.length < 2) return 0;
+    const sm = v.map((_, i) => {
+      let s = 0, n = 0;
+      for (let k = Math.max(0, i - 2); k <= Math.min(v.length - 1, i + 2); k++) { s += v[k]; n++; }
+      return s / n;
+    });
+    let g = 0, ref = sm[0];
+    for (let i = 1; i < sm.length; i++) {
+      const d = sm[i] - ref;
+      if (d > 3) { g += d; ref = sm[i]; }
+      else if (d < -3) { ref = sm[i]; }
+    }
+    return g;
+  }
+  function _trackBounds() {
+    let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+    for (const p of _points) {
+      if (p.lon < mnx) mnx = p.lon; if (p.lat < mny) mny = p.lat;
+      if (p.lon > mxx) mxx = p.lon; if (p.lat > mxy) mxy = p.lat;
+    }
+    return [[mnx, mny], [mxx, mxy]];
+  }
+  let _eleBusy = false;
+  function _eleWeight() {
+    const wEl = document.getElementById("gpxi-ele-weight");
+    return Math.max(0, Math.min(1, (parseFloat(wEl && wEl.value) || 0) / 100));
+  }
+  function _blendEles(w) {
+    return _points.map((p, i) => {
+      const gps = (p.ele == null || !isFinite(p.ele)) ? null : p.ele;
+      const dem = _demEles ? _demEles[i] : null;
+      if (dem == null || !isFinite(dem)) return gps;   // kein DEM → GPS behalten
+      if (gps == null) return dem;
+      return (1 - w) * gps + w * dem;
+    });
+  }
+  function _cumDist() {
+    const out = new Array(_points.length); out[0] = 0;
+    for (let i = 1; i < _points.length; i++) out[i] = out[i - 1] + _haversine(_points[i - 1], _points[i]);
+    return out;
+  }
+  // Profil ungültig machen (z. B. wenn Punkte sich ändern → Indizes passen nicht mehr).
+  function _eleInvalidate() {
+    _demEles = null; _profDraw = null;
+    _closeProfileBox(); _closeMapPopup();
+    try { setHover(null); } catch (_) {}
+    const prof = document.getElementById("gpxi-ele-profile");
+    if (prof && !prof.hidden) { prof.hidden = true; try { if (map) map.resize(); } catch (_) {} }
+    setDisabled("gpxi-ele-weight", true);
+    setDisabled("gpxi-ele-apply", true);
+  }
+  function _profileVisible() {
+    const prof = document.getElementById("gpxi-ele-profile");
+    return !!(prof && !prof.hidden);
+  }
+  function _clampWindow() {
+    const n = _points.length;
+    if (n < 2) { _profI0 = 0; _profI1 = Math.max(0, n - 1); return; }
+    _profI0 = Math.max(0, Math.min(_profI0, n - 2));
+    _profI1 = Math.min(n - 1, Math.max(_profI1, _profI0 + 1));
+  }
+  // Höhenprofil zeichnen — nur das sichtbare Index-Fenster [_profI0.._profI1] (Zoom-Sync mit Karte).
+  function drawEleProfile() {
+    const svg = document.getElementById("gpxi-eleprof-svg");
+    if (!svg || !_demEles || _demEles.length !== _points.length || _points.length < 2) { _profDraw = null; return; }
+    _closeProfileBox();   // schwebende Info-Box ist nach Neuzeichnen nicht mehr passend platziert
+    { const hc = document.getElementById("gpxi-eleprof-cursor"); if (hc) hc.hidden = true; }
+    _clampWindow();
+    const i0 = _profI0, i1 = _profI1;
+    const W = 1000, H = 150, padT = 10, padB = 16;
+    const cum = _cumDist();
+    const x0 = cum[i0], x1 = cum[i1] || (x0 + 1), span = (x1 - x0) || 1;
+    const gpsArr = _points.map(p => (p.ele == null || !isFinite(p.ele)) ? null : p.ele);
+    const demArr = _demEles;
+    const w = _eleWeight();
+    const resArr = _blendEles(w);
+    // y-Skala nur über das sichtbare Fenster
+    let lo = Infinity, hi = -Infinity;
+    for (let i = i0; i <= i1; i++) for (const v of [gpsArr[i], demArr[i], resArr[i]]) { if (v == null || !isFinite(v)) continue; if (v < lo) lo = v; if (v > hi) hi = v; }
+    if (!isFinite(lo) || !isFinite(hi)) { _profDraw = null; return; }
+    if (hi - lo < 1) hi = lo + 1;
+    const X = d => ((d - x0) / span) * W;
+    const Y = v => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+    const path = arr => {
+      let d = "", pen = false;
+      for (let i = i0; i <= i1; i++) {
+        const v = arr[i];
+        if (v == null || !isFinite(v)) { pen = false; continue; }
+        d += (pen ? "L" : "M") + X(cum[i]).toFixed(1) + " " + Y(v).toFixed(1) + " ";
+        pen = true;
+      }
+      return d.trim();
+    };
+    const mid = (lo + hi) / 2;
+    let inner = [hi, mid, lo].map(v =>
+      `<line x1="0" y1="${Y(v).toFixed(1)}" x2="${W}" y2="${Y(v).toFixed(1)}" class="gpxi-ep-grid"/>`
+    ).join("");
+    inner += `<path d="${path(gpsArr)}" class="gpxi-ep-line gpxi-ep-gps"/>`
+          +  `<path d="${path(demArr)}" class="gpxi-ep-line gpxi-ep-dem"/>`
+          +  `<path d="${path(resArr)}" class="gpxi-ep-line gpxi-ep-res"/>`;
+    // Anker-Marker A/B als vertikale Linien (wenn im Fenster)
+    const vline = (idx, cls) => (idx != null && idx >= i0 && idx <= i1)
+      ? `<line x1="${X(cum[idx]).toFixed(1)}" y1="0" x2="${X(cum[idx]).toFixed(1)}" y2="${H}" class="${cls}"/>` : "";
+    inner += vline(_selA, "gpxi-ep-anchor gpxi-ep-anchor-a") + vline(_selB, "gpxi-ep-anchor gpxi-ep-anchor-b");
+    // Einzelne klickbare Punkte — nur wenn wenige sichtbar (sonst zu viel DOM)
+    const visN = i1 - i0 + 1;
+    if (visN <= 200) {
+      let dots = "";
+      for (let i = i0; i <= i1; i++) {
+        const v = resArr[i]; if (v == null || !isFinite(v)) continue;
+        const sel = (i === _selA || i === _selB) ? " gpxi-ep-dot-sel" : "";
+        dots += `<circle cx="${X(cum[i]).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${visN <= 60 ? 3.2 : 2.2}" class="gpxi-ep-dot${sel}"/>`;
+      }
+      inner += dots;
+    }
+    svg.innerHTML = inner;
+    _profDraw = { i0, i1, x0, span, W, cum };
+    const info = document.getElementById("gpxi-eleprof-info");
+    if (info) info.textContent =
+      t("gpxinspect.ele_gain_gps", "Höhenmeter — GPS ") + Math.round(_eleGain(gpsArr)) + " · " +
+      t("gpxinspect.ele_gain_map", "Karte ") + Math.round(_eleGain(demArr)) + " · " +
+      t("gpxinspect.ele_gain_res", "Ergebnis ") + Math.round(_eleGain(resArr)) + " m" +
+      (visN < _points.length ? "   (" + t("gpxinspect.ele_zoom_hint", "Ausschnitt") + " " + (i0 + 1) + "–" + (i1 + 1) + "/" + _points.length + ")" : "");
+    const resEl = document.getElementById("gpxi-ele-result");
+    if (resEl) resEl.textContent = t("gpxinspect.ele_preview", "Vorschau: %new Höhenmeter (%pct % Karte). Übernehmen, um es zu speichern.")
+      .replace("%new", Math.round(_eleGain(resArr))).replace("%pct", Math.round(w * 100));
+  }
+
+  // ── Zoom-Sync Karte ↔ Höhenprofil (v0.9.293) ─────────────────────────────────
+  function _windowFromBounds() {
+    if (!map || _points.length < 2) return false;
+    let b; try { b = map.getBounds(); } catch (_) { return false; }
+    if (!b) return false;
+    const W = b.getWest(), E = b.getEast(), S = b.getSouth(), N = b.getNorth();
+    let lo = -1, hi = -1;
+    for (let i = 0; i < _points.length; i++) {
+      const p = _points[i];
+      if (p.lon >= W && p.lon <= E && p.lat >= S && p.lat <= N) { if (lo < 0) lo = i; hi = i; }
+    }
+    if (lo < 0 || hi <= lo) return false;
+    _profI0 = Math.max(0, lo - 1);
+    _profI1 = Math.min(_points.length - 1, hi + 1);
+    return true;
+  }
+  function onMapMoveSyncProfile() {
+    if (_syncing || !_profileVisible()) return;
+    if (!_windowFromBounds()) { _profI0 = 0; _profI1 = _points.length - 1; }
+    drawEleProfile();
+  }
+  function _fitMapToWindow() {
+    if (!map) return;
+    _clampWindow();
+    let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+    for (let i = _profI0; i <= _profI1; i++) {
+      const p = _points[i];
+      if (p.lon < mnx) mnx = p.lon; if (p.lat < mny) mny = p.lat;
+      if (p.lon > mxx) mxx = p.lon; if (p.lat > mxy) mxy = p.lat;
+    }
+    if (!isFinite(mnx)) return;
+    _syncing = true;
+    try { map.once("moveend", () => { _syncing = false; }); } catch (_) { _syncing = false; }
+    try { map.fitBounds([[mnx, mny], [mxx, mxy]], { padding: 50, animate: false, maxZoom: 18 }); }
+    catch (_) { _syncing = false; }
+  }
+  function _zoomProfileWindow(factor, centerFrac) {
+    const n = _points.length; if (n < 2) return;
+    const cur = _profI1 - _profI0;
+    let next = Math.round(cur * factor);
+    next = Math.max(2, Math.min(n - 1, next));
+    const center = _profI0 + centerFrac * cur;
+    let i0 = Math.round(center - next * centerFrac);
+    i0 = Math.max(0, Math.min(i0, n - 1 - next));
+    _profI0 = i0; _profI1 = i0 + next;
+    drawEleProfile(); _fitMapToWindow();
+  }
+  function _panProfileWindow(fracDelta) {
+    const n = _points.length; if (n < 2) return;
+    const cur = _profI1 - _profI0;
+    const shift = Math.round(fracDelta * cur);
+    if (!shift) return;
+    let i0 = Math.max(0, Math.min(_profI0 + shift, n - 1 - cur));
+    _profI0 = i0; _profI1 = i0 + cur;
+    drawEleProfile(); _fitMapToWindow();
+  }
+  function _profileIdxAtClientX(clientX) {
+    if (!_profDraw) return -1;
+    const svg = document.getElementById("gpxi-eleprof-svg");
+    if (!svg) return -1;
+    const r = svg.getBoundingClientRect();
+    if (!r.width) return -1;
+    const xv = ((clientX - r.left) / r.width) * _profDraw.W;
+    const targetCum = _profDraw.x0 + (xv / _profDraw.W) * _profDraw.span;
+    let best = _profDraw.i0, bestD = Infinity;
+    for (let i = _profDraw.i0; i <= _profDraw.i1; i++) {
+      const d = Math.abs(_profDraw.cum[i] - targetCum);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+  }
+  let _profDragX = null, _profDragMoved = false;
+  function onProfileClick(e) {
+    if (_profDragMoved) { _profDragMoved = false; return; }   // war ein Pan, kein Klick
+    const idx = _profileIdxAtClientX(e.clientX);
+    if (idx < 0) return;
+    const cx = e.clientX, cy = e.clientY;
+    if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; }
+    _clickTimer = setTimeout(() => { _clickTimer = null; showPointInfoProfile(idx, cx, cy); }, 240);
+  }
+  function onProfileDblClick(e) {
+    const idx = _profileIdxAtClientX(e.clientX);
+    if (idx < 0) return;
+    e.preventDefault();
+    if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; }
+    selectAnchor(idx);
+  }
+  function onProfileWheel(e) {
+    if (!_profDraw) return;
+    e.preventDefault();
+    const svg = document.getElementById("gpxi-eleprof-svg");
+    const r = svg.getBoundingClientRect();
+    const frac = r.width ? Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) : 0.5;
+    _zoomProfileWindow(e.deltaY > 0 ? 1.25 : 0.8, frac);
+  }
+  function onProfileDown(e) { _profDragX = e.clientX; _profDragMoved = false; }
+  function onProfileMove(e) {
+    if (_profDragX == null || !_profDraw) return;
+    const svg = document.getElementById("gpxi-eleprof-svg");
+    const r = svg.getBoundingClientRect();
+    if (!r.width) return;
+    const dxFrac = (e.clientX - _profDragX) / r.width;
+    if (Math.abs(dxFrac) < 0.03) return;
+    _profDragMoved = true;
+    _panProfileWindow(-dxFrac);
+    _profDragX = e.clientX;
+  }
+  function onProfileUp() { _profDragX = null; }
+
+  // ── Verknüpfter Hover-Cursor (v0.9.294) — Maus Karte ↔ Position im Profil ─────
+  // Maus über der Karte → vertikaler Balken im Profil; Maus über dem Profil → Ring
+  // auf dem Track. Beides läuft über setHover(idx).
+  function setHover(idx) {
+    // 1) Ring-Marker auf der Karte
+    try {
+      const src = map && map.getSource("gpxi-hover");
+      if (src) {
+        if (idx == null || !_points[idx]) src.setData({ type: "FeatureCollection", features: [] });
+        else src.setData({ type: "Feature", geometry: { type: "Point", coordinates: [_points[idx].lon, _points[idx].lat] } });
+      }
+    } catch (_) {}
+    // 2) Vertikaler Cursor im Profil
+    const strip = document.getElementById("gpxi-ele-profile");
+    const svg = document.getElementById("gpxi-eleprof-svg");
+    let cur = document.getElementById("gpxi-eleprof-cursor");
+    if (!strip || !svg || !_profDraw || idx == null || idx < _profDraw.i0 || idx > _profDraw.i1) {
+      if (cur) cur.hidden = true; return;
+    }
+    if (!cur) { cur = document.createElement("div"); cur.id = "gpxi-eleprof-cursor"; cur.className = "gpxi-ep-cursor"; strip.appendChild(cur); }
+    const xView = ((_profDraw.cum[idx] - _profDraw.x0) / _profDraw.span) * _profDraw.W;
+    const sr = svg.getBoundingClientRect(), pr = strip.getBoundingClientRect();
+    cur.style.left = ((sr.left - pr.left) + (xView / _profDraw.W) * sr.width) + "px";
+    cur.style.top = (sr.top - pr.top) + "px";
+    cur.style.height = sr.height + "px";
+    cur.hidden = false;
+  }
+  function _hideHover() { setHover(null); }
+  function _nearestIdxToLngLat(lng, lat) {
+    const i0 = _profDraw ? _profDraw.i0 : 0;
+    const i1 = _profDraw ? _profDraw.i1 : _points.length - 1;
+    const coslat = Math.cos(lat * Math.PI / 180);   // Längengrade nach Breite skalieren
+    let best = -1, bestD = Infinity;
+    for (let i = i0; i <= i1; i++) {
+      const p = _points[i];
+      const dx = (p.lon - lng) * coslat, dy = p.lat - lat;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+  }
+  let _hoverRAF = 0, _hoverLL = null;
+  function onMapHover(e) {
+    if (!_profileVisible()) return;
+    _hoverLL = e.lngLat;
+    if (_hoverRAF) return;
+    _hoverRAF = requestAnimationFrame(() => {
+      _hoverRAF = 0;
+      if (!_hoverLL) return;
+      const idx = _nearestIdxToLngLat(_hoverLL.lng, _hoverLL.lat);
+      if (idx >= 0) setHover(idx);
+    });
+  }
+  function onProfileHover(e) {
+    if (!_profDraw) return;
+    const idx = _profileIdxAtClientX(e.clientX);
+    if (idx >= 0) setHover(idx);
+  }
+
+  // ── Punkt-Info-Feld (v0.9.293) — leichtes Feld AM Punkt, dunkelt NICHT ab ─────
+  // Karte = natives Popup (folgt dem Punkt). Profil = schwebende Box an der Klick-
+  // stelle. Neuer Klick → das Feld wandert zum neuen Punkt.
+  function _pointInfoHtml(idx) {
+    const p = _points[idx];
+    const cum = _cumDist();
+    const distStart = cum[idx] || 0;
+    const prev = idx > 0 ? _points[idx - 1] : null;
+    const dPrev = prev ? _haversine(prev, p) : null;
+    const tThis = p.time ? Date.parse(p.time) : null;
+    const tPrev = prev && prev.time ? Date.parse(prev.time) : null;
+    const dtPrev = (tThis != null && tPrev != null) ? (tThis - tPrev) / 1000 : null;
+    const speed = (dPrev != null && dtPrev && dtPrev > 0) ? (dPrev / dtPrev) * 3.6 : null;
+    const grade = (dPrev != null && dPrev > 0 && prev && prev.ele != null && p.ele != null) ? ((p.ele - prev.ele) / dPrev) * 100 : null;
+    const dem = _demEles ? _demEles[idx] : null;
+    const rows = [];
+    const row = (k, v) => rows.push(`<tr><td class="gpxi-pm-k">${k}</td><td class="gpxi-pm-v">${v}</td></tr>`);
+    row(t("gpxinspect.pm_index", "Punkt"), "#" + (idx + 1) + " / " + _points.length);
+    row(t("gpxinspect.pm_pos", "Position"), p.lat.toFixed(6) + ", " + p.lon.toFixed(6));
+    row(t("gpxinspect.pm_ele", "Höhe (GPS)"), p.ele != null ? Math.round(p.ele) + " m" : "—");
+    if (dem != null && isFinite(dem)) row(t("gpxinspect.pm_ele_map", "Höhe (Karte)"), Math.round(dem) + " m");
+    row(t("gpxinspect.pm_time", "Zeit"), p.time ? _fmtPtTime(p.time) : t("gpxinspect.no_time", "ohne Zeit"));
+    row(t("gpxinspect.pm_dist", "Distanz ab Start"), _fmtKm(distStart));
+    if (dPrev != null) row(t("gpxinspect.pm_dprev", "Abstand zum vorigen"), dPrev.toFixed(1) + " m");
+    if (speed != null) row(t("gpxinspect.pm_speed", "Geschwindigkeit"), speed.toFixed(1) + " km/h");
+    if (grade != null) row(t("gpxinspect.pm_grade", "Steigung"), (grade >= 0 ? "+" : "") + grade.toFixed(1) + " %");
+    return `<div class="gpxi-pi-head">${t("gpxinspect.pm_title", "Punkt-Daten")}</div>` +
+      `<table class="gpxi-pm-tbl"><tbody>${rows.join("")}</tbody></table>` +
+      `<div class="gpxi-pi-actions">` +
+      `<button class="btn" id="gpxi-pi-a">${t("gpxinspect.pm_set_a", "Als Anker A")}</button>` +
+      `<button class="btn" id="gpxi-pi-b">${t("gpxinspect.pm_set_b", "Als Anker B")}</button>` +
+      `</div>`;
+  }
+  function _wirePointInfo(idx, closeFn) {
+    const aBtn = document.getElementById("gpxi-pi-a");
+    const bBtn = document.getElementById("gpxi-pi-b");
+    if (aBtn) aBtn.onclick = () => { _selA = idx; _selB = null; renderPoints(); updateUI(); if (_profDraw) drawEleProfile(); if (closeFn) closeFn(); };
+    if (bBtn) bBtn.onclick = () => {
+      if (_selA === null) { _selA = idx; }
+      else if (idx !== _selA) { _selB = idx; if (_selB < _selA) { const tmp = _selA; _selA = _selB; _selB = tmp; } }
+      renderPoints(); updateUI(); if (_profDraw) drawEleProfile(); if (closeFn) closeFn();
+    };
+  }
+  function _closeProfileBox() { const box = document.getElementById("gpxi-pinfo-box"); if (box) box.remove(); }
+  function _closeMapPopup() { if (_ptPopup) { try { _ptPopup.remove(); } catch (_) {} _ptPopup = null; } }
+  // Karte: Popup am Punkt (folgt der Karte beim Pannen/Zoomen).
+  function showPointInfoMap(idx) {
+    const p = _points[idx];
+    if (!p || !_maplib || !map) return;
+    _closeProfileBox();
+    _closeMapPopup();
+    _ptPopup = new _maplib.Popup({ closeButton: true, closeOnClick: false, maxWidth: "300px", className: "gpxi-pinfo-pop", offset: 10 })
+      .setLngLat([p.lon, p.lat]).setHTML(`<div class="gpxi-pinfo">${_pointInfoHtml(idx)}</div>`).addTo(map);
+    try { _ptPopup.on("close", () => { _ptPopup = null; }); } catch (_) {}
+    _wirePointInfo(idx, _closeMapPopup);
+  }
+  // Profil: schwebende Box an der Klickstelle (im canvaswrap), folgt dem Theme.
+  function showPointInfoProfile(idx, clientX, clientY) {
+    const wrap = document.getElementById("gpxi-canvaswrap");
+    if (!wrap) return;
+    _closeMapPopup();
+    let box = document.getElementById("gpxi-pinfo-box");
+    if (!box) { box = document.createElement("div"); box.id = "gpxi-pinfo-box"; box.className = "gpxi-pinfo gpxi-pinfo-float"; wrap.appendChild(box); }
+    box.innerHTML = `<button class="gpxi-pi-x" id="gpxi-pi-close" title="${t("gpxinspect.pm_close", "Schließen")}">✕</button>` + _pointInfoHtml(idx);
+    const wr = wrap.getBoundingClientRect();
+    box.style.left = "0px"; box.style.top = "0px";   // erst messen, dann platzieren
+    const bw = box.offsetWidth, bh = box.offsetHeight;
+    let left = (clientX - wr.left) + 12;
+    let top = (clientY - wr.top) - bh - 12;           // bevorzugt oberhalb des Klicks
+    if (top < 4) top = (clientY - wr.top) + 14;       // sonst darunter
+    if (left + bw > wr.width - 4) left = wr.width - bw - 6;
+    if (left < 4) left = 4;
+    if (top + bh > wr.height - 4) top = wr.height - bh - 6;
+    if (top < 4) top = 4;
+    box.style.left = left + "px"; box.style.top = top + "px";
+    const cBtn = document.getElementById("gpxi-pi-close");
+    if (cBtn) cBtn.onclick = _closeProfileBox;
+    _wirePointInfo(idx, _closeProfileBox);
+  }
+  // DEM einmal samplen + Profil einblenden.
+  async function loadEleProfile() {
+    const resEl = document.getElementById("gpxi-ele-result");
+    if (_eleBusy || _points.length < 2 || !map) return;
+    if (!(typeof isMapboxMode === "function" && isMapboxMode())) {
+      const m = t("gpxinspect.ele_need_token", "Braucht einen Mapbox-Token (Einstellungen).");
+      if (resEl) resEl.textContent = m; toast(m, "warn"); return;
+    }
+    const btn = document.getElementById("gpxi-ele-load");
+    _eleBusy = true;
+    if (btn) { btn.disabled = true; btn.textContent = "⏳ " + t("gpxinspect.ele_working", "Hole Höhen aus der Karte …"); }
+    try {
+      // Track-Bbox anfahren (animate:false), auf 'idle' warten (DEM-Kacheln da), samplen, zurück.
+      const cam = { center: map.getCenter(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() };
+      try { map.fitBounds(_trackBounds(), { padding: 40, animate: false }); } catch (_) {}
+      await new Promise((resolve) => {
+        let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
+        try { map.once("idle", fin); } catch (_) {}
+        setTimeout(fin, 9000);
+      });
+      if (isUnmounted) return;
+      let hit = 0;
+      const dem = _points.map(p => {
+        let v = null;
+        try { v = map.queryTerrainElevation([p.lon, p.lat]); } catch (_) {}
+        if (v == null || !isFinite(v)) return null;
+        hit++; return Math.round(v * 10) / 10;
+      });
+      try { map.jumpTo(cam); } catch (_) {}
+      if (!hit) {
+        const m = t("gpxinspect.ele_no_dem", "Keine Höhendaten gefunden (Internet/Token?).");
+        if (resEl) resEl.textContent = m; toast(m, "warn"); return;
+      }
+      _demEles = dem;
+      const prof = document.getElementById("gpxi-ele-profile");
+      if (prof) prof.hidden = false;
+      setDisabled("gpxi-ele-weight", false);
+      setDisabled("gpxi-ele-apply", false);
+      try { map.resize(); } catch (_) {}   // Karte schrumpft um den Profil-Streifen
+      // Fenster initial auf den aktuell sichtbaren Karten-Ausschnitt (Zoom-Sync)
+      _profI0 = 0; _profI1 = _points.length - 1;
+      _windowFromBounds();
+      drawEleProfile();
+    } catch (e) {
+      applog && applog("error", "[gpxinspect] loadEleProfile: " + e);
+      if (resEl) resEl.textContent = t("gpxinspect.ele_err", "Höhenprofil laden fehlgeschlagen.");
+    } finally {
+      _eleBusy = false;
+      if (btn) { btn.disabled = false; btn.textContent = "🗺 " + t("gpxinspect.ele_load", "Höhenprofil aus Karte laden"); }
+    }
+  }
+  // Aktuelle Mischung in die Punkte schreiben (mit Undo).
+  function applyEleBlend() {
+    if (!_demEles || _demEles.length !== _points.length) return;
+    const w = _eleWeight();
+    const res = _blendEles(w);
+    const oldGain = _eleGain(_points.map(p => p.ele));
+    _pushUndo(t("gpxinspect.ele_title", "Höhe korrigieren"));
+    for (let i = 0; i < _points.length; i++) {
+      if (res[i] != null && isFinite(res[i])) _points[i].ele = Math.round(res[i] * 10) / 10;
+    }
+    _hasEle = true; _dirty = true;
+    const newGain = _eleGain(_points.map(p => p.ele));
+    renderAll(); updateUI();
+    drawEleProfile();   // GPS-Linie == jetzt Ergebnis → die beiden fallen zusammen
+    const resEl = document.getElementById("gpxi-ele-result");
+    if (resEl) resEl.textContent = t("gpxinspect.ele_done", "Übernommen: %old → %new Höhenmeter (%pct % Karte). Jetzt speichern.")
+      .replace("%old", Math.round(oldGain)).replace("%new", Math.round(newGain)).replace("%pct", Math.round(w * 100));
+    toast(t("gpxinspect.ele_applied_toast", "Höhe übernommen — zum Sichern unten speichern."), "success");
   }
 
   async function saveTrack() {
@@ -819,8 +1470,8 @@ function mountGpxInspect(body, headerActions) {
     if (selEl) {
       if (!haveA) selEl.textContent = t("gpxinspect.sel_none", "Keine Auswahl");
       else if (!haveB) {
-        // v0.9.263 — Zeit/Höhe des angeklickten Punktes zeigen (Nutzer-Wunsch).
-        selEl.textContent = t("gpxinspect.sel_a_short", "Anker A: ") + _ptInfo(_selA)
+        // v0.9.293 — Detail-Daten liegen jetzt im Punkt-Modal (Klick), hier nur kurz.
+        selEl.textContent = t("gpxinspect.sel_a_short", "Anker A: ") + "#" + (_selA + 1)
           + " — " + t("gpxinspect.sel_a_next", "jetzt B klicken");
       } else {
         const between = _selB - _selA - 1;
@@ -850,13 +1501,19 @@ function mountGpxInspect(body, headerActions) {
     // Auto-Despike: Button frei wenn Punkte da & nicht im Zeichnen-Modus.
     setDisabled("gpxi-despike", _drawMode);
     const spikeBox = document.getElementById("gpxi-spikebox");
-    const nSpk = _spikes.length;
-    if (spikeBox) spikeBox.hidden = (nSpk === 0) || _drawMode;
-    if (nSpk > 0) {
+    const nSpk = _spikes.length, nGap = _gaps.length;
+    if (spikeBox) spikeBox.hidden = (nSpk === 0 && nGap === 0) || _drawMode;
+    {
       const sh = document.getElementById("gpxi-spikehint");
-      if (sh) sh.textContent = t("gpxinspect.spike_nav", "Ausreißer ") + (_spikeIdx + 1) + "/" + nSpk;
-      setDisabled("gpxi-spike-prev", _spikeIdx <= 0);
-      setDisabled("gpxi-spike-next", _spikeIdx >= nSpk - 1);
+      if (sh) {
+        let txt = "";
+        if (nSpk > 0) txt += t("gpxinspect.spike_nav", "Ausreißer ") + (_spikeIdx + 1) + "/" + nSpk;
+        if (nGap > 0) txt += (txt ? " · " : "") + t("gpxinspect.gap_count", "Lücken: ") + nGap;
+        sh.textContent = txt;
+      }
+      // Durchsteppen nur sinnvoll für Ausreißer; bei reinen Lücken Nav aus.
+      setDisabled("gpxi-spike-prev", nSpk === 0 || _spikeIdx <= 0);
+      setDisabled("gpxi-spike-next", nSpk === 0 || _spikeIdx >= nSpk - 1);
     }
     // Zeichnen-Modus: Box ein, Stützpunkt-Zähler, Übernehmen/Undo nach Bedarf.
     const drawBox = document.getElementById("gpxi-drawbox");
@@ -914,6 +1571,31 @@ function mountGpxInspect(body, headerActions) {
       if (_despikeRan && !_drawMode) runDespike({ silent: true });
     });
   })();
+  // v0.9.294 — Füll-Abstand ändert die Lücken-Vorschau (Geister-Punkte) live nach.
+  { const sp = document.getElementById("gpxi-spacing");
+    if (sp) sp.addEventListener("input", () => { if (_gaps.length) renderGaps(); }); }
+  // v0.9.292 — Höhe korrigieren: Profil laden, live mischen, übernehmen
+  _on("gpxi-ele-load", loadEleProfile);
+  _on("gpxi-ele-apply", applyEleBlend);
+  { const ew = document.getElementById("gpxi-ele-weight"), ewl = document.getElementById("gpxi-ele-weight-val");
+    if (ew) ew.addEventListener("input", () => { if (ewl) ewl.textContent = ew.value + " %"; drawEleProfile(); }); }
+  // v0.9.293 — Profil-Interaktion: Klick=Modal, Doppelklick=Anker, Rad=Zoom, Drag=Pan
+  { const psvg = document.getElementById("gpxi-eleprof-svg");
+    if (psvg) {
+      psvg.addEventListener("click", onProfileClick);
+      psvg.addEventListener("dblclick", onProfileDblClick);
+      psvg.addEventListener("wheel", onProfileWheel, { passive: false });
+      psvg.addEventListener("pointerdown", onProfileDown);
+      psvg.addEventListener("pointermove", onProfileMove);
+      psvg.addEventListener("mousemove", onProfileHover);            // v0.9.294 — Track-Ring zeigen
+      psvg.addEventListener("mouseleave", _hideHover);
+      window.addEventListener("pointerup", onProfileUp);
+    } }
+  if (!(typeof isMapboxMode === "function" && isMapboxMode())) {
+    const lb = document.getElementById("gpxi-ele-load"); if (lb) lb.disabled = true;
+    const rr = document.getElementById("gpxi-ele-result");
+    if (rr) rr.textContent = t("gpxinspect.ele_need_token", "Braucht einen Mapbox-Token (Einstellungen).");
+  }
   _on("gpxi-spike-prev", () => gotoSpike(_spikeIdx - 1));
   _on("gpxi-spike-next", () => gotoSpike(_spikeIdx + 1));
   _on("gpxi-spike-healall", healAllSpikes);
@@ -927,6 +1609,11 @@ function mountGpxInspect(body, headerActions) {
   return function cleanup() {
     isUnmounted = true;
     try { document.removeEventListener("keydown", onKeyDown); } catch (_) {}
+    try { window.removeEventListener("pointerup", onProfileUp); } catch (_) {}   // v0.9.293
+    if (_clickTimer) { try { clearTimeout(_clickTimer); } catch (_) {} _clickTimer = null; }
+    if (_hoverRAF) { try { cancelAnimationFrame(_hoverRAF); } catch (_) {} _hoverRAF = 0; }
+    try { _closeProfileBox(); } catch (_) {}
+    try { _closeMapPopup(); } catch (_) {}
     try { if (map) { map.remove(); } } catch (_) {}
     map = null;
   };

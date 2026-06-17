@@ -156,15 +156,41 @@ jobs:
           # Version von exiftool.org/ver.txt holen, aber von SourceForge LADEN:
           # exiftool.org hostet nur die aktuelle Version (neue raus → alte URL 404,
           # killt den Build, v0.9.315). SourceForge archiviert ALLE Versionen.
+          #
+          # v0.9.315 fix #2: Download über curl.exe statt Invoke-WebRequest.
+          # IWR folgte dem SourceForge-Mirror-Redirect nicht sauber → speicherte
+          # eine HTML-Interstitial-Seite als et.zip → Expand-Archive "OperationStopped".
+          # curl.exe (auf windows-latest vorhanden) folgt Redirects mit -L korrekt.
+          # Danach Magic-Byte-Check (ZIP beginnt mit "PK") + selbst-lokalisierendes
+          # Auffinden der exe (kein Raten des entpackten Ordnernamens).
+          $ErrorActionPreference = "Stop"
           try { $ver = (Invoke-WebRequest "https://exiftool.org/ver.txt" -UseBasicParsing).Content.Trim() } catch { $ver = "" }
           if (-not $ver) { $ver = "13.59" }
           Write-Host "ExifTool-Version: $ver (Download via SourceForge)"
           New-Item -ItemType Directory -Force -Path vendor/exiftool/windows | Out-Null
-          Invoke-WebRequest "https://downloads.sourceforge.net/project/exiftool/exiftool-${ver}_64.zip" -OutFile et.zip
+
+          $url = "https://downloads.sourceforge.net/project/exiftool/exiftool-${ver}_64.zip"
+          & curl.exe -fSL --retry 3 -o et.zip $url
+          if ($LASTEXITCODE -ne 0) { throw "curl-Download fehlgeschlagen (exit $LASTEXITCODE): $url" }
+
+          # ZIP-Magic-Byte-Check: echte ZIP beginnt mit 0x50 0x4B ("PK").
+          # Falls SourceForge mal eine HTML-Fehlerseite liefert, schlägt das hier
+          # klar fehl statt erst bei Expand-Archive mit kryptischem Fehler.
+          $bytes = [System.IO.File]::ReadAllBytes("et.zip")[0,1]
+          if ($bytes[0] -ne 0x50 -or $bytes[1] -ne 0x4B) {
+            throw "et.zip ist keine gueltige ZIP (Magic-Bytes: $($bytes[0]),$($bytes[1])) — vermutlich HTML-Interstitial."
+          }
+          Write-Host "et.zip OK ($((Get-Item et.zip).Length) Bytes)"
+
           Expand-Archive et.zip -DestinationPath vendor/exiftool/windows -Force
-          $k = "vendor/exiftool/windows/exiftool-${ver}_64/exiftool(-k).exe"
-          if (Test-Path $k) { Rename-Item $k "exiftool.exe" }
-          Get-ChildItem "vendor/exiftool/windows/exiftool-${ver}_64" | Select-Object -First 5 Name
+
+          # exe selbst-lokalisieren (Ordnername nicht raten — SF/exiftool.org koennen
+          # unterschiedlich packen). "exiftool(-k).exe" -> "exiftool.exe" umbenennen.
+          $k = Get-ChildItem -Path vendor/exiftool/windows -Recurse -Filter "exiftool(-k).exe" | Select-Object -First 1
+          if (-not $k) { throw "exiftool(-k).exe nach dem Entpacken nicht gefunden" }
+          Rename-Item $k.FullName "exiftool.exe"
+          Write-Host "exiftool.exe bereit: $($k.DirectoryName)\exiftool.exe"
+          Get-ChildItem $k.DirectoryName | Select-Object -First 8 Name
 
       - name: Build .exe
         run: pyinstaller ReisezoomGPSStudio.spec --clean --noconfirm

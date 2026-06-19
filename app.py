@@ -4146,7 +4146,7 @@ def main() -> None:
         _menu_mapbox     = _strings.get("menu.mapbox_help", "Mapbox Token Help")
         _menu_feedback   = _strings.get("menu.feedback", "Feedback / Fehler melden…")
         _menu_support    = _strings.get("menu.support", "Entwicklung unterstützen ☕")
-        _menu_blog       = _strings.get("menu.blog", "Blog (reisezoom.com)")
+        #_menu_blog       = _strings.get("menu.blog", "Blog (reisezoom.com)")
         _menu_youtube    = _strings.get("menu.youtube", "YouTube-Kanal")
         _menu_export_gpx = _strings.get("menu.export_gpx", "Als GPX exportieren…")
         _menu_export_csv = _strings.get("menu.export_csv", "Als CSV exportieren…")

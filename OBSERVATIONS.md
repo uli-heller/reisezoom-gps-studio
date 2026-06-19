@@ -4,6 +4,7 @@ Beobachtungen mit Ubuntu-24.04
 ## Fehler bei `pip install -r requirements.txt`
 
 TODO Uli: Entweder Lösung finden oder Ticket erstellen!
+- In einem neuen Container tritt das Problem nicht auf
 
 ```
 $ pip install -r requirements.txt
@@ -37,13 +38,12 @@ ii  python3-deprecated               1.2.14-1     all          Python decorator 
 ii  python3-deprecation              2.1.0-3      all          Library to handle automated deprecations
 ```
 
-
 ## Fehler beim Start mit `python app.py`
 
 TODO Uli:
 
-- Ist's ein Folgefehler vom vorigen?
-- Kann man's einfach korrigieren?
+- Ist's ein Folgefehler vom vorigen? Nein! Hab's in einem neuen Container getestet
+- Kann man's einfach korrigieren? OFFEN
 - Ggf. Ticket erstellen
 
 ```

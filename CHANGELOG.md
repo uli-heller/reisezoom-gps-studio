@@ -14,6 +14,8 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.318] – 2026-06-19
+
 ### Hinzugefügt
 - **Ruhige Kamera über 3D-Terrain (entkoppelte FreeCamera)** (v0.9.318): Neue Checkbox **„🎥 Ruhige Kamera (3D-Terrain)"** in der Kamera-Sektion (Default **AUS** = klassischer, gut getesteter Modus). Angehakt fliegt die Kamera bei Keyframe-Flügen nicht mehr auf dem Gelände reitend (= Berg-Hüpfen), sondern entkoppelt durch den 3D-Raum: pro Keyframe wird die exakte 3D-Kamera ausgelesen, dazwischen Position+Orientierung interpoliert → framing-treu an den Keyframes, ruhig dazwischen. Gilt in **Render UND Probelauf** (WYSIWYG). In der Sandbox bei 2× Überhöhung ~3× ruhiger; headless verifiziert + Marc-getestet (kein Hüpfen). **Ersetzt** den wirkungslosen „Kamera-Höhe halten"-Regler (raus). i18n de/en/es. **Noch offen:** Edge-Case-Prüfung (Welt-Anflug-Keyframes, Multi-Track), Tour-Map ist statisch (unberührt).
 

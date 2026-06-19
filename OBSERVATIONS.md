@@ -57,3 +57,17 @@ $ python app.py
 (app.py:3702136): GLib-GIO-ERROR **: 16:45:11.009: g_menu_item_set_detailed_action: Detailed action name 'app._Hilfe_🌐_Blog_(reisezoom.com)' has invalid format: 0-9:unknown keyword
 Trace/Breakpoint ausgelöst
 ```
+
+### Copilot - Frage
+
+Beim Start unter Linux bekomme ich eine Fehlermeldung mit "(app.py:4112): GLib-GIO-ERROR **: 15:12:12.279: g_menu_item_set_detailed_action: Detailed action name 'app._Help_🌐_Blog_(reisezoom.com)' has invalid format: 0-9:unknown keyword". Wie kann ich das korrigieren?
+
+### Copilot - Antwort
+
+Das Problem liegt an der Menü-Definition für macOS bei den externen Links. Die Fehlermeldung besagt, dass die Aktion 'app._Help_🌐_Blog_(reisezoom.com)' ein ungültiges Format hat.
+
+Die Ursache ist auf Zeile 4124 zu finden — dort wird ein String mit Emojis und Sonderzeichen in eine GLib-Aktion konvertiert, die nur ASCII-Zeichen akzeptiert.
+
+Hier die Lösung:
+
+(Copilot is reponding...)

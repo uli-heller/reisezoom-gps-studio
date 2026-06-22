@@ -6649,7 +6649,7 @@ function mountAnimator(body, headerActions, opts) {
       const er = document.getElementById("route-end-resolved");   if (er) er.textContent = "";
       try { _routeStatus(""); } catch (_) {}
       // Geladenen Route-Track aus der Vorschau nehmen (frisches Projekt = leer).
-      currentGpx = null; currentCoords = null; currentBbox = null; _gpxStats = null; _ovSeries = null; _gpxElevations = null;
+      currentGpx = null; currentCoords = null; currentBbox = null; _gpxStats = null; _ovSeries = null; _ovSensorFields = []; _gpxElevations = null;
       if (map) {
         ["preview-line", "preview-glow", "preview-highlight"].forEach(l => { try { if (map.getLayer(l)) map.removeLayer(l); } catch (_) {} });
         try { if (map.getSource("preview-track")) map.removeSource("preview-track"); } catch (_) {}
@@ -7209,6 +7209,7 @@ function mountAnimator(body, headerActions, opts) {
   // GPX-Statistiken merken — werden für die Overlay-Live-Vorschau gebraucht.
   let _gpxStats = null;
   let _ovSeries = null;   // v0.9.325 — Per-Punkt-Reihen für WYSIWYG-Live-Stats (s. animator_load_gpx)
+  let _ovSensorFields = [];   // v0.9.330 — FIT-Sensorfelder des aktuellen Tracks [{key,label,unit}]
   let _gpxElevations = null;
 
   // ── v0.9.321 Stats-Editor ────────────────────────────────────────────────
@@ -7237,7 +7238,15 @@ function mountAnimator(body, headerActions, opts) {
     dist_total: "Strecke", duration: "Zeit", moving_time: "Fahrzeit", avg_speed: "Ø Tempo", avg_speed_total: "Ø Tempo (gesamt)", max_speed: "Max. Tempo",
     elev_gain: "Bergauf", elev_loss: "Bergab", ele_high: "Höchster Punkt", ele_low: "Tiefster Punkt",
   };
-  const _ovFieldLabel = (id) => t("animator.statsfield." + id, _OV_FALLBACK_LABEL[id] || id);
+  // v0.9.330 — FIT-Sensorfelder dynamisch an den Live-Katalog anhängen (id = "sensor:<key>").
+  const _ovSensorMeta = (key) => (_ovSensorFields || []).find(f => f.key === key);
+  const _ovSensorCatItems = () => (_ovSensorFields || []).map(f => ({ id: "sensor:" + f.key, req: "none" }));
+  const _ovCat = (box) => box === "live" ? OVERLAY_FIELD_CATALOG.live.concat(_ovSensorCatItems()) : OVERLAY_FIELD_CATALOG[box];
+  const _ovFieldLabel = (id) => {
+    if (typeof id === "string" && id.startsWith("sensor:")) { const m = _ovSensorMeta(id.slice(7)); return m ? m.label : id.slice(7); }
+    return t("animator.statsfield." + id, _OV_FALLBACK_LABEL[id] || id);
+  };
+  const _ovSensorUnit = (key) => { const m = _ovSensorMeta(key); return m && m.unit ? " " + m.unit : ""; };
   const _ovHasTime = () => !!(_gpxStats && _gpxStats.duration_s > 0);
   const _ovHasEle = () => !!(_gpxStats && _gpxStats.ele_max != null);
   const _ovAvail = (req) => req === "time" ? _ovHasTime() : req === "ele" ? _ovHasEle() : true;
@@ -7259,7 +7268,7 @@ function mountAnimator(body, headerActions, opts) {
 
   // Gespeicherte Auswahl (Projekt) → {order:[alle ids in Reihenfolge], on:Set}
   function _ovReadOrder(box) {
-    const cat = OVERLAY_FIELD_CATALOG[box].map(f => f.id);
+    const cat = _ovCat(box).map(f => f.id);
     let saved = _activeProject?.[_MODKEY]?.["overlay_" + box + "_fields"];
     if (!Array.isArray(saved) || !saved.length) saved = OVERLAY_DEFAULT_FIELDS[box];
     saved = saved.filter(id => cat.includes(id));
@@ -7285,7 +7294,7 @@ function mountAnimator(body, headerActions, opts) {
     if (!cont) return;
     const { order, on } = _ovReadOrder(box);
     cont.innerHTML = order.map(id => {
-      const f = OVERLAY_FIELD_CATALOG[box].find(x => x.id === id);
+      const f = _ovCat(box).find(x => x.id === id);
       const avail = _ovAvail(f.req);
       const checked = on.has(id) && avail;
       return `<div class="ov-fieldrow${avail ? "" : " unavail"}" draggable="${avail ? "true" : "false"}" data-fid="${id}">`
@@ -7315,6 +7324,15 @@ function mountAnimator(body, headerActions, opts) {
   function _ovRebuildEditors() { _ovBuildEditor("totals"); _ovBuildEditor("live"); }
   // Vorschau-Wert (Endzustand) für ein Feld — WYSIWYG-Annäherung.
   function _ovFieldValue(id) {
+    // v0.9.330 — FIT-Sensorfeld: Endzustand = letzter vorhandener Messwert.
+    if (typeof id === "string" && id.startsWith("sensor:")) {
+      const key = id.slice(7);
+      const arr = _ovSeries && _ovSeries.sensors ? _ovSeries.sensors[key] : null;
+      if (arr && arr.length) {
+        for (let j = arr.length - 1; j >= 0; j--) { if (arr[j] != null) return Math.round(arr[j]) + _ovSensorUnit(key); }
+      }
+      return "—";
+    }
     const s = _gpxStats; if (!s) return "—";
     const km = s.distance_km || 0, dur = s.duration_s || 0;
     // v0.9.324 — echte Werte aus den Track-Stats (kein Schätz-Faktor mehr).
@@ -7362,6 +7380,15 @@ function mountAnimator(body, headerActions, opts) {
       box.querySelectorAll('.ov-v[data-ovid]').forEach((el) => {
         const id = el.getAttribute("data-ovid");
         let v = null;
+        // v0.9.330 — FIT-Sensorwert am aktuellen Punkt (gerundet + Einheit, en-dash bei null).
+        if (typeof id === "string" && id.startsWith("sensor:")) {
+          const key = id.slice(7);
+          const arr = sr.sensors ? sr.sensors[key] : null;
+          const raw = arr ? arr[i] : null;
+          v = (raw == null) ? "–" : (Math.round(raw) + _ovSensorUnit(key));
+          if (v != null) el.textContent = v;
+          return;
+        }
         switch (id) {
           case "dist_done": v = _ovFmtKm(sr.cumDistM[i] / 1000); break;
           case "dist_left": v = _ovFmtKm(Math.max(0, (totD - sr.cumDistM[i]) / 1000)); break;
@@ -7546,6 +7573,7 @@ function mountAnimator(body, headerActions, opts) {
     currentGpx = path;
     _gpxStats = res.stats;
     _ovSeries = res.series || null;
+    _ovSensorFields = res.sensor_fields || [];   // v0.9.330 — FIT-Sensorfelder für den Live-Katalog
     _gpxElevations = res.elevations || (res.coords ? res.coords.map(() => 0) : []);
     try { _ovRebuildEditors(); } catch (_) {}   // v0.9.321 — Feld-Verfügbarkeit aktualisieren
     // Stats-Bar umschalten: Empty-Hint aus, Karten an
@@ -7692,7 +7720,7 @@ function mountAnimator(body, headerActions, opts) {
         currentGpx = null;
         currentCoords = null;
         currentBbox = null;
-        _gpxStats = null; _ovSeries = null;
+        _gpxStats = null; _ovSeries = null; _ovSensorFields = [];
         _gpxElevations = [];
         try {
           document.getElementById("anim-stats-empty").hidden = false;
@@ -7875,6 +7903,7 @@ function mountAnimator(body, headerActions, opts) {
     currentGpx = path;
     _gpxStats = res.stats;
     _ovSeries = res.series || null;
+    _ovSensorFields = res.sensor_fields || [];   // v0.9.330 — FIT-Sensorfelder für den Live-Katalog
     _gpxElevations = res.elevations || (res.coords ? res.coords.map(() => 0) : []);
     try { _ovRebuildEditors(); } catch (_) {}   // v0.9.321 — Feld-Verfügbarkeit aktualisieren
     try {
@@ -8143,7 +8172,7 @@ function mountAnimator(body, headerActions, opts) {
     currentGpx = null;
     currentCoords = null;
     currentBbox = null;
-    _gpxStats = null; _ovSeries = null;
+    _gpxStats = null; _ovSeries = null; _ovSensorFields = [];
     _gpxElevations = null;
     // Track-Layer von der Karte entfernen
     if (map) {

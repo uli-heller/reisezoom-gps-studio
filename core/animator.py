@@ -81,6 +81,7 @@ def find_ffmpeg() -> str:
 
 from .gpx import parse_gpx as core_parse_gpx, downsample, TrackPoint
 from . import timeline as _timeline  # v0.7.0: Camera-Keyframe-Interpolation
+from . import sensors as _sensors    # v0.9.331: FIT-Sensorfeld-Registry
 
 
 MAP_STYLES = {
@@ -458,9 +459,34 @@ def _overlay_totals_rows(field_ids, total_stats, has_time: bool, has_ele: bool) 
     return "\n".join(rows)
 
 
+def _sensor_dom_id(key: str) -> str:
+    return "live-sensor-" + key
+
+
+def _overlay_sensor_series_json(ds_points, field_ids) -> str:
+    """JSON `{key: [wert_pro_ds_punkt]}` für die im Overlay aktiven Sensor-Felder
+    (`sensor:<key>`). Liest direkt aus `TrackPoint.extra` der ds-Punkte."""
+    keys = [fid.split(":", 1)[1] for fid in (field_ids or [])
+            if isinstance(fid, str) and fid.startswith("sensor:")]
+    if not keys:
+        return "{}"
+    out = {}
+    for k in keys:
+        out[k] = [(p.extra.get(k) if isinstance(getattr(p, "extra", None), dict) else None)
+                  for p in ds_points]
+    return json.dumps(out)
+
+
 def _overlay_live_rows(field_ids, has_time: bool, has_ele: bool) -> str:
     rows = []
     for fid in (field_ids or DEFAULT_LIVE_FIELDS):
+        # v0.9.331 — FIT-Sensorfeld (sensor:<key>) → Label aus der Registry.
+        if isinstance(fid, str) and fid.startswith("sensor:"):
+            key = fid.split(":", 1)[1]
+            lbl, _u = _sensors.field_meta(key)
+            rows.append(f'<div class="stat-row"><span class="label">{lbl}</span>'
+                        f'<span class="value" id="{_sensor_dom_id(key)}">&mdash;</span></div>')
+            continue
         f = _OVERLAY_LIVE_BY_ID.get(fid)
         if not f or not _overlay_field_available(f["requires"], has_time, has_ele):
             continue
@@ -474,6 +500,16 @@ def _overlay_live_update_js(field_ids, has_time: bool, has_ele: bool) -> str:
     Wird als literaler Block in den per-Frame-Loop injiziert (kein f-string-Reparse)."""
     lines = []
     for fid in (field_ids or DEFAULT_LIVE_FIELDS):
+        # v0.9.331 — Sensor-Live-Wert aus sensorSeries[key][idx] (gerundet + Einheit).
+        if isinstance(fid, str) and fid.startswith("sensor:"):
+            key = fid.split(":", 1)[1]
+            _, unit = _sensors.field_meta(key)
+            unit_js = json.dumps((" " + unit) if unit else "")
+            lines.append(
+                f"  {{ var _e=document.getElementById('{_sensor_dom_id(key)}');"
+                f" if(_e){{ var _v=(sensorSeries[{json.dumps(key)}]||[])[idx];"
+                f" _e.textContent=(_v==null?'\\u2013':(Math.round(_v)+{unit_js})); }} }}")
+            continue
         f = _OVERLAY_LIVE_BY_ID.get(fid)
         if not f or not _overlay_field_available(f["requires"], has_time, has_ele):
             continue
@@ -979,6 +1015,7 @@ def _make_html(cfg: AnimatorConfig, ds_points: list[TrackPoint], cum_dist: list[
     speed_kmh, grade_pct, _moving_s, _max_kmh = _overlay_compute_speed_grade(ds_points, cum_dist, cum_time, eles, has_time, has_ele)
     speed_json = json.dumps([round(x, 2) for x in speed_kmh])
     grade_json = json.dumps([round(x, 2) for x in grade_pct])
+    sensor_series_json = _overlay_sensor_series_json(ds_points, getattr(cfg, "overlay_live_fields", None))
     total_stats = dict(total_stats)
     # v0.9.324 — Max-Tempo + Fahrzeit kommen aus den VOLL aufgelösten Track-Stats
     # (TrackStats.max_speed_kmh/moving_time_s). Die ds_points-Werte sind nur
@@ -1414,6 +1451,7 @@ const cumDistM = {cum_dist_json};
 const cumTimeS = {cum_time_json};
 const speedKmh = {speed_json};   // v0.9.321 — Stats-Editor: Pro-Punkt-Tempo
 const gradePct = {grade_json};   // v0.9.321 — Pro-Punkt-Steigung %
+const sensorSeries = {sensor_series_json};   // v0.9.330 — FIT-Sensorwerte pro Punkt (key → [werte])
 const TOTAL_DIST_M = cumDistM.length ? cumDistM[cumDistM.length - 1] : 0;
 const TOTAL_TIME_S = cumTimeS.length ? cumTimeS[cumTimeS.length - 1] : 0;
 function fmtKmJS(km){{ return km < 100 ? km.toFixed(1)+' km' : km.toFixed(0)+' km'; }}
@@ -1775,6 +1813,7 @@ def _make_html_alpha(cfg: AnimatorConfig, ds_points: list[TrackPoint], cum_dist:
     speed_kmh, grade_pct, _moving_s, _max_kmh = _overlay_compute_speed_grade(ds_points, cum_dist, cum_time, eles, has_time, has_ele)
     speed_json = json.dumps([round(x, 2) for x in speed_kmh])
     grade_json = json.dumps([round(x, 2) for x in grade_pct])
+    sensor_series_json = _overlay_sensor_series_json(ds_points, getattr(cfg, "overlay_live_fields", None))
     total_stats = dict(total_stats)
     # v0.9.324 — Max-Tempo + Fahrzeit kommen aus den VOLL aufgelösten Track-Stats
     # (TrackStats.max_speed_kmh/moving_time_s). Die ds_points-Werte sind nur
@@ -1877,6 +1916,7 @@ const cumDistM = {cum_dist_json};
 const cumTimeS = {cum_time_json};
 const speedKmh = {speed_json};   // v0.9.321 — Stats-Editor: Pro-Punkt-Tempo
 const gradePct = {grade_json};   // v0.9.321 — Pro-Punkt-Steigung %
+const sensorSeries = {sensor_series_json};   // v0.9.330 — FIT-Sensorwerte pro Punkt (key → [werte])
 const TOTAL_DIST_M = cumDistM.length ? cumDistM[cumDistM.length - 1] : 0;
 const TOTAL_TIME_S = cumTimeS.length ? cumTimeS[cumTimeS.length - 1] : 0;
 function fmtKmJS(km){{ return km < 100 ? km.toFixed(1)+' km' : km.toFixed(0)+' km'; }}

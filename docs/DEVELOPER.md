@@ -161,8 +161,14 @@ Zusatz-Messwerte pro Trackpunkt (FIT-HR/Power/Temp/E-Bike, GPX-Extensions). **Va
 - **Export (alles, wofür GPX Felder hat):** `trackio.to_gpx_string` schreibt gpxtpx (hr/cad/atemp) + `<power>`; Nicht-Standard-Felder kann GPX nicht tragen → bleiben in der Sidecar.
 - **Downsampling:** `extra` reist mit den TrackPoint-Objekten automatisch mit (wie `ele`).
 - **Gotcha:** alte Cache-GPX (vor v0.9.330) haben keine Sidecar → Sensoren erst nach Cache-Invalidierung (Quelldatei re-touch / Cache leeren). Defekte/fehlende Sidecar kippt den Track-Load NIE (still no-op).
-- **Tests:** `tests/test_fit_sensors.py` (FIT-Mapping, Export→Import-Roundtrip, Sidecar-Merge, Metadaten/Fallback).
-- **OFFEN:** Phase 2 (Overlay-Anzeige/Grafik pro Feld — Stats-Editor erweitern), Phase 3 (Auto-Schilder §15.3).
+- **Tests:** `tests/test_fit_sensors.py` (FIT-Mapping, Export→Import-Roundtrip, Sidecar-Merge, Metadaten/Fallback) + Voll-Template-Smoke (`_make_html`/`_make_html_alpha` mit aktivem `sensor:<key>`).
+
+**Phase 2a — Sensoren als Live-Overlay (seit v0.9.330):** Sensorfelder reihen sich als zusätzliche **Live-Felder** mit der ID `sensor:<key>` in den bestehenden Stats-Editor ein (nur Live-Box; Totals/Tour-Map bleiben unberührt, da zeit-animiert).
+- **Bridge `app.animator_load_gpx`:** `series.sensors = {key: [wert_pro_ds_punkt]}` (index-gleich zu `coords`/`cumDistM`) + Top-Level `sensor_fields` (`[{key,label,unit}]`).
+- **Render `core/animator.py`:** `_sensor_dom_id(key)`, `_overlay_sensor_series_json(ds_points, field_ids)`. `_overlay_live_rows`/`_overlay_live_update_js` erkennen `sensor:`-IDs (Label aus `sensors.field_meta`, Wert = `sensorSeries[key][idx]`, gerundet + Einheit, en-dash bei null). Beide Templates (`_make_html` + `_make_html_alpha`) berechnen `sensor_series_json` neben `speed_json` und injizieren `const sensorSeries = …` neben `gradePct`.
+- **Frontend `modules/animator/ui/module.js`:** `_ovSensorFields` (aus `res.sensor_fields`), dynamischer Katalog `_ovCat("live") = static + sensor:<key>`, `_ovFieldLabel`/`_ovSensorUnit`/`_ovFieldValue`/`_ovUpdateLiveAt` behandeln `sensor:`-IDs. `_ovGetFields("live")` schickt sie als `overlay_live_fields` an den Render. Bei GPX-Wechsel/Reset wird `_ovSensorFields` mitgeleert.
+- **Spiegelung:** Tour-Map (`modules/tourmap`) bekommt KEINE Sensor-Felder — Sensorwerte sind zeit-animiert (Live-Box), die Tour-Map ist ein Standbild. Analog zur bestehenden Live-Box-Ausnahme der Spiegelungs-Regel.
+- **OFFEN:** Phase 2b (Diagramme/Aggregate pro Feld — Ø/Max-HF als Totals, HF-Zonen-Track-Färbung, Gauges), Phase 3 (Auto-Schilder §15.3).
 
 ### `core/gpx.py`
 

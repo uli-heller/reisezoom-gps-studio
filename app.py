@@ -126,7 +126,7 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.329"
+APP_VERSION = "0.9.330"
 
 # v0.9.280 (Nutzer-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
 # kein Selbst-Update). Fragt die GitHub-Releases-API, vergleicht die Version und
@@ -1529,12 +1529,20 @@ class Api:
             eles_full = [p.ele if p.ele is not None else 0.0 for p in ds]
             _spd, _grd, _, _ = canim._overlay_compute_speed_grade(
                 ds, cum_dist, cum_time, eles_full, has_time, has_ele)
+            # v0.9.331 — FIT-Sensoren (HF/Trittfrequenz/Leistung/Temp/…) als
+            # Per-Punkt-Reihen (index-gleich zu `ds`/coords), damit die Live-Box
+            # sie wie Tempo/Höhe mitlaufen lassen kann. Nur vorhandene Felder.
+            sensor_series = {}
+            for f in stats.sensor_fields:
+                k = f["key"]
+                sensor_series[k] = [p.extra.get(k) for p in ds]
             series = {
                 "cumDistM": cum_dist,
                 "cumTimeS": cum_time,
                 "speedKmh": [round(x, 2) for x in _spd],
                 "gradePct": [round(x, 2) for x in _grd],
                 "ele": [round(e, 1) for e in eles_full],
+                "sensors": sensor_series,
                 "total_dist_m": stats.distance_m,
                 "total_time_s": stats.duration_s,
                 "has_time": has_time,
@@ -1563,6 +1571,8 @@ class Api:
                     "max_speed_kmh": stats.max_speed_kmh,
                 },
                 "series": series,
+                # v0.9.331 — vorhandene Sensorfelder [{key,label,unit}] fürs UI.
+                "sensor_fields": stats.sensor_fields,
             }
         except Exception as e:
             return {"ok": False, "error": str(e), "trace": traceback.format_exc()}

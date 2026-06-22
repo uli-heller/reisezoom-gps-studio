@@ -14,8 +14,13 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
-### Hinzugefügt (Fundament, noch ohne UI)
-- **FIT-/Sensor-Datenschicht (IDEAS §15.2 Phase 1).** FIT- und TCX-Importe behalten jetzt ihre Sensorwerte (Herzfrequenz, Trittfrequenz, Temperatur, Leistung, E-Bike-/Hersteller-Felder) statt sie zu verwerfen — gespeichert in einer Sidecar-Datei neben dem Track. GPX-Importe lesen vorhandene gpxtpx/gpxpx-Extensions; GPX-Export schreibt Herzfrequenz/Trittfrequenz/Temperatur/Leistung als Standard-Extensions (Strava/Garmin lesen die). *Anzeige/Overlay folgt in Phase 2.*
+## [0.9.330] – 2026-06-22
+
+### Hinzugefügt
+- **Sensorwerte als Live-Overlay (IDEAS §15.2 Phase 2a).** Wenn ein importierter Track Sensordaten trägt (FIT/TCX von Garmin, Wahoo, Polar … oder GPX mit gpxtpx/gpxpx-Extensions), tauchen die vorhandenen Felder — **Herzfrequenz, Trittfrequenz, Temperatur, Leistung** und weitere — automatisch im **Stats-Feld-Editor der Live-Box** auf. Anhaken, sortieren und stylen wie die übrigen Live-Werte; im Render und in der Vorschau laufen sie **Punkt für Punkt synchron zum Track mit** (echtes WYSIWYG). Hat ein Track keine Sensoren, ändert sich nichts. *Diagramme/Aggregate (Ø-/Max-HF, HF-Zonen-Färbung) folgen in Phase 2b.*
+
+### Fundament (Datenschicht, Phase 1)
+- **FIT-/Sensor-Datenschicht.** FIT- und TCX-Importe behalten ihre Sensorwerte (Herzfrequenz, Trittfrequenz, Temperatur, Leistung, E-Bike-/Hersteller-Felder) statt sie zu verwerfen — gespeichert in einer Sidecar-Datei neben dem Track. GPX-Importe lesen vorhandene gpxtpx/gpxpx-Extensions; GPX-Export schreibt Herzfrequenz/Trittfrequenz/Temperatur/Leistung als Standard-Extensions (Strava/Garmin lesen die).
 
 ## [0.9.329] – 2026-06-21
 

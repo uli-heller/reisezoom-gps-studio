@@ -1,0 +1,22 @@
+name: Lint (ruff)
+
+# Automatischer Code-Wächter: prüft bei jedem Push/PR den Python-Code mit ruff
+# (Config: ruff.toml — hohes Signal, kein Stil-Genörgel). LÄUFT SEPARAT von
+# release.yml → ein roter Lint-Lauf blockiert KEINEN Build und KEIN Release,
+# er zeigt nur ein ✗ am Commit als Hinweis.
+on:
+  push:
+  pull_request:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install ruff
+      - name: ruff check
+        run: ruff check .

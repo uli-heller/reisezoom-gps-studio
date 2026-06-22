@@ -12,7 +12,7 @@ import csv
 import io
 import xml.sax.saxutils as _sx
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 
 
 def _get(p, key):

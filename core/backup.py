@@ -3,8 +3,6 @@ Foto-Backup vor EXIF-Schreibvorgängen. ZIP-Snapshot in projekt-eigenem Ordner.
 """
 from __future__ import annotations
 
-import os
-import time
 import zipfile
 from datetime import datetime
 from pathlib import Path

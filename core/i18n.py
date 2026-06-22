@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import locale
-import os
 import subprocess
 import sys
 from pathlib import Path

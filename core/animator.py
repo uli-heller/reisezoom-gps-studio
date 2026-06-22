@@ -3005,7 +3005,6 @@ async def render(
             # (anim + hold). Vorher gab's nach dem Track-Ende einen plötzlich
             # schnelleren Sweep (hardcoded +3°), was bei niedriger rotation
             # so wirkte als ob die Kamera erst dann anfängt zu schwenken.
-            sweep_denom = max(1, total_frames - 1)
             # v0.9.107 — Spin-Akkumulation entfernt. Drehung kommt jetzt
             # aus center.lng-Werten pro KF (= position-Lane).
             # Letzten applied padding cachen damit wir nicht jedem Frame

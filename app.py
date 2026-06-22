@@ -22,7 +22,7 @@ import traceback
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 # Playwright sucht Chromium-Browser per Default neben seinem Driver
 # (`.../driver/package/.local-browsers/`). Im PyInstaller-Bundle landet
@@ -1253,7 +1253,7 @@ class Api:
         if sys.platform == "darwin":
             try:
                 return _macos_pick(dialog_type, file_types, multiple)
-            except Exception as e:
+            except Exception:
                 # Bei jedem PyObjC-Fehler: Fallback auf pywebview's API
                 traceback.print_exc()
         if not self._window:

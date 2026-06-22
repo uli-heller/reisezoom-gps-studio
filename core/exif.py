@@ -972,7 +972,6 @@ def _exiftool_write_gps_video(path: str, lat: float, lon: float,
     # ISO 6709-String: "+52.5163+013.3777+035.000/" (Vorzeichen, Punkte als Trenner)
     def iso6709(v: float, deg: int) -> str:
         sign = "+" if v >= 0 else "-"
-        fmt = f"%0{deg+1}.4f" if v >= 0 else f"-%0{deg+1}.4f"
         return f"{sign}{abs(v):0{deg+5}.4f}"
     coord_str = f"{iso6709(lat, 2)}{iso6709(lon, 3)}"
     if alt is not None:

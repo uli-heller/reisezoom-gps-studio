@@ -1,0 +1,28 @@
+# ruff-Konfiguration für Reisezoom GPS Studio.
+# Ziel: automatischer Code-Wächter mit HOHEM SIGNAL — echte Bug-Fänger, KEIN
+# Stil-Genörgel. Die kompakte Einzeiler-Schreibweise (if x: continue / a; b) ist
+# in diesem Projekt Absicht und wird NICHT angemeckert.
+
+target-version = "py313"   # App läuft auf 3.13+/3.14 (PEP-701-f-strings nötig)
+line-length = 200          # nur als Obergrenze; lange Zeilen sind hier ok
+
+exclude = [
+    ".venv", "venv", "build", "dist", "_backups",
+    "vendor", "Resources", "*.spec",
+]
+
+[lint]
+# F  = pyflakes: ungenutzte Importe/Variablen, undefinierte Namen (Tippfehler!),
+#      doppelte Dict-Keys, f-strings ohne Platzhalter, Redefinitionen …
+# E9 = echte Syntax-/Laufzeitfehler (IndentationError etc.)
+# B  = flake8-bugbear: typische Fehlerquellen (mutable Default-Args, …)
+select = ["F", "E9", "B"]
+
+# Bewusst aus (Projektstil / Desktop-App-Eigenheiten):
+#   E402  Imports nicht am Dateianfang — wir machen sys.path-Tricks + lazy imports
+#   B008  Funktionsaufruf im Argument-Default — bei dataclass field()/Defaults ok
+ignore = ["E402", "B008", "B905"]  # B905 = zip ohne strict= → hier Pedanterie, Code läuft
+
+[lint.per-file-ignores]
+# Tests dürfen lockerer sein (Asserts, Fixtures, Demo-Variablen)
+"tests/*" = ["B", "F841"]

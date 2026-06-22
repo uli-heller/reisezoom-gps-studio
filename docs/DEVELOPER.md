@@ -1332,8 +1332,22 @@ python tests/make_test_photos.py
 ```
 Erzeugt 6 JPGs mit EXIF-Zeitstempeln an exakten Track-Punkten + `_meta.json` mit erwarteten Lat/Lon-Werten.
 
+### Linting (ruff)
+Python-Code-Wächter mit **hohem Signal** (echte Bug-Fänger: ungenutzte Importe/
+Variablen, undefinierte Namen/Tippfehler, bugbear) — **kein** Stil-Genörgel. Config:
+`ruff.toml` (kompakte Einzeiler-Schreibweise ist Absicht und bleibt erlaubt).
+```bash
+.venv/bin/ruff check .          # prüfen
+.venv/bin/ruff check . --fix    # sichere Funde automatisch beheben
+```
+Läuft auch in CI (`.github/workflows/lint.yml`) bei jedem Push — **separat** von
+release.yml, blockiert also weder Build noch Release (nur ✗-Hinweis am Commit).
+
 ### CI-Stand
-Keine CI eingerichtet. Manuelle Test-Runs vor jedem Commit / Build empfohlen.
+- **Release** (`release.yml`): Tag-Push → macOS-DMG + Windows-EXE → GitHub-Release.
+- **Lint** (`lint.yml`): Push/PR → ruff (informativ, nicht-blockierend).
+- **Win-Install-Smoke** (`test-windows-install.yml`).
+Manuelle Test-Runs (oben) vor jedem Commit / Build weiterhin empfohlen.
 
 ---
 

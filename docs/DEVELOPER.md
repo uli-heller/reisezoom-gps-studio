@@ -125,6 +125,50 @@ Download-on-first-render ist `chromium-headless-shell` jetzt im Bundle:
   ausgelöst über `error_code === "playwright_browser_missing"`. Greift nur noch
   als Sicherheitsnetz (korruptes/fehlendes Bundle).
 
+### Editionen — Solo-Geotagger aus EINER Codebasis (seit v0.9.331)
+
+Dieselbe Codebasis liefert zwei Desktop-Apps; **kein Code-Klon**, nur ein Schalter.
+
+- **Erkennung** (`app.py` `_detect_edition()`): Priorität `RZ_EDITION`-Env > gebündelte
+  `edition.txt` (`sys._MEIPASS/edition.txt`) > Default `"full"`. → `APP_EDITION`
+  (`"full" | "geotagger"`) + `APP_NAME`. `get_app_info()` liefert `edition`+`name`,
+  `main()` setzt den Fenstertitel daraus.
+- **Frontend-Gating** (`ui/js/app.js`): Boot liest `get_app_info().edition` →
+  `window.RZ_EDITION`. `getModules()` filtert via `editionModuleAllowed(slug)` —
+  in `"geotagger"` bleibt NUR der Geotagger-Tab. ALLE `module.js` werden weiter
+  geladen (index.html unverändert), gefiltert wird nur die Anzeige. Solo setzt
+  zusätzlich `body.edition-geotagger`, Brand-Sub „Geotagger" und **überspringt den
+  Mapbox-First-Run** (still `onboarding_done`+`force_osm=true` → OSM-Karte ohne
+  Token/Kreditkarte; genau die Nutzer-Beschwerde).
+- **Schlankes Bundle** (`ReisezoomGPSStudio.spec`, eine Spec, `_IS_GEO`-Zweige):
+  Solo lässt **Chromium (`pw-browsers/`) + ffmpeg (`imageio_ffmpeg`) + playwright**
+  weg (lazy-Imports in den Render-Funktionen, die der Tagger nie aufruft → in
+  `excludes`), bäckt `edition.txt`, setzt eigenen Namen/BundleID/Icon
+  (`Reisezoom Geotagger.app` / `com.reisezoom.geotagger`). **Ergebnis: ~68 MB
+  statt ~440 MB.** Default (kein Env) = `full` → CI/`release.yml` unverändert.
+- **Build:** `scripts/build_geotagger.sh` (setzt `RZ_EDITION=geotagger`, ohne
+  Chromium-Setup, installiert die Solo-App parallel zur Vollversion).
+- **Test:** `tests/test_edition_gating.py` (headless, beide Editionen — nur-1-Tab,
+  OSM, kein Mapbox-Nag, Body-Flag).
+- **Spiegelungs-Hinweis:** Studio bleibt komplett unberührt; alle Gates sind additiv.
+
+### Web-Geotagger (`web-tagger/`) — JPEG-only, 100 % client-seitig (seit v0.9.331)
+
+Statische Browser-App (kein Server, kein Upload, kein Mapbox). Eigene, schlanke
+JS-Implementierung der Match-Logik (DRY zur Desktop-Semantik, aber separater Code,
+weil der Browser kein ExifTool/Python hat).
+- `index.html` lädt per CDN **exifr** (EXIF lesen), **piexifjs** (GPS in JPEG
+  schreiben), **MapLibre GL** (OSM-Karte). `app.js` = State + Logik, `style.css`.
+- Ablauf: GPX parsen (`parseGpx`) → Fotos lesen (`readPhoto` via exifr) → Zeit-Match
+  (`nearestByTime`, binäre Suche; Kamera-Zeitzone + Fein-Offset wie Desktop) →
+  Pins auf Karte → `writeGpsIntoJpeg()` (piexif DMS-Rationals) → Download
+  `<name>_geotagged.jpg`. `window.__rzTagger` exponiert Helfer für Tests.
+- **Grenzen (bewusst):** nur GPX als Track, nur JPEG schreiben (HEIC/RAW/Video =
+  ExifTool → Desktop). Kein In-place (Browser) → Download-Kopie.
+- **Test:** `tests/test_web_tagger.py` (echtes JPEG+GPX → Match → GPS geschrieben +
+  zurückgelesen, headless).
+- **Deploy:** statisch hostbar (z. B. `gps-studio.reisezoom.com/tagger`).
+
 ---
 
 ## 3 · Core-Module im Detail

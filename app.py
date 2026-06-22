@@ -126,7 +126,35 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.330"
+APP_VERSION = "0.9.331"
+
+# ── Edition (v0.9.331) ───────────────────────────────────────────────────────
+# Dieselbe Codebasis liefert zwei Apps:
+#   "full"      → Reisezoom GPS Studio (alle Module: Animator, Tour-Map, Höhen,
+#                 Reiseroute, GPX-Inspektor, Geotagger).
+#   "geotagger" → Reisezoom Geotagger (NUR das Geotagger-Modul, OSM-Karte ohne
+#                 Mapbox-Token/Kreditkarte, ohne Render-Ballast Chromium/ffmpeg).
+# Quelle der Wahrheit (Priorität): Env RZ_EDITION > gebündelte edition.txt > "full".
+# Der Solo-Build legt RZ_EDITION=geotagger an (build_geotagger.sh) und bäckt
+# eine edition.txt ins Bundle (spec). Kein Code-Klon — nur dieser Schalter.
+def _detect_edition() -> str:
+    e = (os.environ.get("RZ_EDITION") or "").strip().lower()
+    if e in ("geotagger", "full"):
+        return e
+    try:
+        base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
+        marker = os.path.join(base, "edition.txt")
+        if os.path.isfile(marker):
+            with open(marker, "r", encoding="utf-8") as fh:
+                v = fh.read().strip().lower()
+            if v in ("geotagger", "full"):
+                return v
+    except Exception:
+        pass
+    return "full"
+
+APP_EDITION = _detect_edition()
+APP_NAME = "Reisezoom Geotagger" if APP_EDITION == "geotagger" else "Reisezoom GPS Studio"
 
 # v0.9.280 (Nutzer-Wunsch) — In-App-Update-Check (Stufe 1: nur prüfen + Hinweis,
 # kein Selbst-Update). Fragt die GitHub-Releases-API, vergleicht die Version und
@@ -2597,7 +2625,8 @@ class Api:
         """Über-Dialog-Daten: Version, Python, Paths."""
         return {
             "ok": True,
-            "name": "Reisezoom GPS Studio",
+            "name": APP_NAME,
+            "edition": APP_EDITION,   # v0.9.331 — "full" | "geotagger" (Frontend-Gating)
             "version": APP_VERSION,
             "python": sys.version.split()[0],
             "app_support": str(APP_SUPPORT),
@@ -3981,7 +4010,7 @@ def main() -> None:
     _have_remembered = (_win_w > 200 and _win_h > 200)
 
     create_kwargs = dict(
-        title="Reisezoom GPS Studio",
+        title=APP_NAME,   # v0.9.331 — editionsabhängig (Studio / Geotagger)
         url=Path(html_path).resolve().as_uri(),
         js_api=api,
         width=_win_w if _have_remembered else 1400,

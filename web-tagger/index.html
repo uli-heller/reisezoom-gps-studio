@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reisezoom Foto-Geotagger – im Browser, ohne Upload</title>
+<meta name="description" content="Schreibe GPS-Koordinaten aus deinem GPX-Track in deine JPEG-Fotos – komplett im Browser, deine Bilder verlassen nie deinen Rechner.">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <span class="hdr-logo">◉</span>
+    <div>
+      <div class="hdr-title">Reisezoom <b>Foto-Geotagger</b></div>
+      <div class="hdr-sub">GPS aus deinem Track in deine Fotos – im Browser, ohne Upload</div>
+    </div>
+  </div>
+  <a class="hdr-cta" href="https://s.reisezoom.com/gps-studio-win" target="_blank" rel="noopener">
+    Mehr brauchst du (RAW, HEIC, Video)? → Desktop-App
+  </a>
+</header>
+
+<main class="wrap">
+  <!-- linke Spalte: Steuerung + Foto-Liste -->
+  <section class="panel">
+    <div class="privacy">
+      🔒 Alles läuft <b>lokal in deinem Browser</b>. Deine Fotos und dein Track werden
+      <b>nicht hochgeladen</b>. Schreibt GPS in <b>JPEG</b> (für RAW/HEIC/Video brauchst du die Desktop-App).
+    </div>
+
+    <div class="step">
+      <div class="step-h"><span class="step-n">1</span> Track laden (GPX)</div>
+      <label class="drop" id="drop-gpx">
+        <input type="file" id="in-gpx" accept=".gpx,application/gpx+xml" hidden>
+        <span id="gpx-label">GPX-Datei wählen oder hierher ziehen</span>
+      </label>
+    </div>
+
+    <div class="step">
+      <div class="step-h"><span class="step-n">2</span> Fotos laden (JPEG)</div>
+      <label class="drop" id="drop-photos">
+        <input type="file" id="in-photos" accept="image/jpeg,.jpg,.jpeg" multiple hidden>
+        <span id="photos-label">JPEG-Fotos wählen oder hierher ziehen</span>
+      </label>
+    </div>
+
+    <div class="step">
+      <div class="step-h"><span class="step-n">3</span> Zeit abgleichen</div>
+      <div class="ctl-row">
+        <label class="ctl">
+          <span>Kamera-Zeitzone</span>
+          <select id="in-tz"></select>
+        </label>
+        <label class="ctl">
+          <span>Fein-Offset</span>
+          <input type="text" id="in-offset" value="0s" inputmode="text" placeholder="z. B. 4s / -2m">
+        </label>
+      </div>
+      <p class="hint">Stimmt die Uhr deiner Kamera nicht exakt mit GPS überein, schiebst du hier nach
+        (Sekunden <code>s</code>, Minuten <code>m</code>, Stunden <code>h</code>; Minus geht).
+        Die Pins auf der Karte aktualisieren sich live.</p>
+    </div>
+
+    <div class="summary" id="summary" hidden></div>
+
+    <div class="actions" id="actions" hidden>
+      <button class="btn btn-primary" id="btn-write" disabled>📍 GPS in JPEGs schreiben &amp; herunterladen</button>
+    </div>
+
+    <div class="photolist" id="photolist"></div>
+  </section>
+
+  <!-- rechte Spalte: Karte -->
+  <section class="mapwrap">
+    <div id="map"></div>
+    <div class="map-empty" id="map-empty">
+      <div>
+        <div class="map-empty-ico">🗺️</div>
+        Lade einen Track + Fotos – dann erscheinen deine Aufnahmen hier auf der Karte.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="ftr">
+  <span>© Reisezoom · Karte © OpenStreetMap-Mitwirkende ·
+  EXIF: <a href="https://github.com/MikeKovarik/exifr" target="_blank" rel="noopener">exifr</a> &amp;
+  <a href="https://github.com/hMatoba/piexifjs" target="_blank" rel="noopener">piexifjs</a> ·
+  Karte: <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre GL</a></span>
+</footer>
+
+<script src="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

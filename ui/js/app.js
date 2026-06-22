@@ -18,11 +18,21 @@ function applyI18nToModuleManifests() {
   }
 }
 
+// v0.9.331 — Edition: "full" zeigt alle Module, "geotagger" (Solo-App) nur den
+// Geotagger. Gefiltert wird NUR die Anzeige — die module.js-Dateien bleiben alle
+// geladen (kein Code-Klon). window.RZ_EDITION wird im Boot aus get_app_info() gesetzt.
+function editionModuleAllowed(slug) {
+  if (window.RZ_EDITION === "geotagger") return slug === "geotagger";
+  return true;
+}
+
 function getModules() {
   const reg = window.RZGPS_MODULES || {};
-  return Object.values(reg).sort((a, b) =>
-    (a.manifest.sort_order || 999) - (b.manifest.sort_order || 999)
-  );
+  return Object.values(reg)
+    .filter(m => editionModuleAllowed(m.manifest.slug))
+    .sort((a, b) =>
+      (a.manifest.sort_order || 999) - (b.manifest.sort_order || 999)
+    );
 }
 
 function renderTabs() {
@@ -750,12 +760,20 @@ window.addEventListener("DOMContentLoaded", async () => {
   // openHelpModal/openBugReportModal bleiben als Funktionen erhalten (Menü ruft
   // openBugReportModal direkt; einzelne Help-Items hängen direkt am Menü).
 
-  // Topbar-Version aus Backend syncen (sonst hardcoded v0.2 im HTML)
+  // Topbar-Version + Edition aus Backend syncen (sonst hardcoded v0.2 im HTML)
+  // v0.9.331 — Edition bestimmt, welche Module sichtbar sind + Karten-Default.
   try {
     const info = await api().get_app_info();
+    window.RZ_EDITION = (info && info.edition) || "full";
     const tv = document.getElementById("topbar-version");
     if (tv && info && info.version) tv.textContent = "v" + info.version;
-  } catch (_) {}
+    if (info && info.name) document.title = info.name;
+    if (window.RZ_EDITION === "geotagger") {
+      document.body.classList.add("edition-geotagger");
+      const bs = document.getElementById("brand-sub");
+      if (bs) bs.textContent = "Geotagger";
+    }
+  } catch (_) { window.RZ_EDITION = window.RZ_EDITION || "full"; }
 
   // v0.9.280 — Update-Check im Hintergrund (blockiert den Start nicht).
   setTimeout(() => { checkForUpdate(false); }, 1500);
@@ -764,9 +782,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   // gespeichert haben → blockierendes Modal mit zwei Optionen:
   //   1) Mapbox-Token eintragen (volle Features)
   //   2) Ohne Token starten — dann OSM als Fallback (kein Satellite, kein 3D)
-  const onboardingDone = !!(_settingsCache && _settingsCache.onboarding_done);
-  if (!onboardingDone) {
-    await openFirstRunMapboxModal();
+  // v0.9.331 — Solo-Geotagger: KEIN Mapbox-Nag. Der Tagger braucht nur eine
+  // Übersichtskarte zum Verorten der Fotos → immer OSM (kein Token, keine
+  // Kreditkarte). Onboarding wird still als erledigt markiert + force_osm gesetzt.
+  if (window.RZ_EDITION === "geotagger") {
+    if (!(_settingsCache && _settingsCache.onboarding_done && _settingsCache.force_osm)) {
+      try { await saveSettings({ onboarding_done: true, force_osm: true }); } catch (_) {}
+      if (_settingsCache) { _settingsCache.onboarding_done = true; _settingsCache.force_osm = true; }
+    }
+  } else {
+    const onboardingDone = !!(_settingsCache && _settingsCache.onboarding_done);
+    if (!onboardingDone) {
+      await openFirstRunMapboxModal();
+    }
   }
   // Aktiven Map-Token für die Factory laden (auch wenn kein Token → OSM-Mode)
   await initMapToken();

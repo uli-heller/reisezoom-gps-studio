@@ -473,8 +473,15 @@ Nach dem Render: großes Vorschaubild, „Im Finder zeigen", „Pfad kopieren", 
 
 ## 6 · Modul: Geotagger — Fotos mit GPS taggen
 
+> **Den Geotagger gibt es seit v0.9.331 in drei Varianten:**
+> 1. **Im GPS Studio** (dieses Modul) — zusammen mit Animator, Tour-Map & Co.
+> 2. **Als eigene Solo-App „Reisezoom Geotagger"** — schlank, nur fürs Foto-Taggen, mit **OpenStreetMap-Karte ohne Mapbox-Token** (kein Kreditkarten-Thema). Ideal, wenn du *nur* Fotos verorten willst.
+> 3. **Als Web-Tool im Browser** — taggt **JPEG**-Fotos komplett lokal (nichts wird hochgeladen), ohne Installation. Für RAW/HEIC/Video brauchst du die Desktop-App.
+>
+> Alle drei nutzen dieselbe Logik. Die folgenden Workflow-Schritte gelten für die Desktop-Varianten (1 + 2).
+
 ### Was es macht
-Liest die Aufnahmezeit aus den EXIF-Daten jedes Fotos und sucht im GPX-Track den dazu passenden Track-Punkt. Schreibt die GPS-Koordinaten als EXIF-Tag ins Foto. **Funktioniert mit JPG, RAW (CR3/NEF/ARW/RAF/RW2/ORF/DNG/PEF/RWL/SRW/HEIC) und Video (MP4/MOV/INSV)**.
+Liest die Aufnahmezeit aus den EXIF-Daten jedes Fotos und sucht im GPX-Track den dazu passenden Track-Punkt. Schreibt die GPS-Koordinaten als EXIF-Tag ins Foto. **Funktioniert mit JPG, RAW (CR3/NEF/ARW/RAF/RW2/ORF/DNG/PEF/RWL/SRW/HEIC) und Video (MP4/MOV/INSV)** (Web-Tool: nur JPG).
 
 ### Workflow
 1. **GPX laden** — die Karte zeigt den Track

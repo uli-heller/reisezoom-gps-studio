@@ -14,6 +14,15 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.331] – 2026-06-22
+
+### Hinzugefügt
+- **Reisezoom Geotagger – eigenständige Solo-App.** Dieselbe Codebasis liefert jetzt zwei Apps: das volle **GPS Studio** und einen schlanken **Geotagger** (nur Foto-Tagging). Die Solo-App nutzt eine **OpenStreetMap-Karte ohne Mapbox-Token** (kein Kreditkarten-Zwang mehr – häufige Rückmeldung) und lässt den ganzen Render-Ballast weg (Chromium + ffmpeg) → **~68 MB statt ~440 MB**. Umschalten per Edition-Marker (`RZ_EDITION`/`edition.txt`), kein doppelter Code: das Geotagger-Modul + der gesamte `core/` sind identisch geteilt.
+- **Web-Geotagger (Browser, ohne Upload).** Ein kostenloses Browser-Tool taggt **JPEG**-Fotos komplett **lokal** (die Bilder verlassen den Rechner nicht): GPX laden, Fotos laden, über Zeit + Zeitzone/Offset abgleichen, GPS in die JPEGs schreiben und herunterladen. Karte über OpenStreetMap. Für RAW/HEIC/Video + echtes In-place-Taggen führt der Weg weiter zur Desktop-App.
+
+### Geändert
+- Beim Solo-Geotagger entfällt der Mapbox-Ersteinrichtungsdialog – er startet direkt mit OSM.
+
 ## [0.9.330] – 2026-06-22
 
 ### Hinzugefügt

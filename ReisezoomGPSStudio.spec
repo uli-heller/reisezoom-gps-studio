@@ -6,6 +6,20 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
+# ── Edition (v0.9.331) ───────────────────────────────────────────────────────
+# RZ_EDITION steuert, OB die schwere Render-Maschinerie (Chromium + ffmpeg) mit
+# ins Bundle kommt. "geotagger" = schlanke Solo-App (NUR Foto-Tagging, OSM-Karte):
+#   - kein pw-browsers/ (~190 MB Chromium gespart)
+#   - kein imageio-ffmpeg (~30 MB gespart)
+#   - kein playwright im hidden-import
+#   - edition.txt-Marker ins Bundle (app.py liest ihn → schaltet die UI um)
+#   - eigener App-Name / Icon / BundleID
+# Default "full" = Reisezoom GPS Studio (alle Module). CI baut ohne Env → full.
+_EDITION = (os.environ.get("RZ_EDITION") or "full").strip().lower()
+if _EDITION not in ("full", "geotagger"):
+    _EDITION = "full"
+_IS_GEO = _EDITION == "geotagger"
+
 # UI + Module + i18n als Resource-Daten einsammeln (gleiche relative Struktur)
 data_files = []
 for top in ("ui", "modules", "i18n"):
@@ -34,7 +48,18 @@ data_files += collect_data_files("webview")
 # Gebündeltes ffmpeg-Binary aus imageio-ffmpeg — damit User KEIN
 # System-ffmpeg installieren müssen (Animator-MP4-Encode funktioniert
 # out-of-the-box). Binary ist ~30 MB statisch gelinkt.
-data_files += collect_data_files("imageio_ffmpeg", include_py_files=False)
+# v0.9.331 — der Solo-Geotagger rendert keine Videos → ffmpeg raus.
+if not _IS_GEO:
+    data_files += collect_data_files("imageio_ffmpeg", include_py_files=False)
+
+# v0.9.331 — Edition-Marker ins Bundle backen (nur Solo). app.py liest
+# sys._MEIPASS/edition.txt → schaltet UI auf den Geotagger.
+if _IS_GEO:
+    _ed_path = os.path.join("build", "edition.txt")
+    os.makedirs("build", exist_ok=True)
+    with open(_ed_path, "w", encoding="utf-8") as _ef:
+        _ef.write("geotagger\n")
+    data_files.append((_ed_path, "."))
 
 # v0.9.61 (Marc-Wunsch): exiftool plattform-spezifisch ins Bundle.
 # macOS + Windows kriegen das Binary direkt, Linux-User installieren
@@ -66,7 +91,8 @@ if _EXIFTOOL_SRC:
 # PLAYWRIGHT_BROWSERS_PATH auf den gebündelten Pfad (sys._MEIPASS/pw-browsers).
 # Fehlt der Ordner (z.B. Dev-Build ohne Install) → kein Bundling, Runtime nutzt
 # den User-Cache-Fallback (Download-on-first-render bleibt als Sicherheitsnetz).
-if _spec_os.path.isdir("pw-browsers"):
+# v0.9.331 — Solo-Geotagger rendert nichts → Chromium NICHT bündeln.
+if not _IS_GEO and _spec_os.path.isdir("pw-browsers"):
     for _root, _dirs, _files in _spec_os.walk("pw-browsers"):
         _rel = _spec_os.path.relpath(_root, "pw-browsers")
         _dst = "pw-browsers" if _rel == "." else _spec_os.path.join("pw-browsers", _rel)
@@ -84,13 +110,17 @@ hidden = [
     # v0.9.282 — FIT-Import (Garmin/Wahoo). Lazy import in core/imports.py → muss
     # explizit als hidden-import rein, sonst fehlt's im PyInstaller-Bundle.
     "fitdecode",
-    "playwright",
-    "playwright.async_api",
-    "imageio_ffmpeg",   # gebündeltes ffmpeg-Binary für Animator-MP4-Encode
     # v0.9.57 — pillow-heif für HEIC/HEIF-Support (Nutzer-Bug: iPhone-Fotos)
     "pillow_heif",
     "_pillow_heif_cffi",
 ]
+# v0.9.331 — Render-Stack (Playwright/Chromium + ffmpeg) nur für die Vollversion.
+if not _IS_GEO:
+    hidden += [
+        "playwright",
+        "playwright.async_api",
+        "imageio_ffmpeg",   # gebündeltes ffmpeg-Binary für Animator-MP4-Encode
+    ]
 # Native libheif/.dylib aus pillow-heif mitnehmen
 data_files += collect_data_files("pillow_heif", include_py_files=False)
 
@@ -122,9 +152,23 @@ else:
 
 # Auto-collect pywebview-Submodule (fallback)
 hidden += collect_submodules("webview")
-# Auto-collect playwright (große Library)
-hidden += collect_submodules("playwright")
+# Auto-collect playwright (große Library) — nur Vollversion (v0.9.331)
+if not _IS_GEO:
+    hidden += collect_submodules("playwright")
 
+
+# Müll der die App aufbläht
+_excludes = [
+    "tkinter", "PyQt5", "PyQt6", "PySide2", "PySide6",
+    "matplotlib", "scipy", "numpy.tests",
+    "test", "tests", "unittest",
+]
+# v0.9.331 — Solo-Geotagger rendert nichts. animator.py/heightanim.py importieren
+# playwright + imageio_ffmpeg NUR lazy (innerhalb von Render-Funktionen, die der
+# Tagger nie aufruft), also gefahrlos rauswerfen → spart die ffmpeg-Binary (~30 MB)
+# und das playwright-Python-Paket. PyInstallers Auto-Hook würde sie sonst ziehen.
+if _IS_GEO:
+    _excludes += ["imageio_ffmpeg", "playwright"]
 
 a = Analysis(
     ["app.py"],
@@ -135,12 +179,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[
-        # Müll der die App aufbläht
-        "tkinter", "PyQt5", "PyQt6", "PySide2", "PySide6",
-        "matplotlib", "scipy", "numpy.tests",
-        "test", "tests", "unittest",
-    ],
+    excludes=_excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -149,19 +188,31 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# Windows-Icon falls vorhanden (PyInstaller verlangt .ico, nicht .png/.icns)
+# v0.9.331 — editionsabhängige Namen/IDs/Icons.
+_INTERNAL_NAME = "ReisezoomGeotagger" if _IS_GEO else "ReisezoomGPSStudio"
+_BUNDLE_NAME   = "Reisezoom Geotagger.app" if _IS_GEO else "Reisezoom GPS Studio.app"
+_BUNDLE_ID     = "com.reisezoom.geotagger" if _IS_GEO else "com.reisezoom.gpsstudio"
+_DISPLAY_NAME  = "Reisezoom Geotagger" if _IS_GEO else "Reisezoom GPS Studio"
+
+# Windows-Icon falls vorhanden (PyInstaller verlangt .ico, nicht .png/.icns).
+# Solo-Geotagger nimmt ein eigenes Icon falls vorhanden, sonst das Studio-Icon.
+def _pick(*cands):
+    for c in cands:
+        if c and os.path.isfile(c):
+            return c
+    return None
 _exe_icon = None
-if _sys.platform == "win32" and os.path.isfile("assets/icon.ico"):
-    _exe_icon = "assets/icon.ico"
-elif _sys.platform == "linux" and os.path.isfile("assets/icon_1024.png"):
-    _exe_icon = "assets/icon_1024.png"
+if _sys.platform == "win32":
+    _exe_icon = _pick("assets/icon_geotagger.ico" if _IS_GEO else None, "assets/icon.ico")
+elif _sys.platform == "linux":
+    _exe_icon = _pick("assets/icon_geotagger_1024.png" if _IS_GEO else None, "assets/icon_1024.png")
 
 exe = EXE(
     pyz,
     a.scripts,
     [],
     exclude_binaries=True,
-    name="ReisezoomGPSStudio",
+    name=_INTERNAL_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -183,7 +234,7 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="ReisezoomGPSStudio",
+    name=_INTERNAL_NAME,
 )
 
 # macOS-spezifisches .app-BUNDLE — auf Windows/Linux übersprungen
@@ -203,15 +254,16 @@ if _sys.platform == "darwin":
     except Exception:
         pass
 
+    _icns = _pick("assets/icon_geotagger.icns" if _IS_GEO else None, "assets/icon.icns")
     app = BUNDLE(
         coll,
-        name="Reisezoom GPS Studio.app",
-        icon="assets/icon.icns",
-        bundle_identifier="com.reisezoom.gpsstudio",
+        name=_BUNDLE_NAME,
+        icon=_icns,
+        bundle_identifier=_BUNDLE_ID,
         version=_APP_VERSION,
         info_plist={
-            "CFBundleName": "Reisezoom GPS Studio",
-            "CFBundleDisplayName": "Reisezoom GPS Studio",
+            "CFBundleName": _DISPLAY_NAME,
+            "CFBundleDisplayName": _DISPLAY_NAME,
             "CFBundleShortVersionString": _APP_VERSION,
             "CFBundleVersion": _APP_VERSION,
             "NSHumanReadableCopyright": "© 2026 Reisezoom",

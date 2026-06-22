@@ -37,9 +37,13 @@ from typing import List, Optional, Tuple
 import gpxpy
 import gpxpy.gpx
 
+from . import sensors as _sensors
+
 _log = logging.getLogger("core.imports")
 
-# (lat, lon, ele|None, time_iso|None)
+# (lat, lon, ele|None, time_iso|None)  — Geometrie-Punkt.
+# Sensor-tragende Parser (FIT/TCX) liefern 5-Tupel mit zusätzlichem extra-Dict
+# `(lat, lon, ele, time_iso, {field: value})`. `_split_rows()` trennt beides.
 Point = Tuple[float, float, Optional[float], Optional[str]]
 
 
@@ -87,7 +91,32 @@ def _iter_local(root, name: str):
 _SEMI = 180.0 / (2 ** 31)  # Semicircles → Grad
 
 
-def _parse_fit(path: str) -> List[Point]:
+def _fit_extra(frame) -> dict:
+    """Alle numerischen Sensor-Felder einer FIT-`record`-Message → {key: float}.
+    Geometrie/abgeleitete Felder werden übersprungen (FIT_SKIP); bekannte Namen
+    auf kanonische Keys gemappt, unbekannte numerische Felder durchgereicht
+    (= „alles lesen was da ist"). Array-/None-/bool-Werte werden ignoriert."""
+    out: dict = {}
+    try:
+        fields = frame.fields
+    except Exception:
+        return out
+    for fld in fields:
+        try:
+            name = fld.name
+            val = fld.value
+        except Exception:
+            continue
+        if not name or name in _sensors.FIT_SKIP:
+            continue
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            continue
+        key = _sensors.FIT_FIELD_MAP.get(name, name)
+        out[key] = float(val)
+    return out
+
+
+def _parse_fit(path: str) -> List[tuple]:
     try:
         import fitdecode  # type: ignore
     except Exception as e:  # pragma: no cover
@@ -121,7 +150,8 @@ def _parse_fit(path: str) -> List[Point]:
                     ts = ts.replace(tzinfo=timezone.utc)
                 tiso = ts.astimezone(timezone.utc).isoformat()
             pts.append((float(lat), float(lon),
-                        float(ele) if ele is not None else None, tiso))
+                        float(ele) if ele is not None else None, tiso,
+                        _fit_extra(frame)))
     return pts
 
 
@@ -269,28 +299,46 @@ def _parse_kmz(path: str) -> List[Point]:
 
 # ── TCX (Garmin Training Center, Strava-Export) ──────────────────────────────
 
-def _parse_tcx(path: str) -> List[Point]:
+def _parse_tcx(path: str) -> List[tuple]:
     tree = ET.parse(path)
     root = tree.getroot()
-    pts: List[Point] = []
+    pts: List[tuple] = []
     for tp in _iter_local(root, "trackpoint"):
         lat = lon = ele = None
         tiso = None
+        extra: dict = {}
         for ch in tp.iter():
             ln = _localname(ch.tag)
-            if ln == "latitudedegrees" and ch.text:
-                lat = float(ch.text)
-            elif ln == "longitudedegrees" and ch.text:
-                lon = float(ch.text)
-            elif ln == "altitudemeters" and ch.text:
+            txt = (ch.text or "").strip()
+            if ln == "latitudedegrees" and txt:
+                lat = float(txt)
+            elif ln == "longitudedegrees" and txt:
+                lon = float(txt)
+            elif ln == "altitudemeters" and txt:
                 try:
-                    ele = float(ch.text)
+                    ele = float(txt)
                 except ValueError:
                     ele = None
-            elif ln == "time" and ch.text:
-                tiso = _norm_iso(ch.text.strip())
+            elif ln == "time" and txt:
+                tiso = _norm_iso(txt)
+            # Sensoren: HR (<HeartRateBpm><Value>), Trittfrequenz, Leistung (TPX:Watts)
+            elif ln == "value" and txt:          # nur HR-Value im TCX-Trackpoint
+                try:
+                    extra["hr"] = float(txt)
+                except ValueError:
+                    pass
+            elif ln == "cadence" and txt:
+                try:
+                    extra["cadence"] = float(txt)
+                except ValueError:
+                    pass
+            elif ln == "watts" and txt:
+                try:
+                    extra["power"] = float(txt)
+                except ValueError:
+                    pass
         if lat is not None and lon is not None:
-            pts.append((lat, lon, ele, tiso))
+            pts.append((lat, lon, ele, tiso, extra))
     return pts
 
 
@@ -369,7 +417,8 @@ def _norm_iso(s: Optional[str]) -> Optional[str]:
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
-def parse_points(path: str) -> List[Point]:
+def _parse_rows(path: str) -> List[tuple]:
+    """Dispatch auf den Format-Parser → rohe Rows (4- ODER 5-Tupel mit extra)."""
     ext = os.path.splitext(path)[1].lower()
     key = _DISPATCH.get(ext)
     if key is None:
@@ -389,10 +438,30 @@ def parse_points(path: str) -> List[Point]:
         "fit": _parse_fit, "nmea": _parse_nmea, "kml": _parse_kml,
         "kmz": _parse_kmz, "tcx": _parse_tcx, "geojson": _parse_geojson,
     }[key]
-    pts = parser(path)
-    if not pts:
+    rows = parser(path)
+    if not rows:
         raise TrackImportError("Keine Track-Punkte in der Datei gefunden.")
-    return pts
+    return rows
+
+
+def _split_rows(rows: List[tuple]) -> tuple[List[Point], List[dict]]:
+    """Rows (4-/5-Tupel) → (Geometrie-4-Tupel, Liste der extra-Dicts)."""
+    pts: List[Point] = []
+    extras: List[dict] = []
+    for r in rows:
+        pts.append((r[0], r[1], r[2], r[3]))
+        extras.append(r[4] if len(r) >= 5 and isinstance(r[4], dict) else {})
+    return pts, extras
+
+
+def parse_points(path: str) -> List[Point]:
+    """Nur Geometrie (lat,lon,ele,time) — rückwärtskompatibel."""
+    return _split_rows(_parse_rows(path))[0]
+
+
+def parse_track(path: str) -> tuple[List[Point], List[dict]]:
+    """Geometrie + Sensor-extras pro Punkt (für die Sidecar-Erzeugung)."""
+    return _split_rows(_parse_rows(path))
 
 
 # ── GPX schreiben ─────────────────────────────────────────────────────────────
@@ -404,7 +473,8 @@ def write_gpx(points: List[Point], out_path: str, name: str = "Track") -> str:
     gpx.tracks.append(trk)
     seg = gpxpy.gpx.GPXTrackSegment()
     trk.segments.append(seg)
-    for lat, lon, ele, tiso in points:
+    for row in points:
+        lat, lon, ele, tiso = row[0], row[1], row[2], row[3]
         t = None
         if tiso:
             try:
@@ -419,7 +489,31 @@ def write_gpx(points: List[Point], out_path: str, name: str = "Track") -> str:
     return out_path
 
 
+def _sidecar_for(gpx_path: str) -> str:
+    base = gpx_path[:-4] if gpx_path.lower().endswith(".gpx") else gpx_path
+    return base + ".sensors.json"
+
+
+def write_sidecar(extras: List[dict], gpx_path: str) -> Optional[str]:
+    """Schreibt `<gpx>.sensors.json` (Variante B) mit index-gleichen Sensor-
+    Reihen. Tut nichts (gibt None zurück), wenn keine Sensoren vorkommen."""
+    keys = set()
+    for e in extras:
+        keys.update(e.keys())
+    if not keys:
+        return None
+    n = len(extras)
+    values = {k: [extras[i].get(k) for i in range(n)] for k in keys}
+    data = {"fields": _sensors.describe_fields(keys), "values": values}
+    sc = _sidecar_for(gpx_path)
+    with open(sc, "w", encoding="utf-8") as fh:
+        json.dump(data, fh)
+    return sc
+
+
 def convert_to_gpx(src_path: str, out_path: str, name: Optional[str] = None) -> str:
+    """Konvertiert nach GPX (Geometrie). Schreibt KEINE Sidecar — die
+    sensor-bewusste Cache-Schicht ist `ensure_gpx` (atomisches GPX + Sidecar)."""
     pts = parse_points(src_path)
     if name is None:
         name = os.path.splitext(os.path.basename(src_path))[0]
@@ -456,8 +550,14 @@ def ensure_gpx(path: str, cache_dir) -> str:
                 return out
         except OSError:
             pass
+    # v0.9.330 — Geometrie atomisch als GPX + Sensoren als Sidecar (Variante B).
+    pts, extras = parse_track(path)
+    if not pts:
+        raise TrackImportError("Keine Track-Punkte in der Datei gefunden.")
+    name = os.path.splitext(os.path.basename(path))[0]
     tmp = out + ".tmp"
-    convert_to_gpx(path, tmp)
+    write_gpx(pts, tmp, name=name)
     os.replace(tmp, out)
-    _log.info("ensure_gpx: %s → %s", path, out)
+    sc = write_sidecar(extras, out)
+    _log.info("ensure_gpx: %s → %s%s", path, out, " (+sensors)" if sc else "")
     return out

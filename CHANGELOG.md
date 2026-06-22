@@ -14,6 +14,9 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+### Hinzugefügt (Fundament, noch ohne UI)
+- **FIT-/Sensor-Datenschicht (IDEAS §15.2 Phase 1).** FIT- und TCX-Importe behalten jetzt ihre Sensorwerte (Herzfrequenz, Trittfrequenz, Temperatur, Leistung, E-Bike-/Hersteller-Felder) statt sie zu verwerfen — gespeichert in einer Sidecar-Datei neben dem Track. GPX-Importe lesen vorhandene gpxtpx/gpxpx-Extensions; GPX-Export schreibt Herzfrequenz/Trittfrequenz/Temperatur/Leistung als Standard-Extensions (Strava/Garmin lesen die). *Anzeige/Overlay folgt in Phase 2.*
+
 ## [0.9.329] – 2026-06-21
 
 ### Behoben (Nutzer-Feedback)

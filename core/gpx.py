@@ -4,14 +4,18 @@ GPX-Parsing + Stats. Wrapper um gpxpy mit ergonomischen Helfern für UI/Renderer
 from __future__ import annotations
 
 import bisect
+import json
+import os
 import statistics
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from math import radians, sin, cos, sqrt, atan2
 from typing import List, Optional
 
 import gpxpy
 import gpxpy.gpx
+
+from . import sensors as _sensors
 
 
 @dataclass
@@ -23,6 +27,9 @@ class TrackPoint:
     # kumulative Felder, von compute_cumulative() befüllt
     dist_m: float = 0.0      # kumulierte Distanz in Metern bis hier
     elapsed_s: float = 0.0   # kumulierte Zeit in Sekunden seit Track-Start
+    # v0.9.330 — Sensor-Zusatzwerte pro Punkt (FIT-HR/Power/Temp/…, GPX-Extensions).
+    # Geometrie/abgeleitete Werte (Distanz/Tempo/Steigung) gehören NICHT hier rein.
+    extra: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -38,6 +45,8 @@ class TrackStats:
     name: Optional[str]        # GPX-Track-Name
     moving_time_s: float = 0.0   # Bewegungs-/Netto-Zeit in Sekunden (Pausen abgezogen)
     max_speed_kmh: float = 0.0   # Spitzentempo in km/h (Spike-gekappt)
+    # v0.9.330 — vorhandene Sensorfelder [{key,label,unit}] (FIT/GPX-Extensions).
+    sensor_fields: list = field(default_factory=list)
 
 
 def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -182,6 +191,67 @@ def compute_moving_and_max(pts: List[TrackPoint]) -> tuple[float, float]:
     return moving_s, max_ms * 3.6
 
 
+def _ext_localname(tag) -> str:
+    return str(tag).rsplit("}", 1)[-1].lower()
+
+
+def _read_point_extensions(gp) -> dict:
+    """Liest gpxtpx/gpxpx-Standard-Extensions eines gpxpy-Punkts → {key: float}.
+    Namespace-agnostisch: durchsucht den Extension-Teilbaum nach bekannten
+    lokalen Tag-Namen (hr/cad/atemp/power …). So lesen wir Strava-/Garmin-GPX."""
+    out: dict = {}
+    exts = getattr(gp, "extensions", None) or []
+    for el in exts:
+        try:
+            nodes = [el] + list(el.iter())
+        except Exception:
+            nodes = [el]
+        for n in nodes:
+            ln = _ext_localname(getattr(n, "tag", ""))
+            txt = (getattr(n, "text", None) or "").strip()
+            if not txt:
+                continue
+            key = None
+            if ln in _sensors.GPXTPX_READ:
+                key = _sensors.GPXTPX_READ[ln]
+            elif ln in ("power", "powerinwatts"):
+                key = "power"
+            if key is None:
+                continue
+            try:
+                out[key] = float(txt)
+            except ValueError:
+                pass
+    return out
+
+
+def _sidecar_path(gpx_path: str) -> str:
+    base = gpx_path[:-4] if gpx_path.lower().endswith(".gpx") else gpx_path
+    return base + ".sensors.json"
+
+
+def _load_sidecar_into(pts: List[TrackPoint], gpx_path: str) -> None:
+    """Lädt `<gpx>.sensors.json` (Variante B) und mergt index-gleich in extra.
+    Fehlt die Datei (Track ohne Sensoren / alter Cache) → still no-op."""
+    sc = _sidecar_path(gpx_path)
+    if not os.path.exists(sc):
+        return
+    try:
+        with open(sc, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        values = data.get("values") or {}
+        n = len(pts)
+        for key, arr in values.items():
+            if not isinstance(arr, list):
+                continue
+            for i in range(min(n, len(arr))):
+                v = arr[i]
+                if v is not None:
+                    pts[i].extra[key] = v
+    except Exception:
+        pass  # defekte Sidecar darf den Track-Load NICHT kippen
+
+
 def parse_gpx(path: str) -> tuple[List[TrackPoint], TrackStats]:
     """Liest eine GPX-Datei, gibt Trackpunkte (mit kumulierten Werten) + Stats zurück."""
     with open(path, "r", encoding="utf-8") as fh:
@@ -204,11 +274,19 @@ def parse_gpx(path: str) -> tuple[List[TrackPoint], TrackStats]:
                         lon=p.longitude,
                         ele=p.elevation,
                         time=t_iso,
+                        extra=_read_point_extensions(p),  # gpxtpx/gpxpx (Strava/Garmin)
                     )
                 )
 
     if not pts:
         raise ValueError("GPX enthält keine Trackpunkte")
+
+    # v0.9.330 — Sensor-Sidecar (Variante B): index-gleiche Zusatzreihen mergen.
+    _load_sidecar_into(pts, path)
+    _seen_fields = set()
+    for _p in pts:
+        _seen_fields.update(_p.extra.keys())
+    sensor_fields = _sensors.describe_fields(_seen_fields)
 
     # Kumulierte Distanz/Zeit + Auf-/Abstieg
     eles_raw = [p.ele for p in pts if p.ele is not None]
@@ -266,6 +344,7 @@ def parse_gpx(path: str) -> tuple[List[TrackPoint], TrackStats]:
             "max_lon": max(p.lon for p in pts),
         },
         name=name,
+        sensor_fields=sensor_fields,
     )
     return pts, stats
 

@@ -152,6 +152,18 @@ Download-on-first-render ist `chromium-headless-shell` jetzt im Bundle:
 
 **Frontend:** `window.TRACK_PICK_FILTER` (Datei-Dialog) + `window.TRACK_DROP_RE` (Drag&Drop-Regex) in `ui/js/gpx-bar.js`; Geotagger-/Animator-Drops nutzen dieselben. Drop-Persist auf `"binary"` (FIT/KMZ sind binär).
 
+### `core/sensors.py` + Sensor-Datenschicht (seit v0.9.330 — IDEAS §15.2 Phase 1)
+
+Zusatz-Messwerte pro Trackpunkt (FIT-HR/Power/Temp/E-Bike, GPX-Extensions). **Variante B**: kein GPX-Dialekt, sondern angereichertes internes Modell + Sidecar.
+- **Modell:** `gpx.TrackPoint.extra: dict[str,float]` (Sensorwerte je Punkt), `gpx.TrackStats.sensor_fields` (`[{key,label,unit}]`). Geometrie/abgeleitet (Distanz/Tempo/Steigung) gehört NICHT in `extra`.
+- **Registry `core/sensors.py`:** `FIELD_META` (Key→Label/Einheit, Fallback für Unbekanntes), `FIT_FIELD_MAP`/`FIT_SKIP` (FIT-record-Name→Key), `GPX_EXPORT`/`GPXTPX_READ` (Standard-Extensions), `describe_fields(keys)`.
+- **Import (alles lesen):** `imports._parse_fit`/`_parse_tcx` liefern 5-Tupel `(lat,lon,ele,time,extra)`; `_split_rows()` trennt Geometrie/extra. `imports.ensure_gpx` schreibt beim Konvertieren **Geometrie-GPX + `<cache>.sensors.json`** (index-gleiche Reihen, ALLE Felder). `gpx.parse_gpx` liest gpxtpx/gpxpx-Extensions inline (Strava/Garmin-GPX) UND mergt die Sidecar (`_load_sidecar_into`).
+- **Export (alles, wofür GPX Felder hat):** `trackio.to_gpx_string` schreibt gpxtpx (hr/cad/atemp) + `<power>`; Nicht-Standard-Felder kann GPX nicht tragen → bleiben in der Sidecar.
+- **Downsampling:** `extra` reist mit den TrackPoint-Objekten automatisch mit (wie `ele`).
+- **Gotcha:** alte Cache-GPX (vor v0.9.330) haben keine Sidecar → Sensoren erst nach Cache-Invalidierung (Quelldatei re-touch / Cache leeren). Defekte/fehlende Sidecar kippt den Track-Load NIE (still no-op).
+- **Tests:** `tests/test_fit_sensors.py` (FIT-Mapping, Export→Import-Roundtrip, Sidecar-Merge, Metadaten/Fallback).
+- **OFFEN:** Phase 2 (Overlay-Anzeige/Grafik pro Feld — Stats-Editor erweitern), Phase 3 (Auto-Schilder §15.3).
+
 ### `core/gpx.py`
 
 **Hauptfunktionen:**

@@ -31,13 +31,52 @@ def _parse_iso(s):
         return None
 
 
+# v0.9.330 — Sensor-Felder, die GPX nativ tragen kann (gpxtpx/gpxpx). Spiegel
+# von core.sensors.GPX_EXPORT; hier INLINE gehalten, damit dieses Modul
+# dependency-arm bleibt (wird auch vom Web-Export genutzt).
+_GPXTPX_NS = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
+_GPXPX_NS = "http://www.garmin.com/xmlschemas/PowerExtension/v1"
+_TPX_FIELDS = {"hr": "hr", "cadence": "cad", "temperature": "atemp"}
+
+
+def _point_extensions(p) -> str:
+    """GPX-Standard-Extensions eines Punkts aus seinem `extra`-Dict — alles, wofür
+    das Format Felder hat (HR/Trittfrequenz/Temp via gpxtpx, Leistung via <power>).
+    Nicht-Standard-Felder (E-Bike etc.) trägt GPX nicht → werden nicht exportiert."""
+    extra = _get(p, "extra")
+    if not isinstance(extra, dict) or not extra:
+        return ""
+    tpx = []
+    for key, ln in _TPX_FIELDS.items():
+        v = extra.get(key)
+        if v is None:
+            continue
+        try:
+            tpx.append(f"<gpxtpx:{ln}>{float(v):g}</gpxtpx:{ln}>")
+        except (TypeError, ValueError):
+            pass
+    parts = []
+    if tpx:
+        parts.append("<gpxtpx:TrackPointExtension>" + "".join(tpx) + "</gpxtpx:TrackPointExtension>")
+    pw = extra.get("power")
+    if pw is not None:
+        try:
+            parts.append(f"<power>{float(pw):g}</power>")
+        except (TypeError, ValueError):
+            pass
+    return ("<extensions>" + "".join(parts) + "</extensions>") if parts else ""
+
+
 def to_gpx_string(points, name: Optional[str] = None) -> str:
-    """Punkte als valides GPX-1.1 (ein Track, ein Segment) zurückgeben."""
+    """Punkte als valides GPX-1.1 (ein Track, ein Segment) zurückgeben.
+    Sensor-Standardfelder (HR/Trittfrequenz/Temp/Leistung) werden als
+    gpxtpx/gpxpx-Extensions mitgeschrieben (Strava/Garmin lesen die)."""
     nm = _sx.escape(name) if name else "Track"
     out = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<gpx version="1.1" creator="Reisezoom GPS Studio" '
-        'xmlns="http://www.topografix.com/GPX/1/1">',
+        'xmlns="http://www.topografix.com/GPX/1/1" '
+        f'xmlns:gpxtpx="{_GPXTPX_NS}" xmlns:gpxpx="{_GPXPX_NS}">',
         f"<trk><name>{nm}</name><trkseg>",
     ]
     for p in points:
@@ -54,6 +93,7 @@ def to_gpx_string(points, name: Optional[str] = None) -> str:
         dt = _parse_iso(tm)
         if dt is not None:
             seg.append("<time>" + dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") + "</time>")
+        seg.append(_point_extensions(p))
         seg.append("</trkpt>")
         out.append("".join(seg))
     out.append("</trkseg></trk></gpx>")

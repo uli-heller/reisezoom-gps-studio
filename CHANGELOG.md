@@ -14,6 +14,11 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.332] – 2026-06-23
+
+### Hinzugefügt
+- **Solo-Geotagger als offizieller Download (Mac + Windows).** Die schlanke Geotagger-Edition (v0.9.331) wird jetzt von der CI auch als **macOS-DMG** und **Windows-Installer** gebaut und ans GitHub-Release gehängt — eigener App-Name/Icon/Installer (parallel zum vollen GPS Studio installierbar). Eine `.iss`/eine Spec, per `RZ_EDITION`/`/D…`-Overrides editions-fähig (kein Klon).
+
 ## [0.9.331] – 2026-06-22
 
 ### Hinzugefügt

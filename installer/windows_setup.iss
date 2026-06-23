@@ -25,15 +25,32 @@
   #define AppVersion "0.0.0"
 #endif
 
-#define AppName        "Reisezoom GPS Studio"
+; v0.9.332 — Editions-fähig: Defaults bauen das volle GPS Studio. Der
+; CI-Geotagger-Build überschreibt AppName/AppExeName/AppId/SourceDirName/
+; OutputBaseFilename per /D… (gleiche .iss, kein Klon).
+#ifndef AppName
+  #define AppName "Reisezoom GPS Studio"
+#endif
+#ifndef AppExeName
+  #define AppExeName "ReisezoomGPSStudio.exe"
+#endif
+; AppId — EINDEUTIGE GUID je Edition, NIE ÄNDERN (sonst findet ein Update die
+; alte Installation nicht). Studio + Geotagger haben BEWUSST verschiedene IDs,
+; damit beide parallel installierbar sind.
+#ifndef AppId
+  #define AppId "{{F8C7E2A1-9B4D-4E5F-A6B7-1234567890AB}"
+#endif
+; PyInstaller-Output-Ordner unter dist\ (Studio: ReisezoomGPSStudio).
+#ifndef SourceDirName
+  #define SourceDirName "ReisezoomGPSStudio"
+#endif
+; Fixer Setup-Filename (Download-Buttons zeigen drauf).
+#ifndef OutputBaseFilename
+  #define OutputBaseFilename "ReisezoomGPSStudio-windows-setup"
+#endif
+
 #define AppPublisher   "Reisezoom (Marc Arzt)"
 #define AppURL         "https://reisezoom.com/reisezoom-gps-studio/"
-#define AppExeName     "ReisezoomGPSStudio.exe"
-; AppId — EINDEUTIGE GUID, NIE ÄNDERN.
-; Updates funktionieren nur korrekt wenn AppId zwischen Versionen identisch
-; bleibt — Inno findet so die alte Installation und ersetzt sie sauber.
-; Generiert mit: New-Guid | % { $_.Guid }
-#define AppId          "{{F8C7E2A1-9B4D-4E5F-A6B7-1234567890AB}"
 
 [Setup]
 AppId={#AppId}
@@ -63,7 +80,7 @@ ArchitecturesAllowed=x64compatible
 OutputDir=..\dist
 ; WICHTIG: fixer Filename — Shortlinks `s.reisezoom.com/gps-studio-win`
 ; zeigen exakt auf diese Datei. Bei Workflow-Änderungen Convention behalten.
-OutputBaseFilename=ReisezoomGPSStudio-windows-setup
+OutputBaseFilename={#OutputBaseFilename}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -93,7 +110,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Source = relativ zur .iss-Datei, also `installer\` als Working-Directory.
 ; Im CI wird der Workflow so aufgerufen, dass `dist\ReisezoomGPSStudio\`
 ; (PyInstaller-Output) der Source ist — drum gehen wir `..\dist\...`.
-Source: "..\dist\ReisezoomGPSStudio\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\{#SourceDirName}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"

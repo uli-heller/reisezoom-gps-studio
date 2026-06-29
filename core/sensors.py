@@ -40,6 +40,18 @@ FIELD_META: dict[str, tuple[str, str]] = {
     "step_length":     ("Schrittlänge",        "mm"),
     "vertical_oscillation": ("Vertikale Bewegung", "cm"),
     "saturated_hemoglobin_percent": ("SpO₂",   "%"),
+    # Reisezoom-Logger (Android) — eigener rz:-Namespace, siehe RZ_READ unten.
+    "heading":      ("Blickrichtung",  "°"),
+    "course":       ("Kurs",           "°"),
+    "pitch":        ("Neigung",        "°"),
+    "roll":         ("Querneigung",    "°"),
+    "steps":        ("Schritte",       ""),
+    "lux":          ("Umgebungslicht", "lx"),
+    "pressure":     ("Luftdruck",      "hPa"),
+    "mag":          ("Magnetfeld",     "µT"),
+    "humidity":     ("Luftfeuchte",    "%"),
+    "hacc":         ("GPS-Genauigkeit", "m"),
+    "vacc":         ("Höhen-Genauigkeit", "m"),
 }
 
 # ── FIT-record-Feldname → kanonischer Key ────────────────────────────────────
@@ -86,6 +98,30 @@ GPXTPX_READ: dict[str, str] = {
 
 GPXTPX_NS = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
 GPXPX_NS = "http://www.garmin.com/xmlschemas/PowerExtension/v1"
+
+# ── Reisezoom-Logger-Extensions (Android-App) ────────────────────────────────
+# Beim IMPORT: rz:-localname (lowercase) → kanonischer Key. Namespace
+# https://reisezoom.com/gpx/logger/1 — der Logger schreibt true-north-Heading,
+# Neigung, Schritte, Licht, Luftdruck etc. pro Trackpunkt. `hdg` ist die für den
+# Geotagger wichtige Kamera-Blickrichtung (→ EXIF GPSImgDirection).
+# Bewusst NICHT gemappt: `speed` (Geometrie, leiten wir selbst ab), `batt`/`temp`
+# → auf bestehende kanonische Keys gelegt (battery_soc / temperature).
+RZ_READ: dict[str, str] = {
+    "hdg":      "heading",
+    "course":   "course",
+    "pitch":    "pitch",
+    "roll":     "roll",
+    "steps":    "steps",
+    "lux":      "lux",
+    "pressure": "pressure",
+    "mag":      "mag",
+    "temp":     "temperature",
+    "hum":      "humidity",
+    "hacc":     "hacc",
+    "vacc":     "vacc",
+    "batt":     "battery_soc",
+}
+RZ_NS = "https://reisezoom.com/gpx/logger/1"
 
 
 def field_meta(key: str) -> tuple[str, str]:

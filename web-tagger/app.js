@@ -72,6 +72,16 @@
     return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
   }
 
+  // Liest einen rz:-Extension-Wert (Reisezoom-Logger) aus einem trkpt – über den
+  // qualifizierten Tag-Namen, namespace-tolerant. Gibt eine Zahl oder null zurück.
+  function rzExtVal(trkpt, local) {
+    let els = trkpt.getElementsByTagName("rz:" + local);
+    if (!els.length) els = trkpt.getElementsByTagName(local);  // Fallback ohne Prefix
+    if (!els.length) return null;
+    const v = parseFloat((els[0].textContent || "").trim());
+    return isFinite(v) ? v : null;
+  }
+
   // ── GPX-Parsing ────────────────────────────────────────────────────────────
   function parseGpx(text) {
     const doc = new DOMParser().parseFromString(text, "application/xml");
@@ -87,7 +97,9 @@
       const timeEl = n.getElementsByTagName("time")[0];
       const eleEl = n.getElementsByTagName("ele")[0];
       const tMs = timeEl ? Date.parse(timeEl.textContent.trim()) : NaN;
-      pts.push({ lat, lon, ele: eleEl ? parseFloat(eleEl.textContent) : null, tMs });
+      // Reisezoom-Logger (Android): geloggte Kamera-Blickrichtung rz:hdg (true north).
+      const hdg = rzExtVal(n, "hdg");
+      pts.push({ lat, lon, ele: eleEl ? parseFloat(eleEl.textContent) : null, tMs, hdg });
     }
     return pts.filter(p => isFinite(p.tMs)).sort((a, b) => a.tMs - b.tMs);
   }
@@ -140,7 +152,8 @@
       const utcMs = p.dtMs - tzS * 1000 - offS * 1000;
       const near = nearestByTime(utcMs);
       if (near && near.dtS <= MATCH_TOLERANCE_S) {
-        p.match = { lat: near.pt.lat, lon: near.pt.lon, ele: near.pt.ele, dtS: near.dtS };
+        p.match = { lat: near.pt.lat, lon: near.pt.lon, ele: near.pt.ele, dtS: near.dtS,
+                    hdg: (near.pt.hdg != null ? near.pt.hdg : null) };
       }
     }
     renderList();
@@ -268,7 +281,7 @@
     });
   }
 
-  function writeGpsIntoJpeg(dataUrl, lat, lon, ele) {
+  function writeGpsIntoJpeg(dataUrl, lat, lon, ele, hdg) {
     let exifObj;
     try { exifObj = piexif.load(dataUrl); }
     catch (_) { exifObj = { "0th": {}, "Exif": {}, "GPS": {}, "Interop": {}, "1st": {}, "thumbnail": null }; }
@@ -282,6 +295,12 @@
     if (ele != null && isFinite(ele)) {
       gps[G.GPSAltitudeRef] = ele < 0 ? 1 : 0;
       gps[G.GPSAltitude] = [Math.round(Math.abs(ele) * 100), 100];
+    }
+    // Reisezoom-Logger: geloggte Blickrichtung → GPSImgDirection (true north).
+    if (hdg != null && isFinite(hdg)) {
+      const d = ((hdg % 360) + 360) % 360;
+      gps[G.GPSImgDirectionRef] = "T";
+      gps[G.GPSImgDirection] = [Math.round(d * 100), 100];
     }
     exifObj.GPS = gps;
     const exifBytes = piexif.dump(exifObj);
@@ -297,7 +316,7 @@
     for (const p of todo) {
       try {
         const dataUrl = await fileToDataURL(p.file);
-        const tagged = writeGpsIntoJpeg(dataUrl, p.match.lat, p.match.lon, p.match.ele);
+        const tagged = writeGpsIntoJpeg(dataUrl, p.match.lat, p.match.lon, p.match.ele, p.match.hdg);
         const blob = await (await fetch(tagged)).blob();
         triggerDownload(blob, geotaggedName(p.name));
         done++;

@@ -503,11 +503,74 @@ Wenn doch nicht (z.B. weil die Kamera-Uhr falsch stand):
 - **Offset-Slider** im linken Panel — ±2h Default, mit aufklappbaren ±3 / ±6 / ±12h-Optionen
 - **Referenz-Foto setzen** — Klick auf ein Foto-Tile, dann auf der Karte auf die tatsächliche Aufnahme-Position klicken. Die App berechnet den Offset selbst.
 - **Kamera-Zeitzone wählen** (✎ → „Genauen Offset eingeben") — manche Kameras (viele Olympus/OM, GoPro) speichern **keine** Zeitzone im Foto. Reist du z.B. nach Vietnam (UTC+7), liegen die Bilder dann um 7 Stunden neben dem Track. Stell im Offset-Dialog einfach die **Zeitzone der Kamera-Uhr** ein — einmal gesetzt, passt alles. Fotos, die ihre Zeitzone selbst gespeichert haben (Handys etc.), bleiben unangetastet, du kannst also Handy- und Kamera-Fotos derselben Reise problemlos zusammen taggen. Die aktive Zeitzone steht unter dem Offset-Wert.
+- **Offset pro Kamera (seit v0.9.354)** — taggst du Fotos von **zwei Kameras gleichzeitig** und nur eine hat die falsche Uhr, kannst du jeder Kamera einen eigenen Versatz geben:
+  1. Oben in der Übersicht auf den **Kamera-Knopf** der betroffenen Kamera klicken (filtert nur deren Fotos).
+  2. Jetzt gilt der **Offset-Slider** und das **Referenzbild** nur für diese Kamera. Stell den Versatz ein (Slider oder Referenz-Foto).
+  3. Bei Bedarf zur zweiten Kamera filtern und dort separat justieren.
+  4. Filter wieder auf **„Alle"** — beide Kameras behalten ihren eigenen Offset.
+  Der Knopf jeder Kamera zeigt ihren gesetzten Offset als kleines Badge (z.B. `📷 OM-3 +1h`). Ohne Kamera-Filter („Alle") stellst du den **globalen Standard** ein, der für alle Kameras ohne eigenen Offset gilt. Die Pro-Kamera-Offsets bleiben gespeichert und greifen auch bei der optionalen Aufnahmezeit-Korrektur.
 
 ### Optionen
 - **Backup-ZIP vor dem Schreiben** (Default an) — Original-Fotos werden in `~/Library/.../​_backups_photos/` gesichert
-- **Bestehende GPS-Daten überschreiben** (Default aus)
+- **Wenn ein Foto schon Daten hat** (seit v0.9.339) — drei Modi:
+  - **Behalten, nur Fehlendes ergänzen** (Default): Vorhandenes GPS bleibt unangetastet, es wird nur ergänzt, was fehlt (z.B. Adresse, Blickrichtung). Ideal für gemischte Stapel (Handy-Fotos mit eigenem GPS + Kamera-Fotos ohne). **Ein im Foto gespeicherter Standort hat dabei Vorrang vor der Zeit-Zuordnung** — ein Foto, das schon „Porto" als GPS hat, wird in Porto verortet, nicht auf den per Uhrzeit getroffenen Track-Punkt.
+  - **Alles überschreiben**: ersetzt auch vorhandene Daten durch die Track-Werte.
+  - **Fotos mit GPS ganz auslassen**: rührt Fotos mit eigenem GPS nicht an.
 - **Foto-Aufnahmezeit ebenfalls mit Offset anpassen** (Default aus)
+
+### Blickrichtung aus dem Reisezoom Logger 🧭 (seit v0.9.336)
+Wenn dein GPX-Track mit der **Reisezoom-Logger-App** (Android) aufgezeichnet wurde, enthält er pro Punkt die **echte Kamera-Blickrichtung** (Kompass, true north). Der Geotagger schreibt diese als **GPSImgDirection** ins Foto — so weiß z.B. Lightroom oder Apple Fotos später, in welche Richtung du fotografiert hast (Pfeil auf der Karte).
+
+- Jedes Foto-Tile zeigt einen **🧭-Chip** mit der Richtung und der Quelle:
+  - **(Kamera)** — das Foto hatte die Richtung schon selbst gespeichert (Kamera mit Kompass) → bleibt unangetastet
+  - **(geloggt)** — aus dem Reisezoom-Logger übernommen → wird ins Foto geschrieben
+  - **(Bewegung)** — grob aus der Bewegungsrichtung geschätzt → wird **nicht** ins Foto geschrieben (nur als Hinweis angezeigt)
+- Du musst nichts einstellen: Liegt eine geloggte Richtung vor, wird sie beim normalen „GPS in Fotos schreiben" automatisch mitgeschrieben.
+- Funktioniert in **Studio und Solo-Geotagger** gleichermaßen.
+
+### Aufnahmerichtung selbst setzen — Karten-Kompass 🧭 (seit v0.9.337)
+Du kannst die Blickrichtung jedes Fotos **direkt auf der Karte** bestimmen:
+- **Foto auswählen** → es erscheint auf der Karte ein **Kompass** mit dem Foto-Thumbnail in der Mitte.
+- **Am Ring ziehen** dreht die Richtung (N/O/S/W-Markierungen + Gradanzeige) — so legst du fest, wohin die Kamera zeigte.
+- Das **rote ✕** schaltet die Richtung ab, wenn du sie nicht kennst (es wird dann keine Blickrichtung ins Foto geschrieben).
+- Ist bereits eine Richtung vorhanden (aus der Kamera oder dem Reisezoom-Logger), wird sie **angezeigt** und ist korrigierbar.
+- Manuell gesetzte Richtungen werden beim Taggen als **GPSImgDirection** geschrieben (der Chip zeigt „(manuell)").
+
+### Mehrere Fotos am selben Punkt — auffächern (seit v0.9.347)
+Wenn zwei oder mehr Fotos (fast) genau dieselbe Position haben, liegen ihre Karten-Pins übereinander und du triffst beim Klick nur den obersten. **Klick einfach auf den Pin** — er **fächert die Fotos kreisförmig auf** (mit kleinen Leitlinien), dann klickst du das gewünschte einzeln an. Auswählen klappt automatisch wieder zu; ein Klick auf die leere Karte oder Verschieben/Zoomen klappt ebenfalls zu. (Alternativ erreichst du jedes Foto auch über die **Liste links** + Pfeiltasten ↑/↓.)
+
+### Foto-Details ansehen — EXIF-Tabs (seit v0.9.341)
+Klick auf ein Foto (in der Liste oder auf den Karten-Pin) öffnet rechts das Vorschau-Panel mit zwei Tabs:
+- **Info** — Aufnahme-Zeit, Koordinaten, Adresse und die Lichtstempel-Chips, **plus die wichtigsten Kamera-Daten**: Kamera, Objektiv, Brennweite (mit Kleinbild-Äquivalent, falls vorhanden), ISO, Belichtungszeit, Blende, Belichtungskorrektur und Blitz.
+- **EXIF** — die **komplette** Liste aller im Foto gespeicherten Metadaten-Felder (alles, was ExifTool lesen kann), zum Durchscrollen. Vorschaubild-/Binär-Felder sind ausgeblendet.
+
+**Felder direkt bearbeiten (seit v0.9.343, gesammelt seit v0.9.344):** Im **EXIF-Tab** kannst du jeden Wert **anklicken und ändern** — Eingabe öffnet sich inline, **Enter** (oder ✓) übernimmt, **Esc** (oder ✕) bricht ab. Feld leeren = Tag wird gelöscht. Ausgegraute Felder (Dateiname, Dateigröße, Bildmaße, ExifTool-Version …) sind systembedingt **nicht** editierbar, weil ExifTool sie nicht schreibt. Tipp: Kamera, Objektiv, ISO, Blende usw. findest du als einzeln editierbare Tags (`Make`, `Model`, `LensModel`, `ISO`, `FNumber`, `ExposureTime`) im EXIF-Tab.
+
+**Wann wird gespeichert?** Deine Änderungen werden **nicht sofort** ins Foto geschrieben, sondern als **ausstehend** gesammelt (gelb markiert, mit Hinweiszeile + „verwerfen") — zusätzlich erscheint oben über Fotos/Karte ein kleines gelbes **Warnbanner**, solange ungespeicherte Änderungen offen sind. Geschrieben werden sie erst, wenn du unten auf **„Taggen schreiben"** klickst — gemeinsam mit GPS/Adresse/Richtung und **innerhalb desselben ZIP-Backups**. So gibt es vor jeder Änderung eine Sicherung. Der Schreib-Button ist auch dann aktiv, wenn du nur EXIF-Felder bearbeitet hast (ohne GPS).
+
+### Auto-Tag per Bilderkennung 🔍 (seit v0.9.349, nur Mac)
+Auf dem **Mac** kann der Geotagger zu jedem Foto automatisch **Stichwörter** erkennen — Szenen und Objekte wie „Outdoor, Wald, Reh, Strand". Das macht das **eingebaute Apple-Vision-Framework**: komplett **auf dem Gerät**, ohne Internet, ohne Konto, ohne Download, und schnell (Bruchteile einer Sekunde pro Foto). Häufige Begriffe werden ins Deutsche übersetzt.
+
+So geht's: Button **„🔍 Auto-Tag (Bilderkennung)"** in der Schreib-Sektion klicken → die App analysiert alle sichtbaren/angehakten Fotos → die Vorschläge landen als **ausstehende Änderungen** (gelb, im `Keywords`-Feld) → du überfliegst/korrigierst sie im EXIF-Tab und schreibst sie dann mit **„Taggen schreiben"** (inkl. Backup). Die KI schlägt nur vor — du entscheidest.
+
+> **Windows / Linux:** Diese Funktion gibt es dort **nicht** — Apple Vision ist Mac-exklusiv, und wir wollten dafür kein riesiges KI-Modell mitliefern. Der Button ist dort einfach ausgeblendet; alles andere im Geotagger funktioniert identisch.
+
+### Globale Felder — Urheber & Copyright für den ganzen Stapel (seit v0.9.346)
+Manche Felder willst du **einmal setzen und auf alle Fotos schreiben** — Name, Copyright usw. Dafür gibt es in der Schreib-Sektion den Button **„✎ Globale Felder (Urheber, Copyright …)"**. Im Formular trägst du ein, was du brauchst:
+- **Urheber** (dein Name), **Copyright**, **Nutzungsbedingungen**, **Credit**, **Quelle**, **Website/URL**, **E-Mail**, **Stichwörter** (Komma-getrennt).
+
+Diese Werte werden **als Profil gespeichert** — du tippst Name + Copyright **einmal**, danach stehen sie bei jedem Stapel schon drin. Beim **„Taggen schreiben"** werden sie auf **alle sichtbaren/angehakten Fotos** geschrieben, und zwar pro Feld in mehrere Metadaten-Tags gleichzeitig (EXIF + IPTC + XMP), damit Lightroom, Apple Fotos & Co. sie überall finden. Hast du im EXIF-Tab bei einem Foto denselben Wert von Hand geändert, hat **deine Einzeländerung Vorrang** vor dem globalen Wert. Feld im Formular leeren = wird nicht (mehr) geschrieben.
+
+### Adresse ins Foto schreiben 📍 (seit v0.9.337, automatisch seit v0.9.338)
+Sobald Fotos zugeordnet sind, ermittelt die App **automatisch** zu jedem die **komplette Adresse** (Straße, Ort, Bundesland, Land) und zeigt sie im Foto-Popup. Beim Taggen wird sie als **IPTC + XMP** ins Foto geschrieben — Lightroom, Apple Fotos & Co. zeigen dann Ort und Land an. Der Button **„📍 Adressen abrufen"** ist nur noch zum **erneuten Abrufen** da.
+
+- **Clever statt langsam:** die Suche läuft als **3-Stufen-Pyramide** — erst eine Abfrage auf den Schwerpunkt aller Fotos (= Land), dann je ~1-km-Bereich eine (= Ort), dann fein die Straße. So sind alle Bilder nach wenigen Abfragen grob gefüllt, die Straße kommt nach.
+- **Anbieter wählbar** (⚙ → „Adress-Suche"): **Automatisch** (nimmt Mapbox, falls du einen Token hinterlegt hast, sonst Photon), **Mapbox** (am schnellsten, braucht Token), **Photon/Komoot** oder **Nominatim/OpenStreetMap** — alle ohne Konto außer Mapbox. Jede Option ist im Dialog erklärt.
+- **Abschaltbar:** In den Einstellungen lässt sich die Adress-Suche ganz **ausschalten** — dann wird gar nichts ins Internet gefunkt, und du tippst Adressen bei Bedarf von Hand ein.
+- **Pro Foto korrigierbar:** Stimmt eine Adresse nicht, übers **✎** im Foto-Popup anpassen.
+
+### Auswählen, was geschrieben wird
+Im Schreiben-Bereich kannst du pro Durchgang festlegen, **was ins Foto kommt**: GPS-Koordinaten (immer), **Höhe**, **Blickrichtung** und **Adresse** — jede Option einzeln an- oder abschaltbar. Die Auswahl wird gemerkt.
 
 ### Track-Punkt antippen (seit v0.9.163) ⭐
 Klick auf die **Track-Linie** auf der Karte → ein kleines Popup zeigt **GPS-Koordinaten, Höhe und Datum/Zeit (UTC)** der nächstgelegenen Track-Stelle. Praktisch, um schnell zu prüfen, wann/wo du an einer Stelle warst.

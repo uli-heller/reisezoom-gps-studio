@@ -14,6 +14,227 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.354] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — Zeit-Offset pro Kamera.** Wer zwei Kameras gleichzeitig taggt
+  (z.B. eine mit korrekter Uhr/Zeitzone, eine mit verstellter Uhr), kann jetzt
+  jeder Kamera einen eigenen Zeit-Offset geben: Oben in der Übersicht nach einer
+  Kamera filtern → der Offset-Slider **und** das Referenzbild gelten dann nur für
+  diese Kamera. Ohne Kamera-Filter („Alle") bearbeitet der Slider den globalen
+  Default, der für alle Kameras ohne eigenen Offset gilt. Die Kamera-Chips zeigen
+  ihren gesetzten Offset als Badge (z.B. `📷 OM-3 +1h`). Die Pro-Kamera-Offsets
+  werden über die Session hinaus gespeichert und greifen auch bei der optionalen
+  Aufnahmezeit-Korrektur (`DateTimeOriginal`). Beim Schreiben bekommt jedes Foto
+  automatisch den Offset seiner Kamera. Setzt man den Offset einer Kamera wieder
+  auf den globalen Default (z.B. via ↺), wird der Override entfernt und das Badge
+  verschwindet — keine „+0s"-Leiche.
+
+## [0.9.353] – 2026-06-29
+### Behoben
+- **Geotagger — „Fotos getaggt"-Zahl zählt jetzt Fotos statt Schreib-Schritte.**
+  Wer GPS **und** EXIF-Felder/globale Felder/Keywords in einem Durchgang schrieb,
+  sah im Fertig-Dialog die doppelte Zahl (z.B. „80" statt „40"), weil GPS- und
+  EXIF-Phase getrennt gezählt wurden. Jetzt = Anzahl **distinkter Fotos**. Der
+  Schreibvorgang selbst war immer korrekt (jedes Foto einmal getaggt).
+
+## [0.9.352] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — Anzahl-Badge bei überlappenden Foto-Pins.** Liegen mehrere Fotos
+  pixelgenau am selben Punkt, zeigt der Pin jetzt eine **kleine orangene Zahl**
+  (= wie viele Fotos dort liegen), sodass man das direkt auf der Karte sieht.
+  Klick fächert sie wie gehabt auf. Das Badge wird nach jedem Zoom/Verschieben
+  neu berechnet (Cluster hängen vom Zoom ab).
+
+## [0.9.351] – 2026-06-29
+### Geändert
+- **Geotagger — Sidebar aufgeräumt.** Die langen Erklärungstexte (Manuell
+  platzieren, Auf-Track-einrasten, Aufnahmezeit-aus-Track, Schreib-Modus) sind
+  jetzt durch ein kleines **„?"-Badge mit Hover-Tooltip** ersetzt (wie im
+  Animator) — die Seitenleiste ist dadurch deutlich kompakter. Die dynamischen
+  Status-Zeilen (Foto-Anzahl, Adress-/Auto-Tag-/Globale-Felder-Status) bleiben.
+
+## [0.9.350] – 2026-06-29
+### Geändert
+- **Geotagger — Foto-Vorschau per Karten-Klick schließen.** Ist die Foto-Vorschau
+  offen, schließt jetzt ein Klick irgendwo auf die Karte sie (wie der ✕-Button).
+  Referenz-Modus und das Pin-Auffächern bleiben davon unberührt.
+
+## [0.9.349] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — Auto-Tag per Bilderkennung (Apple Vision, nur macOS).** Neuer
+  Button „🔍 Auto-Tag (Bilderkennung)" erkennt zu jedem sichtbaren/angehakten Foto
+  Stichwörter (Szenen/Objekte, z.B. „Outdoor, Wald, Reh") — **on-device, ohne Netz,
+  ohne Konto, ohne Download**, über das eingebaute Apple-Vision-Framework. Häufige
+  Labels werden ins Deutsche übersetzt. Die Vorschläge landen als **ausstehende
+  EXIF-Edits** (`Keywords`, gelb markiert) → du prüfst sie und schreibst sie mit
+  „Taggen schreiben". Schnell (~30–160 ms/Foto).
+  - **Plattform:** nur auf Mac. Unter **Windows/Linux** ist der Button ausgeblendet
+    (Apple Vision ist macOS-eigen) — alles andere läuft dort unverändert weiter.
+  - Backend: `core/autotag.py` (graceful, `is_available()`), Bridge
+    `autotag_available` / `geotagger_autotag_start` / `…_status` / `…_cancel`.
+
+## [0.9.348] – 2026-06-29
+### Geändert
+- **Geotagger — globale Felder persistieren über Sessions.** Das Profil aus
+  „Globale Felder" (Urheber, Copyright …) wird jetzt fest in den Einstellungen
+  gehalten (`geotagger_global_exif` ist offizieller Default) und beim Speichern
+  direkt über die Bridge auf die Platte geschrieben — beim nächsten App-Start
+  stehen deine Daten schon drin. Round-Trip headless verifiziert.
+
+## [0.9.347] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — übereinanderliegende Foto-Pins auffächern (Spiderfy).** Liegen
+  mehrere Fotos pixelgenau am selben Punkt, fächert ein **Klick auf den Pin** sie
+  kreisförmig auf (mit kleinen orangenen Leitlinien), sodass du jedes einzeln
+  anklicken kannst. Klick auf ein aufgefächertes Foto wählt es aus und klappt zu;
+  Klick auf die leere Karte oder Verschieben/Zoomen klappt ebenfalls zu. Die echte
+  GPS-Position bleibt unverändert (nur visueller Pixel-Versatz via `setOffset`).
+
+## [0.9.346] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — globale Felder (Urheber, Copyright …).** Neuer Button „✎ Globale
+  Felder" in der Schreib-Sektion öffnet ein Formular für **Urheber, Copyright,
+  Nutzungsbedingungen, Credit, Quelle, Website, E-Mail, Stichwörter**. Die Werte
+  werden **als Profil gespeichert** (einmal setzen, bleibt erhalten) und beim
+  „Taggen schreiben" auf **alle sichtbaren/angehakten Fotos** geschrieben — pro
+  logischem Feld in mehrere Tags (EXIF + IPTC + XMP), damit Lightroom/Apple Fotos
+  sie finden. Pro-Foto-Edits im EXIF-Tab haben Vorrang vor den globalen Werten.
+  Der Schreib-Button ist auch dann aktiv, wenn nur globale Felder gesetzt sind.
+
+## [0.9.345] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — Warnbanner bei ungespeicherten EXIF-Änderungen.** Solange noch
+  nicht geschriebene EXIF-Edits ausstehen, erscheint oben über Fotos/Karte ein
+  kleines gelbes Banner („⚠️ n ungespeicherte EXIF-Änderung(en) in p Foto(s) —
+  beim „Taggen schreiben" sichern"). Verschwindet nach dem Schreiben/Verwerfen.
+
+## [0.9.344] – 2026-06-29
+### Geändert
+- **Geotagger — EXIF-Edits werden jetzt gesammelt statt sofort geschrieben.** Eine
+  Änderung im EXIF-Tab wird als **ausstehend** markiert (gelb + Hinweiszeile mit
+  „verwerfen") und erst beim normalen **„Taggen schreiben"** ins Foto geschrieben —
+  zusammen mit GPS/Adresse/Richtung und **innerhalb desselben ZIP-Backups** (Phase A).
+  So liegt vor jeder Änderung eine Sicherung vor.
+  - Der Schreib-Button ist jetzt auch dann aktiv, wenn **nur** EXIF-Felder bearbeitet
+    wurden (ohne GPS-Match); das Backup deckt diese Fotos mit ab.
+  - Backend: `geotagger_start_write(..., exif_edits)` + Worker-**Phase C** schreibt die
+    gesammelten Feld-Edits; Backup-Pfade = Vereinigung aus GPS- und EXIF-editierten Fotos.
+
+## [0.9.343] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — EXIF-Felder direkt editierbar.** Im EXIF-Tab der Foto-Vorschau
+  kann jetzt **jedes editierbare Feld** angeklickt und direkt geändert werden
+  (Inline-Eingabe + ✓/✕, Enter speichert, Esc bricht ab). Der Wert wird sofort
+  per ExifTool ins Foto geschrieben und zurückgelesen. Leeres Feld = löscht den Tag.
+  Abgeleitete/Datei-Pseudo-Felder (Dateiname, -größe, Bildmaße, ExifTool-Version …)
+  sind bewusst **nicht** editierbar (ausgegraut), weil ExifTool sie nicht schreibt.
+  - Backend: `geotagger_write_exif_tag(path, tag, value)` + `core/exif.write_exif_tag()`
+    / `exif_tag_writable()` (Readonly-Denylist).
+
+## [0.9.342] – 2026-06-29
+### Behoben
+- **Geotagger — EXIF-Tab-Formatierung.** Im EXIF-Tab quetschten lange Tag-Namen
+  (z.B. `ExifToolVersion`, `FileName`) die Wert-Spalte zusammen, sodass selbst
+  kurze Werte wie `13.59` zeichenweise umbrachen. Tabelle nutzt jetzt feste
+  Spaltenbreiten (`table-layout: fixed`, 42 %/58 %), Labels dürfen umbrechen,
+  lange Werte/Pfade brechen sauber statt die Spalte zu sprengen.
+
+## [0.9.341] – 2026-06-29
+### Hinzugefügt
+- **Geotagger — EXIF-Detailansicht in der Karten-Vorschau.** Klick auf ein Foto
+  (Liste oder Karten-Pin) zeigt jetzt im Vorschau-Panel zwei Tabs:
+  - **Info** — wie bisher Zeit/Koordinaten/Adresse + Lichtstempel-Chips, **plus**
+    die wichtigsten Kamera-Daten: Kamera, Objektiv, Brennweite (inkl. KB-Äquivalent),
+    ISO, Belichtungszeit, Blende, Belichtungskorrektur, Blitz.
+  - **EXIF** — kompletter Tag-Dump (alle menschenlesbaren EXIF-/IPTC-/XMP-Tags,
+    Binär-/Vorschaubild-Tags ausgefiltert), scrollbar.
+  - Backend: neue Bridge `geotagger_photo_exif(path)` + `core/exif.read_photo_details()`
+    (ein ExifTool-Read, human-readable, lazy im Frontend gecacht pro Foto).
+  - Identisch in Studio und Standalone-Geotagger.
+
+## [0.9.340] – 2026-06-25
+
+### Geändert
+- **Geotagger-Filter als Leiste oben über den Fotos** (statt unten im Panel) —
+  vertraute Position. Chips für **Alle**, **Im Track**, **Außerhalb Trackzeit**,
+  **Ohne Zeit**, **Mit GPS** + je Kamera ein **📷-Chip** (bei ≥2 Kameras), jeweils
+  mit Anzahl.
+- **Filter wirkt jetzt auch auf die Karte** (echtes WYSIWYG): Wählst du z.B. eine
+  Kamera oder „Außerhalb Trackzeit", zeigt die Karte **nur noch diese Marker** —
+  nicht mehr nur die Thumbnails. Die Übersicht im linken Panel bleibt als reine
+  Zähler-Anzeige.
+
+## [0.9.339] – 2026-06-25
+
+### Hinzugefügt / Geändert
+- **„Nur Fehlendes ergänzen" — der neue Standard beim Schreiben.** Hat ein Foto
+  schon Teile der Daten (z.B. eigenes GPS), bleibt das unangetastet — es wird
+  **nur ergänzt, was fehlt** (Adresse, Blickrichtung, Höhe). Damit lassen sich
+  Handy-Fotos (eigenes GPS, keine Adresse) und Kamera-Fotos (kein GPS) **in einem
+  Rutsch** sauber taggen.
+- **Im Foto gespeicherter Standort hat Vorrang vor der Zeit-Zuordnung.** Trägt ein
+  Foto schon GPS (z.B. „Porto"), wird es **dort** verortet — nicht auf den per
+  Uhrzeit getroffenen Track-Punkt. Die Adresse wird dann aus dem **eigenen**
+  Standort geholt.
+- **Schreib-Modus wählbar** (ersetzt die alte „Überschreiben"-Checkbox):
+  **Behalten, nur Fehlendes ergänzen** (Default) · **Alles überschreiben** ·
+  **Fotos mit GPS ganz auslassen**. Auswahl wird gemerkt.
+
+## [0.9.338] – 2026-06-25
+
+### Hinzugefügt
+- **Adresse automatisch beim Hinzufügen** + **mehrere Anbieter**. Die Adress-Suche
+  läuft jetzt von allein, sobald Fotos zugeordnet sind — kein Extra-Klick nötig
+  (der Button bleibt als „nochmal abrufen"). Sie arbeitet als **3-Stufen-Pyramide**:
+  1 Abfrage auf den Schwerpunkt aller Fotos → **Land**, dann ~1-km-Cluster → **Ort**,
+  dann ~60-m-Cluster → **Straße**. So sind alle Fotos nach wenigen Abfragen grob
+  gefüllt, die Straße tröpfelt nach — das umgeht die Tempolimits der Dienste.
+- **Anbieter-Wahl in den Einstellungen** (⚙ → „Adress-Suche"): **Automatisch**
+  (Mapbox wenn Token, sonst Photon), **Mapbox** (schnell, nutzt vorhandenen Token),
+  **Photon/Komoot** (OSM, kein Token) oder **Nominatim/OpenStreetMap**. Jede Option
+  ist im Dialog erklärt.
+- **Komplett abschaltbar:** Checkbox „Adressen automatisch suchen (online)" — aus
+  = es wird gar nichts ins Internet gefunkt (Adressen dann nur von Hand).
+- Auto-ermittelte Adresse bleibt **pro Foto über ✎ editierbar** (aus v0.9.337).
+
+## [0.9.337] – 2026-06-24
+
+### Hinzugefügt
+- **Interaktiver Aufnahmerichtungs-Kompass auf der Karte.** Wähle ein Foto → es
+  erscheint auf der Karte mit einem Kompass (Foto-Thumbnail in der Mitte). Durch
+  Ziehen am Ring stellst du die **Blickrichtung** ein; das **✕** schaltet die
+  Richtung ab (wenn unbekannt). Eine bereits vorhandene Richtung (Kamera-EXIF
+  oder Reisezoom-Logger) wird angezeigt und ist korrigierbar. Manuell gesetzte
+  Richtungen werden als **GPSImgDirection** ins Foto geschrieben.
+- **Adresssuche (Reverse-Geocoding) → EXIF.** Button „📍 Adressen abrufen" holt
+  per OpenStreetMap/Nominatim für jedes verortete Foto die **komplette Adresse**
+  (Straße, Ort, Bundesland, Land) und schreibt sie als **IPTC + XMP** ins Foto
+  (Lightroom/Apple Fotos lesen das). Gedrosselt + gecacht, kein Token nötig.
+  Die ermittelte Adresse ist **pro Foto editierbar** (✎ im Foto-Popup → Straße/PLZ/
+  Ort/Region/Land anpassen oder von Hand setzen), bevor sie geschrieben wird.
+- **Auswahl, was ins Foto geschrieben wird.** Neue Checkboxen im Schreiben-Bereich:
+  GPS (immer), **Höhe**, **Blickrichtung**, **Adresse** — jede einzeln an/abschaltbar
+  und persistiert.
+- **Web-Tagger** (Browser, JPEG): liest jetzt ebenfalls die geloggte Blickrichtung
+  (`rz:hdg`) aus dem GPX und schreibt sie lokal als GPSImgDirection ins JPEG.
+
+## [0.9.336] – 2026-06-24
+
+### Hinzugefügt
+- **Geloggte Blickrichtung → Foto-EXIF.** Der Geotagger (Studio *und* Standalone)
+  liest jetzt den `rz:`-Erweiterungs-Namespace des Reisezoom-Loggers (Android-App)
+  aus GPX-Tracks. Die geloggte Kamera-Blickrichtung (`rz:hdg`, true north) wird beim
+  Taggen als **GPSImgDirection** ins Foto geschrieben — statt sie nur aus der
+  Bewegungsrichtung zu schätzen.
+  - Prioritäts-Kette für die Blickrichtung: **Kamera-EXIF → geloggtes `rz:hdg` →
+    Bewegungs-Schätzung**. GPSImgDirection wird nur geschrieben, wenn ein echtes
+    geloggtes Heading vorliegt (nie die reine Bewegungs-Schätzung).
+  - Der Richtungs-Chip in der Foto-Liste zeigt die Quelle: „Kamera“, „geloggt“ oder
+    „Bewegung“.
+  - Weitere Logger-Felder (Neigung, Schritte, Umgebungslicht, Luftdruck, Magnetfeld,
+    GPS-Genauigkeit, Akku, Temperatur, Luftfeuchte) werden ebenfalls eingelesen und
+    stehen im Inspektor/Animator als Sensorfelder zur Verfügung.
+
 ## [0.9.335] – 2026-06-24
 
 ### Hinzugefügt

@@ -615,7 +615,8 @@ def read_img_direction(path: str) -> Optional[float]:
 
 def _piexif_write_gps(path: str, lat: float, lon: float,
                       alt: Optional[float] = None,
-                      timestamp_utc: Optional[datetime] = None) -> None:
+                      timestamp_utc: Optional[datetime] = None,
+                      img_direction: Optional[float] = None) -> None:
     try:
         ex = piexif.load(path)
     except Exception:
@@ -638,6 +639,11 @@ def _piexif_write_gps(path: str, lat: float, lon: float,
         gps_ifd[piexif.GPSIFD.GPSTimeStamp] = (
             (t.hour, 1), (t.minute, 1), (t.second, 1),
         )
+
+    if img_direction is not None:
+        d = float(img_direction) % 360.0
+        gps_ifd[piexif.GPSIFD.GPSImgDirectionRef] = b"T"  # T = true north
+        gps_ifd[piexif.GPSIFD.GPSImgDirection] = (int(round(d * 100)), 100)
 
     ex["GPS"] = gps_ifd
     try:
@@ -747,7 +753,8 @@ def _exiftool_read_gps(path: str) -> Optional[tuple[float, float, Optional[float
 
 def _build_gps_write_args(lat: float, lon: float,
                           alt: Optional[float] = None,
-                          timestamp_utc: Optional[datetime] = None) -> list[str]:
+                          timestamp_utc: Optional[datetime] = None,
+                          img_direction: Optional[float] = None) -> list[str]:
     """Baut die `-GPSLatitude=…` Argument-Liste (ohne Pfad + `-overwrite_original`)."""
     args = [
         f"-GPSLatitude={abs(lat)}",
@@ -766,15 +773,22 @@ def _build_gps_write_args(lat: float, lon: float,
             f"-GPSDateStamp={t.strftime('%Y:%m:%d')}",
             f"-GPSTimeStamp={t.strftime('%H:%M:%S')}",
         ]
+    if img_direction is not None:
+        d = float(img_direction) % 360.0
+        args += [
+            f"-GPSImgDirection={d:.2f}",
+            "-GPSImgDirectionRef=T",  # T = true north
+        ]
     return args
 
 
 def _exiftool_write_gps(path: str, lat: float, lon: float,
                         alt: Optional[float] = None,
-                        timestamp_utc: Optional[datetime] = None) -> None:
+                        timestamp_utc: Optional[datetime] = None,
+                        img_direction: Optional[float] = None) -> None:
     """Schreibt GPS-Tags via persistenten exiftool-WRITE-Daemon."""
     daemon = _ensure_write_daemon()
-    args = ["-overwrite_original"] + _build_gps_write_args(lat, lon, alt, timestamp_utc) + [path]
+    args = ["-overwrite_original"] + _build_gps_write_args(lat, lon, alt, timestamp_utc, img_direction) + [path]
     _log.info("exiftool-write args=%s", args)
     ok, msg = daemon.write_args(args)
     _log.info("exiftool-write Ergebnis: ok=%s msg=%r", ok, msg[:300])
@@ -977,7 +991,8 @@ def _exiftool_read_video_meta(path: str) -> dict:
 
 def _exiftool_write_gps_video(path: str, lat: float, lon: float,
                               alt: Optional[float] = None,
-                              timestamp_utc: Optional[datetime] = None) -> None:
+                              timestamp_utc: Optional[datetime] = None,
+                              img_direction: Optional[float] = None) -> None:
     """Schreibt GPS in einen Video-Container (MP4/MOV/Insta360).
 
     Strategie: setze sowohl `Keys:GPSCoordinates` (ISO 6709 String, der von
@@ -1009,6 +1024,12 @@ def _exiftool_write_gps_video(path: str, lat: float, lon: float,
         args += [
             f"-GPSAltitude={abs(alt)}",
             f"-GPSAltitudeRef={'above' if alt >= 0 else 'below'}",
+        ]
+    if img_direction is not None:
+        d = float(img_direction) % 360.0
+        args += [
+            f"-GPSImgDirection={d:.2f}",
+            "-GPSImgDirectionRef=T",
         ]
     args.append(path)
     _log.info("exiftool-write-video args=%s", args)
@@ -1450,39 +1471,217 @@ def _read_gps_raw(path: str) -> Optional[tuple[float, float, Optional[float]]]:
 
 def write_gps(path: str, lat: float, lon: float,
               alt: Optional[float] = None,
-              timestamp_utc: Optional[datetime] = None) -> None:
+              timestamp_utc: Optional[datetime] = None,
+              img_direction: Optional[float] = None) -> None:
+    # img_direction (v0.9.336): Kamera-Blickrichtung in Grad (0=N, true north),
+    # z.B. aus dem Reisezoom-Logger (rz:hdg). Wird als GPSImgDirection +
+    # GPSImgDirectionRef='T' geschrieben. None = Tag nicht anfassen.
     # v0.9.152: ausführliches Logging, um „taggen geht nicht" zu diagnostizieren.
-    _log.info("write_gps: path=%s lat=%s lon=%s alt=%s ts=%s | jpeg=%s tiff=%s heif=%s raw=%s video=%s",
-              path, lat, lon, alt, timestamp_utc,
+    _log.info("write_gps: path=%s lat=%s lon=%s alt=%s ts=%s dir=%s | jpeg=%s tiff=%s heif=%s raw=%s video=%s",
+              path, lat, lon, alt, timestamp_utc, img_direction,
               is_jpeg_like(path), is_tiff(path), is_heif(path), is_raw(path), is_video(path))
     if is_jpeg_like(path):
-        _piexif_write_gps(path, lat, lon, alt, timestamp_utc)
+        _piexif_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
         _log.info("write_gps: piexif-Pfad fertig für %s", path)
         return
     # v0.9.154: TIFF — piexif.insert() kann KEIN TIFF (InvalidImageDataError),
     # deshalb exiftool (wie RAW). exiftool schreibt TIFF-EXIF nativ.
     if is_tiff(path):
-        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc)
+        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
         _log.info("write_gps: tiff/exiftool-Pfad fertig für %s", path)
         return
     # v0.9.57: HEIC/HEIF — pillow-heif kann nicht schreiben, deshalb exiftool
     # (= einzige Option). Wenn exiftool fehlt, ExifToolMissingError mit Hinweis.
     if is_heif(path):
-        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc)
+        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
         _log.info("write_gps: heif/exiftool-Pfad fertig für %s", path)
         return
     if is_raw(path):
-        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc)
+        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
         _log.info("write_gps: raw/exiftool-Pfad fertig für %s", path)
         return
     if is_video(path):
-        _exiftool_write_gps_video(path, lat, lon, alt, timestamp_utc)
+        _exiftool_write_gps_video(path, lat, lon, alt, timestamp_utc, img_direction)
         _log.info("write_gps: video/exiftool-Pfad fertig für %s", path)
         return
     # Unbekannte Endung: erstmal piexif probieren, sonst exiftool
     _log.warning("write_gps: unbekannte Endung %s — versuche piexif, sonst exiftool", path)
     try:
-        _piexif_write_gps(path, lat, lon, alt, timestamp_utc)
+        _piexif_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
     except Exception as e:
         _log.warning("write_gps: piexif-Fallback fehlgeschlagen (%s) → exiftool", e)
-        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc)
+        _exiftool_write_gps(path, lat, lon, alt, timestamp_utc, img_direction)
+
+
+def write_location(path: str, address: dict) -> None:
+    """v0.9.337 — Schreibt die Reverse-Geocoding-Adresse als IPTC + XMP in ein Foto/Video.
+
+    `address`: flaches Dict aus core.geocode (`street/city/state/country/country_code`).
+    Immer via exiftool (schreibt IPTC/XMP auch in JPEG — piexif kann das nicht).
+    Setzt sowohl die klassischen IPTC-Location-Tags (Lightroom/Photo Mechanic) als
+    auch die modernen XMP-photoshop/XMP-iptcExt-Felder (Apple Fotos, Lightroom CC).
+    Felder ohne Wert werden übersprungen (kein Leer-Tag). Wirft bei exiftool-Fehler.
+    """
+    street = (address.get("street") or "").strip()
+    city = (address.get("city") or "").strip()
+    state = (address.get("state") or "").strip()
+    country = (address.get("country") or "").strip()
+    ccode = (address.get("country_code") or "").strip()
+
+    args: list[str] = ["-overwrite_original"]
+
+    def _set(tag: str, value: str) -> None:
+        if value:
+            args.append(f"-{tag}={value}")
+
+    # Klassisch IPTC (IIM)
+    _set("IPTC:City", city)
+    _set("IPTC:Province-State", state)
+    _set("IPTC:Country-PrimaryLocationName", country)
+    _set("IPTC:Country-PrimaryLocationCode", ccode)
+    _set("IPTC:Sub-location", street)
+    # XMP-photoshop (Lightroom-Standard)
+    _set("XMP-photoshop:City", city)
+    _set("XMP-photoshop:State", state)
+    _set("XMP-photoshop:Country", country)
+    _set("XMP-iptcCore:CountryCode", ccode)
+    _set("XMP-iptcCore:Location", street)
+    # XMP-iptcExt LocationShown (modern, Apple Fotos)
+    _set("XMP-iptcExt:LocationShownCity", city)
+    _set("XMP-iptcExt:LocationShownProvinceState", state)
+    _set("XMP-iptcExt:LocationShownCountryName", country)
+    _set("XMP-iptcExt:LocationShownCountryCode", ccode)
+    _set("XMP-iptcExt:LocationShownSublocation", street)
+
+    if len(args) <= 1:
+        _log.info("write_location: keine Adressfelder für %s — übersprungen", path)
+        return
+
+    daemon = _ensure_write_daemon()
+    args.append(path)
+    _log.info("write_location: %s (%d Tags)", path, len(args) - 2)
+    ok, msg = daemon.write_args(args)
+    if not ok:
+        raise RuntimeError(f"exiftool (location) fehlgeschlagen: {msg[:300]}")
+
+
+def read_location(path: str) -> dict:
+    """v0.9.339 — Liest vorhandene Orts-Tags (IPTC/XMP). {} wenn keine.
+    Für den „nur Fehlendes ergänzen"-Modus: hat das Foto schon eine Adresse?"""
+    try:
+        info = _ensure_daemon().read_tags_json(path, [
+            "IPTC:City", "XMP-photoshop:City", "XMP-iptcExt:LocationShownCity",
+            "IPTC:Country-PrimaryLocationName", "XMP-photoshop:Country",
+            "XMP-iptcExt:LocationShownCountryName",
+        ], numeric=False) or {}
+    except Exception:
+        return {}
+    city = info.get("City") or info.get("LocationShownCity") or ""
+    country = info.get("Country") or info.get("LocationShownCountryName") or ""
+    return {"city": str(city).strip(), "country": str(country).strip()}
+
+
+def has_location(path: str) -> bool:
+    """True, wenn das Foto bereits eine Stadt ODER ein Land eingetragen hat."""
+    a = read_location(path)
+    return bool(a.get("city") or a.get("country"))
+
+
+# v0.9.341 — Foto-Detail-EXIF für die Karten-Vorschau (Info-Tab + voller EXIF-Tab).
+_PHOTO_BINARY_TAGS = {
+    "ThumbnailImage", "PreviewImage", "JpgFromRaw", "OtherImage", "ThumbnailTIFF",
+    "PhotoshopThumbnail", "DataDump", "RawThumbnail", "BigImage",
+}
+
+
+def read_photo_details(path: str) -> dict:
+    """Liest umfangreiche EXIF-Daten für die Foto-Vorschau im Geotagger:
+      {"key": {camera, lens, focal, focal35, iso, shutter, aperture, …},
+       "all": {Tag: Wert, …}}   ← ALLE menschenlesbaren Tags, Binär/Bild rausgefiltert.
+    Ein exiftool-Aufruf (human-readable), damit z.B. ExposureTime „1/200" bleibt."""
+    try:
+        info = _ensure_daemon().read_tags_json(path, [], numeric=False) or {}
+    except Exception:
+        info = {}
+
+    def g(*names):
+        for n in names:
+            v = info.get(n)
+            if v not in (None, "", []):
+                return str(v).strip()
+        return ""
+
+    make, model = g("Make"), g("Model")
+    if model and make and make.split()[0].lower() in model.lower():
+        camera = model
+    else:
+        camera = (make + " " + model).strip()
+    fnum = g("FNumber", "ApertureValue")
+    aperture = ("" if not fnum else (fnum if str(fnum).lower().startswith("f") else f"f/{fnum}"))
+    key = {
+        "camera": camera,
+        "lens": g("LensModel", "LensID", "Lens", "LensInfo", "LensType"),
+        "focal": g("FocalLength"),
+        "focal35": g("FocalLengthIn35mmFormat"),
+        "iso": g("ISO", "ISOSpeed"),
+        "shutter": g("ExposureTime", "ShutterSpeedValue", "ShutterSpeed"),
+        "aperture": aperture,
+        "exposure_comp": g("ExposureCompensation"),
+        "flash": g("Flash"),
+    }
+
+    all_tags = {}
+    for k, v in info.items():
+        if k == "SourceFile" or k in _PHOTO_BINARY_TAGS:
+            continue
+        sv = str(v)
+        low = sv.lower()
+        if len(sv) > 220 or "use -b" in low or "binary data" in low:
+            continue
+        all_tags[k] = sv
+    return {"key": key, "all": all_tags}
+
+
+def write_img_direction(path: str, deg: float) -> None:
+    """v0.9.339 — Schreibt NUR die Blickrichtung (GPSImgDirection + Ref='T'),
+    ohne die vorhandenen GPS-Koordinaten anzufassen. Für „nur Fehlendes ergänzen":
+    Foto hat eigenes GPS, soll aber eine Richtung dazubekommen."""
+    d = float(deg) % 360.0
+    daemon = _ensure_write_daemon()
+    args = ["-overwrite_original",
+            f"-GPSImgDirection={d:.2f}", "-GPSImgDirectionRef=T", path]
+    ok, msg = daemon.write_args(args)
+    if not ok:
+        raise RuntimeError(f"exiftool (img_direction) fehlgeschlagen: {msg[:300]}")
+
+
+# v0.9.343 — beliebiges EXIF-Feld direkt editieren (Geotagger-Vorschau, EXIF-Tab).
+# Pseudo-/abgeleitete/Datei-Tags sind NICHT beschreibbar (von exiftool berechnet
+# oder Dateisystem) → vorne abfangen, sonst meldet exiftool kryptische Fehler.
+_EXIF_TAG_READONLY = frozenset({
+    "ExifToolVersion", "FileName", "Directory", "FileSize", "FileModifyDate",
+    "FileAccessDate", "FileInodeChangeDate", "FilePermissions", "FileType",
+    "FileTypeExtension", "MIMEType", "ExifByteOrder", "ImageWidth", "ImageHeight",
+    "ImageSize", "Megapixels", "EncodingProcess", "BitsPerSample",
+    "ColorComponents", "YCbCrSubSampling", "IPTCDigest", "CurrentIPTCDigest",
+    "ThumbnailLength", "ThumbnailOffset", "SourceFile",
+})
+
+
+def exif_tag_writable(tag: str) -> bool:
+    """True, wenn `tag` ein editierbares EXIF-Feld ist (nicht abgeleitet/Datei-Pseudo)."""
+    return bool(tag) and tag not in _EXIF_TAG_READONLY
+
+
+def write_exif_tag(path: str, tag: str, value: str) -> None:
+    """v0.9.343 — Setzt EIN beliebiges EXIF-Feld auf `value` (leer = löschen).
+    Wirft RuntimeError, wenn das Tag nicht beschreibbar ist oder exiftool meckert."""
+    tag = (tag or "").strip()
+    if not exif_tag_writable(tag):
+        raise RuntimeError(f"Feld „{tag}“ ist nicht editierbar (abgeleitet/Datei-Feld).")
+    val = "" if value is None else str(value)
+    daemon = _ensure_write_daemon()
+    args = ["-overwrite_original", f"-{tag}={val}", path]
+    ok, msg = daemon.write_args(args)
+    if not ok:
+        raise RuntimeError(f"exiftool ({tag}) fehlgeschlagen: {msg[:300]}")

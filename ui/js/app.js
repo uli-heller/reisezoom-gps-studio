@@ -130,6 +130,9 @@ async function openSettingsModal() {
   // v0.9.247 — OSM-Modus erzwingen (Test)
   const forceOsm = !!(_settingsCache && _settingsCache.force_osm);
   const hasTok = !!(currentTok && currentTok.startsWith("pk."));
+  // v0.9.338 — Adress-Suche (Geotagger Reverse-Geocoding)
+  const geoEnabled = !(_settingsCache && _settingsCache.geocode_enabled === false);
+  const geoProvider = (_settingsCache && _settingsCache.geocode_provider) || "auto";
   // v0.9.287 — Eigene Standardwerte für neue Tracks (Marc-Wunsch)
   const udInfo = await api().get_user_defaults_info().catch(() => ({ has_custom: false }));
 
@@ -160,6 +163,29 @@ async function openSettingsModal() {
           <span>${t("settings.force_osm.label")}</span>
         </label>
         <p class="muted" style="margin-top:2px; font-size:11px; line-height:1.5; padding-left:24px;">${t("settings.force_osm.help")}</p>
+      </div>
+
+      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border);">
+        <p class="muted" style="margin-bottom:6px; font-weight:600; color:var(--text);">${t("settings.geocode.title", "Adress-Suche (Geotagger)")}</p>
+        <p class="muted" style="font-size:11px; line-height:1.5; margin-bottom:10px;">${t("settings.geocode.intro", "Beim Taggen kann die App zu jedem Foto-Standort die Adresse (Ort, Land, Straße) ermitteln und ins Foto schreiben. Das fragt online bei einem Karten-Dienst an.")}</p>
+        <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer;">
+          <input type="checkbox" id="md-geo-enabled" ${geoEnabled ? "checked" : ""}>
+          <span>${t("settings.geocode.enabled", "Adressen automatisch suchen (online)")}</span>
+        </label>
+        <p class="muted" style="margin:2px 0 10px; font-size:11px; line-height:1.5; padding-left:24px;">${t("settings.geocode.enabled_help", "Aus = es wird gar nichts ins Internet gefunkt. Du kannst Adressen dann nur von Hand eintippen.")}</p>
+        <label class="field-label" for="md-geo-provider" style="font-size:12px;">${t("settings.geocode.provider", "Anbieter")}</label>
+        <select id="md-geo-provider" style="width:100%;" ${geoEnabled ? "" : "disabled"}>
+          <option value="auto"${geoProvider === "auto" ? " selected" : ""}>${t("settings.geocode.prov_auto", "Automatisch (empfohlen)")}</option>
+          <option value="mapbox"${geoProvider === "mapbox" ? " selected" : ""}>${t("settings.geocode.prov_mapbox", "Mapbox (schnell, braucht Token)")}</option>
+          <option value="photon"${geoProvider === "photon" ? " selected" : ""}>${t("settings.geocode.prov_photon", "Photon / Komoot (OSM, kein Token)")}</option>
+          <option value="nominatim"${geoProvider === "nominatim" ? " selected" : ""}>${t("settings.geocode.prov_nominatim", "Nominatim / OpenStreetMap (kein Token, langsam)")}</option>
+        </select>
+        <div class="muted" style="font-size:11px; line-height:1.6; margin-top:8px;">
+          <p style="margin:0 0 4px;"><b>${t("settings.geocode.prov_auto", "Automatisch")}:</b> ${t("settings.geocode.help_auto", "nimmt Mapbox, wenn oben ein Token hinterlegt ist, sonst Photon. Für die meisten die beste Wahl.")}</p>
+          <p style="margin:0 0 4px;"><b>Mapbox:</b> ${t("settings.geocode.help_mapbox", "am schnellsten (~10 Abfragen/Sek, 100k/Monat gratis). Nutzt deinen Mapbox-Token von oben.")}</p>
+          <p style="margin:0 0 4px;"><b>Photon:</b> ${t("settings.geocode.help_photon", "OpenStreetMap-Daten über Komoot, kein Token nötig, recht flott.")}</p>
+          <p style="margin:0;"><b>Nominatim:</b> ${t("settings.geocode.help_nominatim", "direkt von OpenStreetMap, kein Token, aber nur ~1 Abfrage/Sekunde — bei vielen Fotos langsamer.")}</p>
+        </div>
       </div>
 
       <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border);">
@@ -284,6 +310,12 @@ async function openSettingsModal() {
   if (_jqSl) _jqSl.oninput = () => { const v = document.getElementById("md-rq-jq-val"); if (v) v.textContent = _jqSl.value; };
   const _crfSl = document.getElementById("md-rq-crf");
   if (_crfSl) _crfSl.oninput = () => { const v = document.getElementById("md-rq-crf-val"); if (v) v.textContent = _crfSl.value; };
+  // v0.9.338 — Adress-Suche: Provider-Dropdown nur aktiv wenn eingeschaltet
+  const _geoEn = document.getElementById("md-geo-enabled");
+  if (_geoEn) _geoEn.onchange = () => {
+    const sel = document.getElementById("md-geo-provider");
+    if (sel) sel.disabled = !_geoEn.checked;
+  };
 
   document.getElementById("md-cancel-set").onclick = () => openModal({}).close();
   document.getElementById("md-ok-set").onclick = async () => {
@@ -319,6 +351,12 @@ async function openSettingsModal() {
       frame_format: rqFmt, jpeg_quality: rqJq, codec: rqCodec, crf: rqCrf, encoder_preset: rqPreset,
     });
     if (renderChanged) patch.render = newRender;
+
+    // v0.9.338 — Adress-Suche
+    const newGeoEnabled = !!document.getElementById("md-geo-enabled")?.checked;
+    const newGeoProvider = document.getElementById("md-geo-provider")?.value || "auto";
+    if (newGeoEnabled !== geoEnabled) patch.geocode_enabled = newGeoEnabled;
+    if (newGeoProvider !== geoProvider) patch.geocode_provider = newGeoProvider;
 
     if (Object.keys(patch).length === 0) {
       openModal({}).close();

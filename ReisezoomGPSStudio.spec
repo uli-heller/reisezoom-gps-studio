@@ -135,6 +135,7 @@ if _sys.platform == "darwin":
         "AppKit",
         "WebKit",
         "objc",
+        "Vision",   # v0.9.349 — Auto-Tag/Bilderkennung (lazy import in core/autotag.py)
     ]
 elif _sys.platform == "win32":
     hidden += [

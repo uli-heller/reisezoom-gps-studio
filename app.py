@@ -75,6 +75,8 @@ from core import imports as cimports  # v0.9.282: universelle Track-Import-Schic
 from core import exif as cexif
 from core import geotag as cgeo
 from core import sun as csun  # v0.9.333 — Sonnenstand + Blickrichtung (Lichtstempel)
+from core import geocode as cgeocode  # v0.9.337 — Reverse-Geocoding (Adresse) via OSM
+from core import autotag as cautotag  # v0.9.349 — Bilderkennung (Apple Vision, nur macOS)
 from core import backup as cbak
 from core import animator as canim
 from core import sessions as _sessions  # v0.8.0: Sessions + Projekte
@@ -127,7 +129,7 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.335"
+APP_VERSION = "0.9.354"
 
 # ── Edition (v0.9.331) ───────────────────────────────────────────────────────
 # Dieselbe Codebasis liefert zwei Apps:
@@ -222,6 +224,12 @@ DEFAULT_SETTINGS = {
     # v0.9.247 — OSM-Modus erzwingen (Test): App läuft als hätte sie keinen
     # Token; der gespeicherte Token bleibt aber erhalten.
     "force_osm": False,
+    # v0.9.338 — Adress-Suche (Reverse-Geocoding) im Geotagger
+    "geocode_enabled": True,       # False = gar nicht ins Netz funken
+    "geocode_provider": "auto",    # auto|mapbox|photon|nominatim (auto: Mapbox wenn Token, sonst Photon)
+    # v0.9.348 — globale EXIF-Felder (Urheber/Copyright/…) als Profil über Sessions
+    # hinweg gespeichert. Logische Keys → siehe _GT_GLOBAL_FIELDS im Geotagger-UI.
+    "geotagger_global_exif": {},
     "onboarding_done": False,      # First-Run-Modal nicht mehr zeigen
     # v0.9.27 (Nutzer-Feedback): letzten GPX-Pfad über App-Restart persistieren
     "last_gpx_path": "",
@@ -345,7 +353,8 @@ DEFAULT_SETTINGS = {
         "photos_show": True,
     },
     "geotagger": {
-        "offset_seconds": 0,                # Slider-Wert (-43200..+43200)
+        "offset_seconds": 0,                # Slider-Wert (-43200..+43200) — globaler Default
+        "cam_offsets": {},                  # v0.9.354 — {Kamera-Modell: Offset-Sek} Override pro Kamera
         "tz_offset_minutes": 0,             # v0.9.177 — Kamera-Zeitzone (UTC±, Minuten);
                                             # nur für Fotos OHNE eingebetteten TZ-Offset
         "make_backup": True,
@@ -738,6 +747,17 @@ class Api:
             "backup_path": None, "completed": False, "cancel": False,
         }
         self._write_lock = threading.Lock()
+        # v0.9.337 — Reverse-Geocoding (Adresse) im Hintergrund
+        self._geo_lock = threading.Lock()
+        self._geo_state = {"running": False, "total": 0, "done": 0,
+                           "completed": False, "results": {}}
+        self._geo_worker = None
+        # v0.9.349 — Bilderkennung / Auto-Tag (Apple Vision, nur macOS)
+        self._autotag_lock = threading.Lock()
+        self._autotag_state = {"running": False, "total": 0, "done": 0,
+                               "completed": False, "cancel": False,
+                               "results": {}, "error": ""}
+        self._autotag_worker = None
 
     def set_window(self, win: webview.Window) -> None:
         self._window = win
@@ -3555,8 +3575,23 @@ class Api:
         except Exception as e:
             return {"ok": False, "error": str(e), "trace": traceback.format_exc()}
 
+    def _build_offset_by_path(self, cam_offsets) -> dict:
+        """v0.9.354 — baut aus {Kamera: Offset-Sekunden} eine {Pfad: Offset}-Map für
+        die aktuell geladenen Fotos. Kamera-Key '—' für Fotos ohne Modell (wie im UI)."""
+        out: dict = {}
+        if not isinstance(cam_offsets, dict) or not cam_offsets:
+            return out
+        for p in self._gtg_photos:
+            cam = p.get("camera") or "—"
+            if cam in cam_offsets:
+                try:
+                    out[p["path"]] = float(cam_offsets[cam])
+                except (TypeError, ValueError):
+                    pass
+        return out
+
     def geotagger_match(self, offset_seconds: float = 0.0, max_gap_seconds: float = 600.0,
-                        tz_offset_minutes: float = 0.0) -> dict:
+                        tz_offset_minutes: float = 0.0, cam_offsets=None) -> dict:
         """Berechnet die GPS-Position für jedes geladene Foto basierend auf Offset.
 
         tz_offset_minutes (v0.9.177): Zeitzone der Kamera-Uhr (UTC±, in Minuten).
@@ -3570,13 +3605,28 @@ class Api:
                     datetime.fromisoformat(p["photo_time"]) if p["photo_time"] else None)
                    for p in self._gtg_photos]
             tz_known_paths = {p["path"] for p in self._gtg_photos if p.get("tz_known")}
+            offset_by_path = self._build_offset_by_path(cam_offsets)
             matches = cgeo.match_photos(phs, self._gtg_track,
                                         offset_seconds=offset_seconds,
                                         max_gap_seconds=max_gap_seconds,
                                         tz_offset_seconds=float(tz_offset_minutes) * 60.0,
-                                        tz_known_paths=tz_known_paths)
+                                        tz_known_paths=tz_known_paths,
+                                        offset_by_path=offset_by_path)
             out = []
             for p, m in zip(self._gtg_photos, matches):
+                # v0.9.339 — Hat das Foto schon eigenes GPS, hat DAS Vorrang vor der
+                # Zeit-Zuordnung: Position = eigenes GPS, immer „platzierbar". Die
+                # Zeit-Zuordnung (track_index, matched_time) bleibt nur als Info für
+                # Richtung/Lichtstempel erhalten.
+                eg = p.get("existing_gps")
+                pos_src = "track"
+                if eg and eg.get("lat") is not None and eg.get("lon") is not None:
+                    m.lat = eg["lat"]
+                    m.lon = eg["lon"]
+                    if eg.get("alt") is not None:
+                        m.alt = eg["alt"]
+                    m.in_range = True
+                    pos_src = "exif"
                 d = {
                     "path": p["path"],
                     "name": p["name"],
@@ -3587,6 +3637,7 @@ class Api:
                     "time_delta_s": m.time_delta_s,
                     "in_range": m.in_range,
                     "existing_gps": p["existing_gps"],
+                    "pos_src": pos_src,
                 }
                 # v0.9.333 — Lichtstempel + Blickrichtung (Sonnenstand aus GPS+Zeit,
                 # Kamerarichtung aus EXIF oder Bewegung). Nur für echte Treffer.
@@ -3609,18 +3660,31 @@ class Api:
                     p["img_dir"] = cexif.read_img_direction(p["path"])
                 except Exception:
                     p["img_dir"] = None
+            # Priorität: 1) Kamera-EXIF (GPSImgDirection), 2) geloggte Blickrichtung
+            # aus dem Reisezoom-Logger (rz:hdg → extra["heading"], true north),
+            # 3) Bewegungsrichtung aus den Track-Nachbarpunkten (Schätzung).
             direction, dsrc = p.get("img_dir"), None
             if direction is not None:
                 dsrc = "exif"
             elif m.track_index is not None and self._gtg_track:
                 tr = self._gtg_track
                 i = m.track_index
-                if i + 1 < len(tr) and (tr[i + 1].lat != tr[i].lat or tr[i + 1].lon != tr[i].lon):
-                    direction = csun.bearing(tr[i].lat, tr[i].lon, tr[i + 1].lat, tr[i + 1].lon)
-                    dsrc = "move"
-                elif i - 1 >= 0 and (tr[i - 1].lat != tr[i].lat or tr[i - 1].lon != tr[i].lon):
-                    direction = csun.bearing(tr[i - 1].lat, tr[i - 1].lon, tr[i].lat, tr[i].lon)
-                    dsrc = "move"
+                logged = None
+                if 0 <= i < len(tr):
+                    logged = tr[i].extra.get("heading")
+                if logged is not None:
+                    try:
+                        direction = float(logged) % 360.0
+                        dsrc = "logged"
+                    except (TypeError, ValueError):
+                        direction = None
+                if direction is None:
+                    if i + 1 < len(tr) and (tr[i + 1].lat != tr[i].lat or tr[i + 1].lon != tr[i].lon):
+                        direction = csun.bearing(tr[i].lat, tr[i].lon, tr[i + 1].lat, tr[i + 1].lon)
+                        dsrc = "move"
+                    elif i - 1 >= 0 and (tr[i - 1].lat != tr[i].lat or tr[i - 1].lon != tr[i].lon):
+                        direction = csun.bearing(tr[i - 1].lat, tr[i - 1].lon, tr[i].lat, tr[i].lon)
+                        dsrc = "move"
             # Sonnenstand → Lichtphase
             alt, az = csun.sun_position(m.matched_time_utc, m.lat, m.lon)
             d["sun_alt"] = round(alt, 1)
@@ -3649,6 +3713,202 @@ class Api:
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
+    # ── Geotagger: Reverse-Geocoding (Adresse) ───────────────────────────────
+    #
+    # Nominatim drosselt auf ~1 Anfrage/Sekunde → Background-Thread + Polling,
+    # damit die UI nicht einfriert. Ergebnisse pro Pfad als Adress-Dict.
+
+    def geotagger_reverse_geocode_start(self, items: list[dict], lang: str = "de") -> dict:
+        """Startet das Adress-Lookup für `items` ([{path, lat, lon}]) als 3-Stufen-
+        Pyramide im Hintergrund: Schwerpunkt→Land (1 Call), ~1-km-Cluster→Ort,
+        ~60-m-Cluster→Straße. So sind alle Fotos nach wenigen Calls grob gefüllt,
+        die Straße tröpfelt nach. Anbieter/an-aus kommen aus den Settings."""
+        s = _load_settings()
+        if not s.get("geocode_enabled", True):
+            return {"ok": False, "error": "Adress-Suche ist in den Einstellungen deaktiviert",
+                    "disabled": True}
+        raw_token = (s.get("mapbox_token") or "").strip()  # bewusst unabhängig von force_osm (= nur Karten-Tiles)
+        provider = cgeocode.resolve_provider(s.get("geocode_provider", "auto"), raw_token)
+        if not provider:
+            return {"ok": False, "error": "Kein Adress-Anbieter aktiv", "disabled": True}
+
+        with self._geo_lock:
+            if self._geo_state.get("running"):
+                return {"ok": False, "error": "Adress-Lookup läuft bereits"}
+            todo = [it for it in (items or [])
+                    if it.get("lat") is not None and it.get("lon") is not None and it.get("path")]
+            if not todo:
+                return {"ok": False, "error": "Keine Fotos mit Koordinaten"}
+            gen = self._geo_gen = self._geo_gen + 1 if hasattr(self, "_geo_gen") else 1
+            # Call-Plan vorab zählen für die Fortschrittsanzeige
+            pts = [(i, float(it["lat"]), float(it["lon"])) for i, it in enumerate(todo)]
+            cells_city = cgeocode.cluster(pts, 1000.0)
+            cells_street = cgeocode.cluster(pts, 60.0)
+            total_calls = 1 + len(cells_city) + len(cells_street)
+            self._geo_state = {"running": True, "total": total_calls, "done": 0,
+                               "completed": False, "results": {}, "provider": provider}
+
+        def _superseded():
+            return getattr(self, "_geo_gen", gen) != gen
+
+        def _rev(lat, lon, zoom):
+            return cgeocode.reverse(lat, lon, provider=provider, mapbox_token=raw_token,
+                                    lang=lang, zoom=zoom)
+
+        def _bump(results):
+            with self._geo_lock:
+                self._geo_state["done"] = self._geo_state.get("done", 0) + 1
+                self._geo_state["results"] = {p: dict(a) for p, a in results.items()}
+
+        def _overlay(results, member_idxs, addr, fields):
+            if not addr:
+                return
+            for idx in member_idxs:
+                path = todo[idx]["path"]
+                dst = results.setdefault(path, {})
+                for f in fields:
+                    v = addr.get(f)
+                    if v:
+                        dst[f] = v
+                dst["country_code"] = addr.get("country_code", dst.get("country_code", ""))
+                dst["display"] = ", ".join(x for x in (
+                    dst.get("street"),
+                    (f'{dst.get("postcode","")} {dst.get("city","")}'.strip() if dst.get("postcode") else dst.get("city")),
+                    dst.get("country")) if x and x.strip())
+
+        def _run():
+            results: dict = {}
+            try:
+                # Stufe 0 — Land/Region (1 Call auf den Schwerpunkt aller Fotos)
+                clat = sum(p[1] for p in pts) / len(pts)
+                clon = sum(p[2] for p in pts) / len(pts)
+                _overlay(results, [p[0] for p in pts], _rev(clat, clon, 5),
+                         ["country", "state"])
+                _bump(results)
+                if _superseded():
+                    return
+                # Stufe 1 — Ort (1 Call je ~1-km-Cluster)
+                for c in cells_city.values():
+                    if _superseded():
+                        return
+                    _overlay(results, c["members"], _rev(c["lat"], c["lon"], 10),
+                             ["city", "state", "country", "postcode"])
+                    _bump(results)
+                # Stufe 2 — Straße (1 Call je ~60-m-Cluster)
+                for c in cells_street.values():
+                    if _superseded():
+                        return
+                    _overlay(results, c["members"], _rev(c["lat"], c["lon"], 18),
+                             ["street", "postcode", "city", "state", "country"])
+                    _bump(results)
+            except Exception:
+                log.exception("reverse_geocode-Pyramide fehlgeschlagen")
+            finally:
+                with self._geo_lock:
+                    if not _superseded():
+                        self._geo_state["running"] = False
+                        self._geo_state["completed"] = True
+                log.info("reverse_geocode (%s): fertig, %d Adressen", provider, len(results))
+
+        self._geo_worker = threading.Thread(target=_run, daemon=True)
+        self._geo_worker.start()
+        return {"ok": True, "total": total_calls, "provider": provider}
+
+    def geotagger_reverse_geocode_status(self) -> dict:
+        """Polling-Endpoint für das Adress-Lookup."""
+        with self._geo_lock:
+            return dict(self._geo_state)
+
+    def geotagger_photo_exif(self, path: str) -> dict:
+        """v0.9.341 — Volle EXIF-Daten eines Fotos für die Karten-Vorschau
+        (Info-Tab Key-Felder + EXIF-Tab mit allen Tags). v0.9.343: `readonly`-Liste
+        markiert nicht-editierbare (abgeleitete/Datei-)Tags fürs Frontend."""
+        try:
+            d = cexif.read_photo_details(path)
+            ro = [k for k in (d.get("all") or {}) if not cexif.exif_tag_writable(k)]
+            return {"ok": True, "readonly": ro, **d}
+        except Exception as e:
+            log.exception("geotagger_photo_exif fehlgeschlagen: %s", path)
+            return {"ok": False, "error": str(e), "key": {}, "all": {}, "readonly": []}
+
+    # ── Auto-Tag / Bilderkennung (Apple Vision, nur macOS) ─────────────────
+    def autotag_available(self) -> bool:
+        """True, wenn die Bilderkennung auf diesem System läuft (macOS + Vision)."""
+        try:
+            return bool(cautotag.is_available())
+        except Exception:
+            return False
+
+    def geotagger_autotag_start(self, paths: list, max_tags: int = 8,
+                                min_conf: float = 0.25) -> dict:
+        """Startet die Bilderkennung für `paths` in einem Hintergrund-Thread.
+        Ergebnisse (path → [keyword,…]) werden per `geotagger_autotag_status`
+        abgeholt. Nur macOS — sonst {ok:False}."""
+        if not self.autotag_available():
+            return {"ok": False, "error": "Bilderkennung nur auf macOS verfügbar"}
+        with self._autotag_lock:
+            if self._autotag_state.get("running"):
+                return {"ok": False, "error": "Bilderkennung läuft bereits"}
+        items = [p for p in (paths or []) if p]
+        if not items:
+            return {"ok": False, "error": "Keine Fotos"}
+        with self._autotag_lock:
+            self._autotag_state = {"running": True, "total": len(items), "done": 0,
+                                   "completed": False, "cancel": False,
+                                   "results": {}, "error": ""}
+        self._autotag_worker = threading.Thread(
+            target=self._autotag_worker_run, args=(items, int(max_tags), float(min_conf)),
+            daemon=True)
+        self._autotag_worker.start()
+        log.info("geotagger_autotag_start: %d Fotos", len(items))
+        return {"ok": True, "total": len(items)}
+
+    def _autotag_worker_run(self, items: list, max_tags: int, min_conf: float) -> None:
+        for idx, path in enumerate(items):
+            with self._autotag_lock:
+                if self._autotag_state.get("cancel"):
+                    break
+            try:
+                kws = cautotag.suggest_keywords(path, max_tags=max_tags,
+                                                min_conf=min_conf, lang="de")
+            except Exception as e:
+                kws = []
+                log.exception("autotag: %s fehlgeschlagen", path)
+                with self._autotag_lock:
+                    self._autotag_state["error"] = str(e)
+            with self._autotag_lock:
+                if kws:
+                    self._autotag_state["results"][path] = kws
+                self._autotag_state["done"] = idx + 1
+        with self._autotag_lock:
+            self._autotag_state["running"] = False
+            self._autotag_state["completed"] = True
+        log.info("autotag: fertig — %d/%d mit Tags",
+                 len(self._autotag_state.get("results", {})), len(items))
+
+    def geotagger_autotag_status(self) -> dict:
+        with self._autotag_lock:
+            return dict(self._autotag_state)
+
+    def geotagger_autotag_cancel(self) -> dict:
+        with self._autotag_lock:
+            if self._autotag_state.get("running"):
+                self._autotag_state["cancel"] = True
+                return {"ok": True}
+            return {"ok": False}
+
+    def geotagger_write_exif_tag(self, path: str, tag: str, value: str) -> dict:
+        """v0.9.343 — Ein EXIF-Feld direkt aus der Vorschau editieren. Schreibt den
+        Wert ins Foto und liefert die frisch gelesenen EXIF-Daten zurück."""
+        try:
+            cexif.write_exif_tag(path, tag, value)
+            d = cexif.read_photo_details(path)
+            ro = [k for k in (d.get("all") or {}) if not cexif.exif_tag_writable(k)]
+            return {"ok": True, "readonly": ro, **d}
+        except Exception as e:
+            log.exception("geotagger_write_exif_tag fehlgeschlagen: %s %s", path, tag)
+            return {"ok": False, "error": str(e)}
+
     # ── Geotagger: Async-Write ───────────────────────────────────────────────
     #
     # Schreiben war ein Blocker: bei vielen RAWs ohne Daemon ~1 s pro Foto.
@@ -3660,8 +3920,16 @@ class Api:
                               overwrite_existing: bool = False,
                               adjust_photo_time: bool = False,
                               offset_seconds: float = 0.0,
-                              set_time_from_track: bool = False) -> dict:
+                              set_time_from_track: bool = False,
+                              write_fields: Optional[dict] = None,
+                              write_mode: str = "",
+                              exif_edits: Optional[dict] = None,
+                              cam_offsets=None) -> dict:
         """Startet den Schreibvorgang in einem Background-Thread.
+        - `write_mode` (v0.9.339): 'fill' = vorhandene Werte behalten, nur Fehlendes
+          ergänzen (Default); 'overwrite' = alles überschreiben; 'skip_existing' =
+          Fotos mit vorhandenem GPS ganz auslassen. Leer → aus `overwrite_existing`
+          abgeleitet (True→overwrite, sonst fill).
         - `matches`: Liste mit {path, lat, lon, alt, matched_time_utc, existing_gps?, manual?}
         - `make_backup`: vorher ZIP-Backup der Fotos
         - `overwrite_existing`: True = auch Fotos mit bereits gesetzten GPS-Tags überschreiben
@@ -3679,6 +3947,11 @@ class Api:
                 log.warning("geotagger_start_write: ABBRUCH — Schreibvorgang läuft bereits")
                 return {"ok": False, "error": "Schreibvorgang läuft bereits"}
 
+        # v0.9.339 — Schreib-Modus auflösen
+        mode = (write_mode or "").strip().lower()
+        if mode not in ("fill", "overwrite", "skip_existing"):
+            mode = "overwrite" if overwrite_existing else "fill"
+
         # Filtern
         to_write = []
         skipped_existing = 0
@@ -3687,7 +3960,9 @@ class Api:
             if m.get("lat") is None or m.get("lon") is None:
                 skipped_no_coords += 1
                 continue
-            if not overwrite_existing and m.get("existing_gps"):
+            # Nur im „skip_existing"-Modus werden Fotos mit vorhandenem GPS ausgelassen.
+            # In „fill"/„overwrite" kommen sie mit — der Worker entscheidet pro Feld.
+            if mode == "skip_existing" and m.get("existing_gps"):
                 skipped_existing += 1
                 continue
             to_write.append(m)
@@ -3700,11 +3975,34 @@ class Api:
                      _s.get("path"), _s.get("lat"), _s.get("lon"), _s.get("alt"),
                      _s.get("matched_time_utc"), _s.get("existing_gps"))
 
-        if not to_write:
+        # v0.9.344 — gesammelte EXIF-Feld-Edits (Tab „EXIF" in der Vorschau).
+        # Werden mit demselben Schreibvorgang (inkl. Backup) ins Foto geschrieben.
+        ee: dict = {}
+        if isinstance(exif_edits, dict):
+            for p, tags in exif_edits.items():
+                if isinstance(tags, dict) and tags:
+                    ee[p] = {str(k): ("" if v is None else str(v)) for k, v in tags.items()}
+        ee_paths = list(ee.keys())
+        log.info("geotagger_start_write: EXIF-Edits → %d Foto(s), %d Feld(er)",
+                 len(ee_paths), sum(len(v) for v in ee.values()))
+
+        if not to_write and not ee_paths:
             log.warning("geotagger_start_write: ABBRUCH — keine Fotos zum Schreiben (skipped_existing=%d skipped_no_coords=%d)",
                         skipped_existing, skipped_no_coords)
             return {"ok": False, "error": "Keine Fotos zum Schreiben",
                     "skipped_existing": skipped_existing}
+
+        # Backup-Pfade = Vereinigung aus GPS-Fotos + EXIF-editierten Fotos
+        backup_paths: list[str] = []
+        _seen_bp: set[str] = set()
+        for _p in [m["path"] for m in to_write] + ee_paths:
+            if _p and _p not in _seen_bp:
+                _seen_bp.add(_p)
+                backup_paths.append(_p)
+        # v0.9.353 — Gesamtzahl = DISTINKTE Fotos (Vereinigung GPS + EXIF-Edits),
+        # nicht die Summe der Schreib-Schritte. Sonst zeigt der Fertig-Dialog z.B.
+        # „80" obwohl nur 40 Fotos getaggt wurden (jedes 1× GPS + 1× EXIF-Felder).
+        total = len(backup_paths)
 
         # v0.9.148: Laufenden Thumbnail-Worker stoppen, BEVOR wir schreiben.
         # Sonst blockiert der GPS-Write hinter dem Worker — beide teilen sich den
@@ -3722,7 +4020,7 @@ class Api:
         with self._write_lock:
             self._write_state = {
                 "running": True,
-                "total": len(to_write),
+                "total": total,
                 "done": 0,
                 "current_name": None,
                 "current_path": None,
@@ -3735,24 +4033,38 @@ class Api:
                 "from_drops": False,
             }
 
+        # v0.9.337 — Feld-Auswahl: was wird geschrieben (Default: alles an).
+        wf = {"gps": True, "altitude": True, "direction": True, "address": True}
+        if isinstance(write_fields, dict):
+            wf.update({k: bool(v) for k, v in write_fields.items()})
+
+        # v0.9.354 — Pro-Kamera-Offset auch für die optionale Aufnahmezeit-Korrektur
+        offset_by_path = self._build_offset_by_path(cam_offsets)
         # Worker starten
         self._write_worker = threading.Thread(
             target=self._write_worker_run,
             args=(to_write, make_backup, adjust_photo_time, offset_seconds,
-                  set_time_from_track),
+                  set_time_from_track, wf, mode, ee, backup_paths, offset_by_path),
             daemon=True,
         )
         self._write_worker.start()
-        log.info("geotagger_start_write: Worker-Thread gestartet (total=%d)", len(to_write))
-        return {"ok": True, "total": len(to_write), "skipped_existing": skipped_existing}
+        log.info("geotagger_start_write: Worker-Thread gestartet (total=%d, fields=%s)", total, wf)
+        return {"ok": True, "total": total, "skipped_existing": skipped_existing}
 
     def _write_worker_run(self, items: list[dict], make_backup: bool,
                           adjust_photo_time: bool = False,
                           offset_seconds: float = 0.0,
-                          set_time_from_track: bool = False) -> None:
+                          set_time_from_track: bool = False,
+                          write_fields: Optional[dict] = None,
+                          write_mode: str = "fill",
+                          exif_edits: Optional[dict] = None,
+                          backup_paths: Optional[list] = None,
+                          offset_by_path: Optional[dict] = None) -> None:
         """Background-Worker: erst Backup-ZIP, dann pro Foto schreiben."""
-        log.info("_write_worker_run: START (items=%d make_backup=%s adjust_time=%s offset=%s set_time_from_track=%s)",
-                 len(items), make_backup, adjust_photo_time, offset_seconds, set_time_from_track)
+        wf = write_fields or {"gps": True, "altitude": True, "direction": True, "address": True}
+        mode = write_mode or "fill"
+        log.info("_write_worker_run: START (items=%d make_backup=%s adjust_time=%s offset=%s set_time_from_track=%s fields=%s mode=%s)",
+                 len(items), make_backup, adjust_photo_time, offset_seconds, set_time_from_track, wf, mode)
         # v0.9.152: Erkennen ob die Fotos per Drag&Drop kamen (liegen dann unter
         # _drops/ — die WebView liefert keinen Original-Pfad). Dann werden NUR die
         # Wegwerf-Kopien getaggt, nicht die Originale → die UI bietet danach den
@@ -3771,7 +4083,8 @@ class Api:
             if make_backup:
                 with self._write_lock:
                     self._write_state["current_name"] = "Backup wird erstellt …"
-                photo_paths = [m["path"] for m in items]
+                # v0.9.344 — Backup deckt GPS-Fotos UND EXIF-editierte Fotos ab.
+                photo_paths = backup_paths if backup_paths else [m["path"] for m in items]
 
                 def _bk_cancel() -> bool:
                     # Kein Lock nötig — atomarer bool-Read reicht für ein Flag.
@@ -3820,14 +4133,63 @@ class Api:
                     ts = None
                     if m.get("matched_time_utc"):
                         ts = datetime.fromisoformat(m["matched_time_utc"])
-                    log.info("_write_worker_run: [%d/%d] write_gps → path=%s lat=%s lon=%s alt=%s ts=%s",
-                             idx + 1, len(items), m.get("path"), m.get("lat"), m.get("lon"),
-                             m.get("alt"), ts)
-                    cexif.write_gps(m["path"],
-                                    float(m["lat"]), float(m["lon"]),
-                                    float(m["alt"]) if m.get("alt") is not None else None,
-                                    ts)
-                    log.info("_write_worker_run: [%d/%d] write_gps OK → %s", idx + 1, len(items), m.get("path"))
+                    path = m["path"]
+                    has_gps = bool(m.get("existing_gps"))
+
+                    # v0.9.336/337: Blickrichtung — nur geloggt (rz:hdg) ODER manuell
+                    # gesetzt (nie reine Bewegungs-Schätzung).
+                    img_dir = None
+                    if wf.get("direction", True) and m.get("dir") is not None \
+                            and m.get("dir_src") in ("logged", "manual"):
+                        img_dir = float(m["dir"])
+                    addr = m.get("address") if (wf.get("address", True) and isinstance(m.get("address"), dict)) else None
+                    alt_val = float(m["alt"]) if (wf.get("altitude", True) and m.get("alt") is not None) else None
+
+                    # v0.9.339 — „Nur Fehlendes ergänzen": vorhandene Werte unangetastet
+                    # lassen. Im fill-Modus pro Feld prüfen, ob das Foto es schon hat.
+                    if mode == "fill":
+                        if img_dir is not None:
+                            try:
+                                if cexif.read_img_direction(path) is not None:
+                                    img_dir = None
+                            except Exception:
+                                pass
+                        if addr is not None:
+                            try:
+                                if cexif.has_location(path):
+                                    addr = None
+                            except Exception:
+                                pass
+
+                    # GPS schreiben? overwrite=immer; fill=nur wenn keins da; im
+                    # skip_existing-Modus sind GPS-Fotos schon rausgefiltert.
+                    write_coords = (mode == "overwrite") or (not has_gps)
+                    if not write_coords:
+                        alt_val = None  # eigenes GPS/Höhe bleiben unangetastet
+
+                    if write_coords:
+                        log.info("_write_worker_run: [%d/%d] write_gps(%s) → %s lat=%s lon=%s alt=%s dir=%s",
+                                 idx + 1, len(items), mode, path, m.get("lat"), m.get("lon"), alt_val, img_dir)
+                        cexif.write_gps(path, float(m["lat"]), float(m["lon"]), alt_val, ts,
+                                        img_dir if img_dir is not None else None)
+                    elif img_dir is not None:
+                        # Eigenes GPS behalten, nur die Blickrichtung ergänzen.
+                        log.info("_write_worker_run: [%d/%d] nur Richtung ergänzen → %s dir=%s",
+                                 idx + 1, len(items), path, img_dir)
+                        cexif.write_img_direction(path, img_dir)
+
+                    # Adresse (IPTC/XMP) — getrennt, da formatübergreifend via exiftool.
+                    if addr is not None:
+                        try:
+                            cexif.write_location(path, addr)
+                        except Exception as e_addr:
+                            log.exception("_write_worker_run: [%d/%d] write_location fehlgeschlagen für %s",
+                                          idx + 1, len(items), path)
+                            with self._write_lock:
+                                self._write_state["errors"].append(
+                                    f"{path}: Adresse schreiben fehlgeschlagen: {e_addr}")
+                    log.info("_write_worker_run: [%d/%d] OK → %s (coords=%s dir=%s addr=%s)",
+                             idx + 1, len(items), path, write_coords, img_dir is not None, addr is not None)
                     # v0.9.281 (Nutzer): Aufnahmezeit aus Track setzen — NUR für manuell
                     # eingerastete Fotos mit Track-Zeit (z.B. WhatsApp ohne korrekte Zeit).
                     if set_time_from_track and m.get("manual") and ts is not None:
@@ -3843,9 +4205,11 @@ class Api:
                                     f"{m['path']}: Aufnahmezeit aus Track fehlgeschlagen: {e3}"
                                 )
                     # Optionale Zeit-Korrektur (verschiebt DateTimeOriginal/CreateDate/ModifyDate)
-                    if adjust_photo_time and offset_seconds:
+                    # v0.9.354 — pro Kamera: eigener Offset des Fotos vor dem globalen.
+                    _shift = (offset_by_path or {}).get(m["path"], offset_seconds)
+                    if adjust_photo_time and _shift:
                         try:
-                            cexif.shift_datetime(m["path"], offset_seconds)
+                            cexif.shift_datetime(m["path"], _shift)
                         except Exception as e2:
                             log.exception("_write_worker_run: [%d/%d] Zeit-Korrektur FEHLGESCHLAGEN für %s",
                                           idx + 1, len(items), m.get("path"))
@@ -3861,6 +4225,32 @@ class Api:
                     with self._write_lock:
                         self._write_state["errors"].append(f"{m['path']}: {e}")
                         self._write_state["skipped"] = self._write_state.get("skipped", 0) + 1
+
+            # Phase C (v0.9.344): gesammelte EXIF-Feld-Edits aus dem EXIF-Tab schreiben.
+            if exif_edits:
+                log.info("_write_worker_run: Phase C — EXIF-Edits in %d Foto(s)", len(exif_edits))
+                # v0.9.353 — Fotos, die schon in Phase B (GPS) gezählt wurden, hier NICHT
+                # erneut hochzählen, damit `done` = distinkte Foto-Anzahl bleibt (nicht 2×).
+                _phase_b_paths = {m.get("path") for m in items}
+                for path, tags in exif_edits.items():
+                    with self._write_lock:
+                        if self._write_state.get("cancel"):
+                            log.info("_write_worker_run: Phase C — abgebrochen")
+                            break
+                        self._write_state["current_name"] = os.path.basename(path)
+                        self._write_state["current_path"] = path
+                    for tag, val in tags.items():
+                        try:
+                            cexif.write_exif_tag(path, tag, val)
+                            log.info("_write_worker_run: EXIF %s=%r → %s", tag, val, path)
+                        except Exception as e_ex:
+                            log.exception("_write_worker_run: EXIF-Edit %s fehlgeschlagen für %s", tag, path)
+                            with self._write_lock:
+                                self._write_state["errors"].append(
+                                    f"{path}: EXIF {tag} fehlgeschlagen: {e_ex}")
+                    if path not in _phase_b_paths:
+                        with self._write_lock:
+                            self._write_state["done"] = self._write_state.get("done", 0) + 1
         except Exception:
             log.exception("_write_worker_run: UNERWARTETER Fehler im Worker")
         finally:
@@ -3952,10 +4342,12 @@ class Api:
                     ts = None
                     if m.get("matched_time_utc"):
                         ts = datetime.fromisoformat(m["matched_time_utc"])
+                    img_dir = m.get("dir") if m.get("dir_src") == "logged" else None
                     cexif.write_gps(m["path"],
                                     float(m["lat"]), float(m["lon"]),
                                     float(m["alt"]) if m.get("alt") is not None else None,
-                                    ts)
+                                    ts,
+                                    float(img_dir) if img_dir is not None else None)
                     written += 1
                 except Exception as e:
                     errors.append(f"{m['path']}: {e}")

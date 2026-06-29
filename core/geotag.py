@@ -52,6 +52,7 @@ def match_photos(
     max_gap_seconds: float = 600.0,
     tz_offset_seconds: float = 0.0,
     tz_known_paths: Optional[set] = None,
+    offset_by_path: Optional[dict] = None,
 ) -> List[PhotoMatch]:
     """
     Matcht eine Liste von (Foto-Pfad, EXIF-Lokalzeit) gegen den Track.
@@ -93,8 +94,13 @@ def match_photos(
     t_min, t_max = sorted_times[0], sorted_times[-1]
 
     matches: List[PhotoMatch] = []
-    off = timedelta(seconds=offset_seconds)
     for path, ptime in photo_times:
+        # v0.9.354 — Pro-Kamera-Offset: falls für diesen Pfad ein eigener Offset
+        # vorliegt (Kamera-spezifisch), den nehmen, sonst den globalen Default.
+        this_off_sec = offset_seconds
+        if offset_by_path is not None and path in offset_by_path:
+            this_off_sec = offset_by_path[path]
+        off = timedelta(seconds=this_off_sec)
         if ptime is None:
             matches.append(PhotoMatch(
                 path=path, photo_time_local=None, matched_time_utc=None,

@@ -196,9 +196,10 @@ def _ext_localname(tag) -> str:
 
 
 def _read_point_extensions(gp) -> dict:
-    """Liest gpxtpx/gpxpx-Standard-Extensions eines gpxpy-Punkts → {key: float}.
+    """Liest Standard-Extensions eines gpxpy-Punkts → {key: float}.
     Namespace-agnostisch: durchsucht den Extension-Teilbaum nach bekannten
-    lokalen Tag-Namen (hr/cad/atemp/power …). So lesen wir Strava-/Garmin-GPX."""
+    lokalen Tag-Namen — gpxtpx/gpxpx (hr/cad/atemp/power, Strava/Garmin) UND
+    den Reisezoom-Logger-Namespace rz: (hdg/pitch/lux/…, Android-App)."""
     out: dict = {}
     exts = getattr(gp, "extensions", None) or []
     for el in exts:
@@ -214,6 +215,9 @@ def _read_point_extensions(gp) -> dict:
             key = None
             if ln in _sensors.GPXTPX_READ:
                 key = _sensors.GPXTPX_READ[ln]
+            elif ln in _sensors.RZ_READ:
+                # Reisezoom-Logger (Android): rz:hdg/pitch/lux/… → kanonische Keys
+                key = _sensors.RZ_READ[ln]
             elif ln in ("power", "powerinwatts"):
                 key = "power"
             if key is None:

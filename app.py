@@ -2809,7 +2809,7 @@ class Api:
                 subdirs = ["chrome-headless-shell-win64", "chrome-headless-shell-win32"]
                 exe_name = "chrome-headless-shell.exe"
             else:
-                subdirs = ["chrome-headless-shell-linux"]
+                subdirs = ["chrome-headless-shell-linux64"]
                 exe_name = "chrome-headless-shell"
 
             for d in candidates:

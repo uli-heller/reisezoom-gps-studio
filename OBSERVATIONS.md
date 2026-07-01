@@ -1,6 +1,71 @@
 Beobachtungen mit Ubuntu-24.04
 ==============================
 
+## Fehler beim "Rendern"
+
+- Browser für Render fehlt -> $HOME/.cache/ms-playwright
+- In der Console:
+
+  ```
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:27 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:27 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:27 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:27 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:29 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:22:37 [INFO] app: playwright_install_chromium: driver=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/node cli=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/package/cli.js
+  2026-07-01 21:22:37 [INFO] app: playwright_install_chromium: cmd=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/node /home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/package/cli.js install chromium-headless-shell
+  2026-07-01 21:22:37 [INFO] app: playwright_install_chromium: rc=0
+  ```
+
+- Leider klappt das Rendern nicht! Beim nächsten mal wird erneut die Fehlermeldung ausgegeben
+- Download-Verzeichnis gelöscht, nochmals Render-Start
+- Nun in der Console:
+
+  ```
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:34 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:34 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:34 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:34 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  [pywebview] SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:37 [WARNING] pywebview: SAVE_DIALOG is deprecated and will be removed in a future version. Use 'FileDialog.SAVE' instead.
+  2026-07-01 21:24:39 [INFO] app: playwright_install_chromium: driver=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/node cli=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/package/cli.js
+  2026-07-01 21:24:39 [INFO] app: playwright_install_chromium: cmd=/home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/node /home/uli/git/forked/reisezoom-gps-studio/.venv/lib/python3.12/site-packages/playwright/driver/package/cli.js install chromium-headless-shell
+  2026-07-01 21:24:56 [INFO] app: playwright_install_chromium: rc=0
+  Downloading Chrome Headless Shell 148.0.7778.96 (playwright chromium-headless-shell v1223) from https://cdn.playwright.dev/builds/cft/148.0.7778.96/linux64/chrome-headless-shell-linux64.zip
+  |                                                                                |   0% of 113.2 MiB
+  |■■■■■■■■                                                                        |  10% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■                                                                |  20% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 113.2 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 113.2 MiB
+  Chrome Headless Shell 148.0.7778.96 (playwright chromium-headless-shell v1223) downloaded to /home/uli/.cache/ms-playwright/chromium_headless_shell-1223
+  Downloading FFmpeg (playwright ffmpeg v1011) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+  |                                                                                |   0% of 2.3 MiB
+  |■■■■■■■■                                                                        |  10% of 2.3 MiB
+  |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+  |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of
+  ```
+
+- Die 30% bleiben endlos stehen
+- Verzeichnis $HOME/.cache/ms-playwright/ffmpeg-1011 löschen
+- Render nochmal starten
+- Jetzt geht FFmpeg bis 100%
+- Leider funktioniert's immer noch nicht
+
 ## Fehler bei `pip install -r requirements.txt`
 
 TODO Uli: Entweder Lösung finden oder Ticket erstellen!

@@ -27,10 +27,12 @@ Lade dir die richtige Version für dein Betriebssystem:
 ### macOS (.dmg)
 1. `.dmg` doppelklicken
 2. App per Drag & Drop in den **Programme**-Ordner ziehen
-3. Beim **ersten Start**: **Rechtsklick** (oder Ctrl+Klick) auf „Reisezoom GPS Studio" → **Öffnen** → im Dialog noch mal **Öffnen** bestätigen.
+3. Beim **ersten Start** fragt macOS einmal kurz nach („… ist eine aus dem Internet geladene App. Möchtest du sie wirklich öffnen?" — mit dem Hinweis, dass Apple sie geprüft und **keine Malware gefunden** hat) → auf **„Öffnen"** klicken.
 4. Ab dem zweiten Start reicht normaler Doppelklick.
 
-Falls macOS sagt „beschädigt und kann nicht geöffnet werden":
+> Die App ist von **Apple signiert und notarisiert** — die frühere „nicht verifizierter Entwickler"-Blockade gibt es nicht mehr. Die einmalige „Wirklich öffnen?"-Frage zeigt macOS bei **jeder** aus dem Netz geladenen App (auch bei signierten) und kommt nur beim ersten Mal.
+
+Falls macOS ausnahmsweise „beschädigt und kann nicht geöffnet werden" sagt (z.B. nach einem unvollständigen Download):
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Reisezoom GPS Studio.app"
 ```
@@ -41,6 +43,8 @@ xattr -dr com.apple.quarantine "/Applications/Reisezoom GPS Studio.app"
 3. Setup-Wizard durchklicken (Sprache wählen → Pfad bestätigen → optional Desktop-Shortcut)
 4. Fertig — App startet automatisch und legt einen Start-Menü-Eintrag an
 5. Beim ersten Render lädt die App noch Chromium nach (~150 MB, einmalig, dauert 1-2 Min)
+
+> **Ganz sichergehen?** Die Windows-Version ist (noch) nicht signiert. Wer möchte, kann die heruntergeladene `.exe` vorab bei einem Dienst wie [VirusTotal](https://www.virustotal.com) gegenprüfen — die Builds stammen aus einer automatisierten GitHub-Pipeline ohne manuelle Zwischenschritte.
 
 Deinstallieren wie jede andere Windows-App: **Systemsteuerung → Apps & Features → Reisezoom GPS Studio → Deinstallieren**.
 

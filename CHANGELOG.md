@@ -14,6 +14,10 @@ Bei jeder neuen Version:
 
 ## [Unreleased]
 
+## [0.9.384] – 2026-07-01
+### Behoben
+- **Linux: App stürzte beim Start ab** (`GLib-GIO-ERROR … invalid format`). Ursache: Emojis und Klammern in den Hilfe-Menü-Labels (`🌐 Blog (reisezoom.com)`, `▶ YouTube-Kanal`, `☕`) erzeugten unter dem GTK-Backend ungültige interne Action-Namen. Labels auf reinen Text umgestellt (`Blog – reisezoom.com`, `YouTube-Kanal`, `Entwicklung unterstützen`) in DE/EN/ES + Fallbacks in `app.py`. macOS/Windows optisch minimal (Menü ohne Emoji), Funktion identisch. Danke an @commanderf (GitHub-Issue #4) für die präzise Diagnose.
+
 ## [0.9.383] – 2026-07-01
 ### Hinzugefügt
 - **macOS-Release wird jetzt mit Developer ID signiert + notarisiert** (statt nur ad-hoc) — sobald

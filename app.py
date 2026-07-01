@@ -129,7 +129,7 @@ else:
 ci18n.set_i18n_dir(I18N_DIR)
 
 # App-Version — wird im Über-Dialog + im Topbar gezeigt. Bei Release bumpen.
-APP_VERSION = "0.9.383"
+APP_VERSION = "0.9.384"
 
 # ── Edition (v0.9.331) ───────────────────────────────────────────────────────
 # Dieselbe Codebasis liefert zwei Apps:
@@ -4845,8 +4845,8 @@ def main() -> None:
         _menu_about      = _strings.get("menu.about", "About Reisezoom GPS Studio")
         _menu_mapbox     = _strings.get("menu.mapbox_help", "Mapbox Token Help")
         _menu_feedback   = _strings.get("menu.feedback", "Feedback / Fehler melden…")
-        _menu_support    = _strings.get("menu.support", "Entwicklung unterstützen ☕")
-        _menu_blog       = _strings.get("menu.blog", "Blog (reisezoom.com)")
+        _menu_support    = _strings.get("menu.support", "Entwicklung unterstützen")
+        _menu_blog       = _strings.get("menu.blog", "Blog – reisezoom.com")
         _menu_youtube    = _strings.get("menu.youtube", "YouTube-Kanal")
         _menu_export_gpx = _strings.get("menu.export_gpx", "Als GPX exportieren…")
         _menu_export_kml = _strings.get("menu.export_kml", "Als KML exportieren…")

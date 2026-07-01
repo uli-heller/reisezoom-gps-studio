@@ -52,15 +52,15 @@ Für Linux gibt es **kein fertiges Binary** — das Karten-/Render-Backend (pywe
 
 ```bash
 # Fedora / RHEL
-sudo dnf install python3 python3-gobject gobject-introspection \
+sudo dnf install git python3 python3-gobject gobject-introspection \
                  webkit2gtk4.1 python3-cairo ffmpeg perl-Image-ExifTool
 
 # Debian / Ubuntu
-sudo apt install python3 python3-venv python3-gi python3-gi-cairo \
+sudo apt install git python3 python3-venv python3-gi python3-gi-cairo \
                  gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 ffmpeg libimage-exiftool-perl
 
 # Arch
-sudo pacman -S python python-gobject webkit2gtk-4.1 ffmpeg perl-image-exiftool
+sudo pacman -S git python python-gobject webkit2gtk-4.1 ffmpeg perl-image-exiftool
 ```
 
 **2. Repo holen & starten:**
